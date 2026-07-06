@@ -8,5 +8,16 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@langchain/core": "^1.2.1",
+    "@langchain/langgraph": "^1.4.7",
+    "@langchain/openai": "^1.5.3",
+    "@langchain/quickjs": "^0.5.1",
+    "dedent": "^1.7.2",
+    "deepagents": "^1.10.5",
+    "dotenv": "^17.4.2",
+    "langchain": "^1.5.2",
+    "zod": "^4.4.3"
+  }
 }
