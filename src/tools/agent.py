@@ -2,16 +2,9 @@ from langchain.agents import create_agent
 
 from .search import web_search
 from .lib.model import get_model
+from .lib.prompts import RESEARCHER_SYSTEM_PROMPT   
+from .lib.prompts import EDITOR_SYSTEM_PROMPT
 
-
-RESEARCHER_SYSTEM_PROMPT = """
-    你是一名专业调研员，只负责一个子主题调研，所有输出必须中文。
-    工作要求：
-    1) 最多调用 3 次 web_search；
-    2) 给出结构化结论：关键发现 + 证据来源 URL；
-    3) 禁止空转循环，拿到足够信息后立即给出结论；
-    4) 不要偏离用户给定的子主题。
-"""
 
 def create_researcher_agent():
     model = get_model()
@@ -49,13 +42,52 @@ async def run_researcher_once(subtopic: str) -> str:
     
     return messages[-1].content
 
-if __name__ == "__main__":
-    import asyncio
-    async def main():
-        out = await run_researcher_once("AI Agent 框架对比")
-        print(out)
-    asyncio.run(main())
+def create_editor_agent():
+    model = get_model()
+    editor_agent = create_agent(
+        model=model,
+        tools=[],
+        system_prompt=EDITOR_SYSTEM_PROMPT,
+    )
+    return editor_agent
 
+async def review_with_editor(draft: str) -> str:
+    text = (draft or "").strip()
 
+    if not text:
+        raise ValueError("draft 不能为空")
+
+    agent = create_editor_agent()
+
+    result = await agent.ainvoke(
+        {
+            "messages": [
+                {
+                    "role": "user",
+                    "content": (
+                        "请审阅以下调研草稿，并给出中文审阅意见与可执行修改建议：\n\n"
+                        f"{text}"
+                    ),
+                }
+            ]
+        }
+    )
+
+    messages = result.get("messages", [])
+
+    if not messages:
+        raise RuntimeError("没有获取到结果")
+    
+    return messages[-1].content
+
+async def run_research_then_review(subtopic: str) -> str:
+    research_output = await run_researcher_once(subtopic)
+    review_output = await review_with_editor(research_output)
+    return (
+        "=== 调研结果 ===\n"
+        f"{research_output}\n\n"
+        "=== 编辑审阅意见 ===\n"
+        f"{review_output}"
+    )
 
 
