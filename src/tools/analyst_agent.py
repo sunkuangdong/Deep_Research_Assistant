@@ -50,32 +50,32 @@ def should_run_analysis(subtopic: str) -> bool:
     keywords = ["对比", "比较", "排名", "优劣", "趋势", "增长", "占比", "分析"]
     return any(k in topic for k in keywords)
 
-async def run_research_analyze_review(subtopic: str) -> str:
-    research_output = await run_researcher_once(subtopic)
-    if should_run_analysis(subtopic):
-        analysis_output = await analyze_with_analyst(research_output)
-
-        draft_for_editor = (
-            "=== 调研结果 ===\n"
-            f"{research_output}\n\n"
-            "=== 分析结果 ===\n"
-            f"{analysis_output}"
-        )
-    else:
-        analysis_output = "（该主题无需额外数据分析）"
-        draft_for_editor = (
-            "=== 调研结果 ===\n"
-            f"{research_output}"
-        )
-    
-    review_output = await review_with_editor(draft_for_editor)
-
-    return (
-        "=== 调研结果 ===\n"
-        f"{research_output}\n\n"
-        "=== 分析结果 ===\n"
-        f"{analysis_output}\n\n"
-        "=== 编辑审阅意见 ===\n"
-        f"{review_output}"
-    )
+# async def run_research_analyze_review(subtopic: str) -> str:
+#     research_output = await run_researcher_once(subtopic)
+#     if should_run_analysis(subtopic):
+#         analysis_output = await analyze_with_analyst(research_output)
+#
+#         draft_for_editor = (
+#             "=== 调研结果 ===\n"
+#             f"{research_output}\n\n"
+#             "=== 分析结果 ===\n"
+#             f"{analysis_output}"
+#         )
+#     else:
+#         analysis_output = "（该主题无需额外数据分析）"
+#         draft_for_editor = (
+#             "=== 调研结果 ===\n"
+#             f"{research_output}"
+#         )
+#
+#     review_output = await review_with_editor(draft_for_editor)
+#
+#     return (
+#         "=== 调研结果 ===\n"
+#         f"{research_output}\n\n"
+#         "=== 分析结果 ===\n"
+#         f"{analysis_output}\n\n"
+#         "=== 编辑审阅意见 ===\n"
+#         f"{review_output}"
+#     )
 
