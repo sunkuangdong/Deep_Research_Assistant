@@ -1,9 +1,9 @@
 from langchain.agents import create_agent
 
-from .search import web_search
-from .lib.model import get_model
-from .lib.prompts import RESEARCHER_SYSTEM_PROMPT   
-from .lib.prompts import EDITOR_SYSTEM_PROMPT
+from src.tools.search import web_search
+from src.tools.lib.model import get_model
+from src.tools.lib.prompts import RESEARCHER_SYSTEM_PROMPT
+from src.tools.lib.prompts import EDITOR_SYSTEM_PROMPT
 
 
 def create_researcher_agent():
