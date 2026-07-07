@@ -4,6 +4,7 @@ import json
 from src.workflow.cli import parse_args
 from src.workflow.engine import run_staged_workflow
 from src.workflow.metrics import print_stage_metrics
+from src.workflow.runtime import healthcheck_env, print_quick_tips_on_error
 
 
 async def main():
@@ -26,4 +27,10 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    try:
+        healthcheck_env()
+        asyncio.run(main())
+    except Exception as e:
+        print(f"❌ 执行失败: {e}")
+        print_quick_tips_on_error(e)
+        raise SystemExit(1)
