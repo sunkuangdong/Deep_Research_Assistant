@@ -49,3 +49,20 @@ ORCHESTRATOR_SYSTEM_PROMPT = """
     - editor 只审阅，不改写
     - analyst 只做分析，不联网搜索
 """
+
+RUNTIME_NO_ANALYSIS_GUARD = """
+    [运行时约束]
+    - 本次任务禁止调用 task_analyst。
+    - 仅允许调用 task_researcher 与 task_editor。
+    - 若信息不足以做定量分析，请在最终结论中明确写出：
+    “本次按 --no-analysis 运行，未进行分析师阶段（task_analyst）。”
+"""
+
+RUNTIME_DELEGATION_GUARD = """
+    [委派约束]
+    - task_researcher 最多调用 3 次（硬性上限）。
+    - 每次 task_researcher 只能处理 1 个聚焦子主题，禁止一次塞入多个子主题。
+    - 如果主题简单，可少于 3 次；禁止为了凑次数而调用。
+    - 调研完成后再决定是否调用 task_analyst（若允许）。
+    - task_editor 仅调用 1 次用于审阅。
+""" 
