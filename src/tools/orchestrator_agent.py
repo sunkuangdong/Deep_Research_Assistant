@@ -1,4 +1,3 @@
-from pyexpat.errors import messages
 from langchain.agents import create_agent
 from src.tools.lib.model import get_model
 from src.tools.lib.prompts import ORCHESTRATOR_SYSTEM_PROMPT
@@ -14,26 +13,40 @@ def create_orchestrator_agent():
     )
     return orchestrator
 
-async def run_orchestrator_once(topic: str) -> str:
+async def run_orchestrator_once(topic: str, no_analysis: bool = False) -> str:
     clean_topic = (topic or "").strip()
+    runtime_guard = ""
 
     if not clean_topic:
         raise ValueError("topic 不能为空")
-    
+
     agent = create_orchestrator_agent()
 
-    result = await agent.invoke({
-        "messages": [
-            {
-                "role": "user",
-                "content": f"请围绕这个主题完成调研并给出最终报告：{clean_topic}",
-            }
-        ]
-    })
+    if no_analysis:
+        runtime_guard = (
+            "\n\n[运行时约束]\n"
+            "- 本次任务禁止调用分析师（task_analyst）。\n"
+            "- 只允许调研与审阅流程。\n"
+            "- 如遇到需要数值分析的内容，请在结论中明确说明“本次按 no-analysis 跳过分析步骤”。"
+        )
+
+    result = await agent.ainvoke(
+        {
+            "messages": [
+                {
+                    "role": "user",
+                    "content": (
+                        f"请围绕这个主题完成调研并给出最终报告：{clean_topic}"
+                        f"{runtime_guard}"
+                    ),
+                }
+            ]
+        }
+    )
 
     messages = result.get("messages", [])
 
     if not messages:
         raise RuntimeError("orchestrator 没有返回结果")
     
-    return messages[-1].get("content", "")
+    return messages[-1].content
