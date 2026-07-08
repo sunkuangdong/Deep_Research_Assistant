@@ -2,23 +2,32 @@ import asyncio
 import json
 import time
 
-from src.workflow.cli import parse_args
+from src.workflow.cli import parse_args, parse_skills_arg
 from src.workflow.runtime import healthcheck_env, print_quick_tips_on_error
 from src.tools.orchestrator_agent import run_orchestrator_once
 
 from src.workflow.metrics import get_tool_metrics_summary, reset_tool_metrics
 
+from src.workflow.skills import resolve_enabled_skills
+
 
 async def main():
     args = parse_args()
     topic = args.topic.strip()
+    requested_skills = parse_skills_arg(args.skills)
+    enabled_skills = resolve_enabled_skills(requested_skills, use_defaults=True)
+
     if not topic:
         raise ValueError("topic 不能为空")
     
     reset_tool_metrics()
     start_time = time.perf_counter()
 
-    final_text = await run_orchestrator_once(topic, no_analysis=args.no_analysis)
+    final_text = await run_orchestrator_once(
+        topic,
+        no_analysis=args.no_analysis,
+        enabled_skills=enabled_skills,
+    )
 
     total_ms = int((time.perf_counter() - start_time) * 1000)
     tool_metrics = get_tool_metrics_summary()

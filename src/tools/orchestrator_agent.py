@@ -2,6 +2,7 @@ from langchain.agents import create_agent
 from src.tools.lib.model import get_model
 from src.tools.lib.prompts import ORCHESTRATOR_SYSTEM_PROMPT, RUNTIME_NO_ANALYSIS_GUARD, RUNTIME_DELEGATION_GUARD
 from src.tools.subagent_tools import task_researcher, task_analyst, task_editor
+from src.workflow.skills import build_skills_guard
 
 
 def create_orchestrator_agent():
@@ -13,7 +14,11 @@ def create_orchestrator_agent():
     )
     return orchestrator
 
-async def run_orchestrator_once(topic: str, no_analysis: bool = False) -> str:
+async def run_orchestrator_once(
+        topic: str, 
+        no_analysis: bool = False,
+        enabled_skills: list[str] = [],
+    ) -> str:
     clean_topic = (topic or "").strip()
     runtime_guard = ""
     runtime_sections = [RUNTIME_DELEGATION_GUARD.strip()]
@@ -23,9 +28,13 @@ async def run_orchestrator_once(topic: str, no_analysis: bool = False) -> str:
 
     agent = create_orchestrator_agent()
 
+    if enabled_skills:
+        runtime_sections.append(build_skills_guard(enabled_skills).strip())
+
     if no_analysis:
         runtime_sections.append(RUNTIME_NO_ANALYSIS_GUARD.strip())
-        runtime_guard = "\n\n".join(runtime_sections)
+        
+    runtime_guard = "\n\n".join(runtime_sections)
 
     user_prompt = (
         f"请围绕这个主题完成调研并给出最终报告：{clean_topic}\n\n"

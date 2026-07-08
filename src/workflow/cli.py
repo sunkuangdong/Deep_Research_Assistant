@@ -15,4 +15,18 @@ def parse_args():
         action="store_true",
         help="跳过分析步骤，只做调研+审阅",
     )
+    parser.add_argument(
+        "--skills",
+        type=str,
+        default="",
+        help="启用的 skills，逗号分隔，例如：web-research,report-writer",
+    )
     return parser.parse_args()
+
+def parse_skills_arg(skills_arg: str) -> list[str]:
+    raw = (skills_arg or "").strip()
+
+    if not raw:
+        return []
+    
+    return [s.strip() for s in raw.split(",") if s.strip()]
