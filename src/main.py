@@ -24,12 +24,18 @@ async def main():
     reset_tool_metrics()
     start_time = time.perf_counter()
 
-    final_text = await run_orchestrator_once(
-        topic,
-        no_analysis=args.no_analysis,
-        enabled_skills=enabled_skills,
-    )
+    if args.mode == "legacy":
+        final_text = await run_orchestrator_once(
+            topic,
+            no_analysis=args.no_analysis,
+            enabled_skills=enabled_skills,
+        )
+    elif args.mode == "deepagents":
+        raise NotImplementedError("deepagents 模式尚未接入，下一步会实现")
+    else:
+        raise ValueError(f"不支持的运行模式: {args.mode}")
 
+    
     total_ms = int((time.perf_counter() - start_time) * 1000)
     tool_metrics = get_tool_metrics_summary()
     
@@ -37,7 +43,7 @@ async def main():
         payload = {
             "topic": topic,
             "final_text": final_text,
-            "mode": "subagent-orchestrator",
+            "mode": args.mode,
             "total_ms": total_ms,
             "tool_metrics": tool_metrics,
         }
