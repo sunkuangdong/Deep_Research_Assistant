@@ -5,10 +5,9 @@ import time
 from src.workflow.cli import parse_args, parse_skills_arg
 from src.workflow.runtime import healthcheck_env, print_quick_tips_on_error
 from src.tools.orchestrator_agent import run_orchestrator_once
-
 from src.workflow.metrics import get_tool_metrics_summary, reset_tool_metrics
-
 from src.workflow.skills import resolve_enabled_skills
+from src.workflow.deepagents_runner import run_deepagents_workflow
 
 
 async def main():
@@ -31,7 +30,11 @@ async def main():
             enabled_skills=enabled_skills,
         )
     elif args.mode == "deepagents":
-        raise NotImplementedError("deepagents 模式尚未接入，下一步会实现")
+        final_text = await run_deepagents_workflow(
+            topic,
+            enabled_skills=enabled_skills,
+            no_analysis=args.no_analysis,
+        )
     else:
         raise ValueError(f"不支持的运行模式: {args.mode}")
 
