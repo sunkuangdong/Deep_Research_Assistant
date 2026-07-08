@@ -8,7 +8,7 @@ def get_model() -> ChatOpenAI:
     api_key = (os.getenv("OPENAI_API_KEY") or "").strip()
     if not api_key:
         raise ValueError("未设置 OPENAI_API_KEY")
-    model_name = (os.getenv("OPENAI_MODEL") or "gpt-4o").strip()
+    model_name = (os.getenv("MODEL_NAME") or "gpt-4o").strip()
     base_url = (os.getenv("OPENAI_BASE_URL") or "").strip() or None
 
     llm_kwargs = {
