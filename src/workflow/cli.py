@@ -21,6 +21,13 @@ def parse_args():
         default="",
         help="启用的 skills，逗号分隔，例如：web-research,report-writer",
     )
+    parser.add_argument(
+        "--mode",
+        type=str,
+        choices=["legacy", "deepagents"],
+        default="legacy",
+        help="运行模式：legacy=现有 LangChain agent 流程，deepagents=官方 create_deep_agent 流程"
+    )
     return parser.parse_args()
 
 def parse_skills_arg(skills_arg: str) -> list[str]:

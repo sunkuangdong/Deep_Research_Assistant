@@ -13,6 +13,7 @@ from src.workflow.skills import resolve_enabled_skills
 
 async def main():
     args = parse_args()
+    print("args:", args)
     topic = args.topic.strip()
     requested_skills = parse_skills_arg(args.skills)
     enabled_skills = resolve_enabled_skills(requested_skills, use_defaults=True)
