@@ -1,9 +1,12 @@
 import asyncio
 import json
+import time
 
 from src.workflow.cli import parse_args
 from src.workflow.runtime import healthcheck_env, print_quick_tips_on_error
 from src.tools.orchestrator_agent import run_orchestrator_once
+
+from src.workflow.metrics import get_tool_metrics_summary, reset_tool_metrics
 
 
 async def main():
@@ -11,21 +14,28 @@ async def main():
     topic = args.topic.strip()
     if not topic:
         raise ValueError("topic 不能为空")
+    
+    reset_tool_metrics()
+    start_time = time.perf_counter()
+
     final_text = await run_orchestrator_once(topic, no_analysis=args.no_analysis)
+
+    total_ms = int((time.perf_counter() - start_time) * 1000)
+    tool_metrics = get_tool_metrics_summary()
+    
     if args.as_json:
-        print(
-            json.dumps(
-                {
-                    "topic": topic,
-                    "final_text": final_text,
-                    "mode": "subagent-orchestrator",
-                },
-                ensure_ascii=False,
-                indent=2,
-            )
-        )
+        payload = {
+            "topic": topic,
+            "final_text": final_text,
+            "mode": "subagent-orchestrator",
+            "total_ms": total_ms,
+            "tool_metrics": tool_metrics,
+        }
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
     else:
         print(final_text)
+        print(f"\n[Total] {total_ms} ms")
+        print(json.dumps(tool_metrics, ensure_ascii=False, indent=2))
 
 
 if __name__ == "__main__":
