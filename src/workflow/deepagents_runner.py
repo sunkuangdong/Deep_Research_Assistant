@@ -8,7 +8,11 @@ from src.tools.lib.prompts import (
     ORCHESTRATOR_SYSTEM_PROMPT,
     RUNTIME_DELEGATION_GUARD,
     RUNTIME_NO_ANALYSIS_GUARD,
+    RESEARCHER_SYSTEM_PROMPT,
+    ANALYST_SYSTEM_PROMPT,
+    EDITOR_SYSTEM_PROMPT,
 )
+from src.tools.search import web_search
 
 def build_deepagents_system_prompt(no_analysis: bool = False) -> str:
     """
@@ -29,6 +33,46 @@ def build_deepagents_system_prompt(no_analysis: bool = False) -> str:
 
     return "\n\n".join(sections)
 
+def build_deepagents_subagents() -> list[Any]:
+    """
+    构建 DeepAgents 官方 subagents。
+    researcher:
+        负责一个聚焦子主题的联网调研，可以使用 web_search。
+    analyst:
+        负责结构化分析，不直接联网。
+    editor:
+        负责审阅草稿，不直接联网。
+    """
+
+    return [
+        {
+            "name": "researcher",
+            "description": (
+                "Use this subagent for focused web research on one specific "
+                "subtopic. It can search the web and return evidence with URLs."
+            ),
+            "system_prompt": RESEARCHER_SYSTEM_PROMPT,
+            "tools": [web_search],
+        },
+        {
+            "name": "analyst",
+            "description": (
+                "Use this subagent for structured comparison, trend analysis, "
+                "trade-off analysis, and uncertainty assessment based on provided research text."
+            ),
+            "system_prompt": ANALYST_SYSTEM_PROMPT,
+            "tools": [],
+        },
+        {
+            "name": "editor",
+            "description": (
+                "Use this subagent to review the draft report for clarity, "
+                "consistency, and completeness. It does not need to search the web."
+            ),
+            "system_prompt": EDITOR_SYSTEM_PROMPT,
+            "tools": [],
+        }
+    ]
 
 async def run_deepagents_workflow(
     topic: str,
@@ -58,6 +102,8 @@ async def run_deepagents_workflow(
         system_prompt=system_prompt,
         debug=False,
         name="deep_research_agent",
+        tools=[web_search],
+        subagents=build_deepagents_subagents(),
     )
 
     agent = build_deep_agent(config)

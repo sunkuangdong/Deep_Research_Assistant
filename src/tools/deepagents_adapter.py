@@ -23,6 +23,8 @@ class DeepAgentBuildConfig:
     debug: bool = False
     name: str = "deep_research_agent"
     virtual_mode: bool = True
+    tools: list[Any] | None = None
+    subagents: list[Any] | None = None
 
 def build_deep_agent(config: DeepAgentBuildConfig) -> Any:
     """
@@ -39,12 +41,14 @@ def build_deep_agent(config: DeepAgentBuildConfig) -> Any:
 
     agent = create_deep_agent(
         model=model,
+        tools=config.tools or [],
         backend=backend,
         name=config.name,
         skills=config.skills or [],
         memory=config.memory or [],
         system_prompt=config.system_prompt,
         debug=config.debug,
+        subagents=config.subagents or [],
     )
     return agent
 
