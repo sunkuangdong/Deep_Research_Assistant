@@ -2,20 +2,15 @@ import asyncio
 import json
 import time
 
-from src.workflow.cli import parse_args, parse_skills_arg
+from src.workflow.cli import parse_args
 from src.workflow.runtime import healthcheck_env, print_quick_tips_on_error
-from src.tools.orchestrator_agent import run_orchestrator_once
 from src.workflow.metrics import get_tool_metrics_summary, reset_tool_metrics
-from src.workflow.skills import resolve_enabled_skills
 from src.workflow.deepagents_runner import run_deepagents_workflow
 
 
 async def main():
     args = parse_args()
-    print("args:", args)
     topic = args.topic.strip()
-    requested_skills = parse_skills_arg(args.skills)
-    enabled_skills = resolve_enabled_skills(requested_skills, use_defaults=True)
 
     if not topic:
         raise ValueError("topic 不能为空")
@@ -24,16 +19,9 @@ async def main():
     start_time = time.perf_counter()
     deepagents_metadata = {}
 
-    if args.mode == "legacy":
-        final_text = await run_orchestrator_once(
-            topic,
-            no_analysis=args.no_analysis,
-            enabled_skills=enabled_skills,
-        )
-    elif args.mode == "deepagents":
+    if args.mode == "deepagents":
         deepagents_result = await run_deepagents_workflow(
             topic,
-            enabled_skills=enabled_skills,
             no_analysis=args.no_analysis,
         )
         final_text = deepagents_result.final_text
@@ -53,7 +41,6 @@ async def main():
             "total_ms": total_ms,
             "tool_metrics": tool_metrics,
             "deepagents": deepagents_metadata,
-            "enabled_skills": enabled_skills,
             "no_analysis": args.no_analysis,
         }
         print(json.dumps(payload, ensure_ascii=False, indent=2))

@@ -1,4 +1,6 @@
 from __future__ import annotations
+from typing import Any
+
 from src.tools.deepagents_adapter import (
     build_deep_agent,
     run_deep_agent_once,
@@ -57,7 +59,7 @@ DEEPAGENTS_ORCHESTRATION_GUARD = """
     - Clearly mark uncertainty and limitations.
 """
 
-def create_limited_web_search(search_budget: SearchBudget) -> tool:
+def create_limited_web_search(search_budget: SearchBudget) -> Any:
     """
     创建带调用预算的 web_search 工具。
     这个限制是一次 run_deepagents_workflow 调用内生效的：
@@ -108,7 +110,7 @@ def build_deepagents_system_prompt(no_analysis: bool = False) -> str:
     else:
         sections.append(
             """
-            Analysis Requirement]
+            [Analysis Requirement]
                 - For comparison, trend, trade-off, or framework evaluation tasks, you must delegate to the analyst subagent after collecting research evidence.
                 - The final answer must include an explicit analysis section.
                 - The analysis must compare dimensions, trade-offs, suitable scenarios, and uncertainty.
@@ -180,7 +182,6 @@ def build_deepagents_subagents(search_tool, no_analysis: bool = False) -> list[A
 async def run_deepagents_workflow(
     topic: str,
     no_analysis: bool = False,
-    enabled_skills: list[str] = [],
 ) -> DeepAgentsRunResult:
     """
     运行官方 DeepAgents 工作流。
@@ -222,13 +223,6 @@ async def run_deepagents_workflow(
         f"请围绕这个主题完成调研并给出最终报告：{clean_topic}\n\n"
         "要求：所有输出使用中文。"
     )
-
-    if enabled_skills:
-        user_prompt += (
-            "\n\n当前 CLI 请求启用的 skills："
-            f"{', '.join(enabled_skills)}。\n"
-            "注意：官方 SkillsMiddleware 会在第 7 步接入 skills/ 目录后正式生效。"
-        )
     
     final_text = await run_deep_agent_once(agent, user_prompt)
 

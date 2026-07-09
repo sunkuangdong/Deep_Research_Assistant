@@ -21,7 +21,7 @@ def format_web_pages(webpages: list[dict]) -> str:
             网站图标: {page.get("siteIcon") or ""}
             发布时间: {page.get("dateLastCrawled") or ""}"""
         )
-        return "\n\n".join(parts)
+    return "\n\n".join(parts)
     
 async def bocha_web_search(query: str, count: int) -> str:
     api_key = (os.getenv("BOCHA_API_KEY") or "").strip()
