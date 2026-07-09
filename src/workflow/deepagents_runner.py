@@ -53,8 +53,8 @@ async def run_deepagents_workflow(
 
     config = DeepAgentBuildConfig(
         root_dir=".",
-        skills=[],
-        memory=[],
+        skills=["./skills"],
+        memory=["./AGENTS.md"],
         system_prompt=system_prompt,
         debug=False,
         name="deep_research_agent",

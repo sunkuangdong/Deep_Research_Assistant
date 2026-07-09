@@ -22,6 +22,7 @@ class DeepAgentBuildConfig:
     system_prompt: str | None = None
     debug: bool = False
     name: str = "deep_research_agent"
+    virtual_mode: bool = True
 
 def build_deep_agent(config: DeepAgentBuildConfig) -> Any:
     """
@@ -33,7 +34,7 @@ def build_deep_agent(config: DeepAgentBuildConfig) -> Any:
         4) 返回可 ainvoke 的 agent graph
     """
 
-    backend = FilesystemBackend(root_dir=config.root_dir)
+    backend = FilesystemBackend(root_dir=config.root_dir, virtual_mode=config.virtual_mode)
     model = get_model()
 
     agent = create_deep_agent(
