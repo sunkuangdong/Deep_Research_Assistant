@@ -22,6 +22,7 @@ async def main():
     
     reset_tool_metrics()
     start_time = time.perf_counter()
+    deepagents_metadata = {}
 
     if args.mode == "legacy":
         final_text = await run_orchestrator_once(
@@ -30,11 +31,13 @@ async def main():
             enabled_skills=enabled_skills,
         )
     elif args.mode == "deepagents":
-        final_text = await run_deepagents_workflow(
+        deepagents_result = await run_deepagents_workflow(
             topic,
             enabled_skills=enabled_skills,
             no_analysis=args.no_analysis,
         )
+        final_text = deepagents_result.final_text
+        deepagents_metadata = deepagents_result.metadata
     else:
         raise ValueError(f"不支持的运行模式: {args.mode}")
 
@@ -49,12 +52,19 @@ async def main():
             "mode": args.mode,
             "total_ms": total_ms,
             "tool_metrics": tool_metrics,
+            "deepagents": deepagents_metadata,
+            "enabled_skills": enabled_skills,
+            "no_analysis": args.no_analysis,
         }
         print(json.dumps(payload, ensure_ascii=False, indent=2))
     else:
         print(final_text)
         print(f"\n[Total] {total_ms} ms")
+        if deepagents_metadata:
+            print("\n[DeepAgents Metadata]")
+            print(json.dumps(deepagents_metadata, ensure_ascii=False, indent=2))
         print(json.dumps(tool_metrics, ensure_ascii=False, indent=2))
+
 
 
 if __name__ == "__main__":

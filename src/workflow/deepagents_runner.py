@@ -15,37 +15,49 @@ from src.tools.lib.prompts import (
 from langchain_core.tools import tool
 from src.tools.search import WebSearchInput, bocha_web_search
 
+from dataclasses import dataclass
+
+class SearchBudget:
+    def __init__(self, max_calls: int):
+        self.max_calls = max_calls
+        self.call_count = 0
+
+@dataclass(frozen=True)
+class DeepAgentsRunResult:
+    final_text: str
+    metadata: dict
+
 DEEPAGENTS_ORCHESTRATION_GUARD = """
-[DeepAgents Orchestration Rules]
-You are running in official DeepAgents mode.
-Available collaboration options:
-- Use the main web_search tool only for quick verification or simple lookup.
-- Delegate focused research tasks to the researcher subagent.
-- Delegate structured comparison, trend reasoning, trade-off reasoning, and uncertainty assessment to the analyst subagent.
-- Delegate draft review to the editor subagent.
-Delegation policy:
-- For complex research, first create a short plan.
-- Use at most 3 researcher delegations.
-- Each researcher delegation must cover exactly one focused subtopic.
-- Do not ask one researcher to investigate multiple unrelated subtopics.
-- Use analyst only after research evidence is available.
-- Use editor once near the end to review the draft.
-- Do not delegate unnecessary work just to use subagents.
-Search budget:
-- For simple lookup tasks, use at most 1 direct web_search call.
-- For comparison tasks, use at most 4 total web_search calls.
-- For deep research tasks, use at most 6 total web_search calls.
-- The main agent should not call web_search more than 2 times directly.
-- Prefer delegating focused research to the researcher subagent instead of repeatedly searching in the main agent.
-- Stop searching once there is enough evidence to answer.
-- Do not search separately for every small wording variation of the same concept.
-Output policy:
-- Final output must be in Chinese.
-- Include evidence or source names when available.
-- Clearly mark uncertainty and limitations.
+    [DeepAgents Orchestration Rules]
+    You are running in official DeepAgents mode.
+    Available collaboration options:
+    - Use the main web_search tool only for quick verification or simple lookup.
+    - Delegate focused research tasks to the researcher subagent.
+    - Delegate structured comparison, trend reasoning, trade-off reasoning, and uncertainty assessment to the analyst subagent.
+    - Delegate draft review to the editor subagent.
+    Delegation policy:
+    - For complex research, first create a short plan.
+    - Use at most 3 researcher delegations.
+    - Each researcher delegation must cover exactly one focused subtopic.
+    - Do not ask one researcher to investigate multiple unrelated subtopics.
+    - Use analyst only after research evidence is available.
+    - Use editor once near the end to review the draft.
+    - Do not delegate unnecessary work just to use subagents.
+    Search budget:
+    - For simple lookup tasks, use at most 1 direct web_search call.
+    - For comparison tasks, use at most 4 total web_search calls.
+    - For deep research tasks, use at most 6 total web_search calls.
+    - The main agent should not call web_search more than 2 times directly.
+    - Prefer delegating focused research to the researcher subagent instead of repeatedly searching in the main agent.
+    - Stop searching once there is enough evidence to answer.
+    - Do not search separately for every small wording variation of the same concept.
+    Output policy:
+    - Final output must be in Chinese.
+    - Include evidence or source names when available.
+    - Clearly mark uncertainty and limitations.
 """
 
-def create_limited_web_search(max_calls: int = 6) -> tool:
+def create_limited_web_search(search_budget: SearchBudget) -> tool:
     """
     创建带调用预算的 web_search 工具。
     这个限制是一次 run_deepagents_workflow 调用内生效的：
@@ -53,23 +65,23 @@ def create_limited_web_search(max_calls: int = 6) -> tool:
         - 超过 max_calls 后，不再请求真实搜索 API
     """
 
-    call_count = 0
-
     @tool("web_search", args_schema=WebSearchInput)
     async def limited_web_search(query: str, count: int = 10) -> str:
         """使用 Bocha 联网搜索 API 检索互联网网页，并限制单次 DeepAgents 运行中的搜索次数。"""
-        nonlocal call_count
 
-        if call_count >= max_calls:
+        if search_budget.call_count >= search_budget.max_calls:
             return (
-                f"web_search 搜索预算已用完。本次最多允许 {max_calls} 次搜索，"
+                f"web_search 搜索预算已用完。本次最多允许 {search_budget.max_calls} 次搜索，"
                 "请基于已有搜索结果停止继续搜索，并直接整理最终结论。"
             )
-        
-        call_count += 1
-        safe_count = min(call_count, 5)
+        search_budget.call_count += 1
+        safe_count = min(count, 5)
 
-        print(f"  🔎 搜索[{call_count}/{max_calls}]: {query}（{safe_count} 条）")
+        print(
+            f"  🔎 搜索[{search_budget.call_count}/{search_budget.max_calls}]: "
+            f"{query}（{safe_count} 条）"
+        )
+        
         return await bocha_web_search(query, safe_count)
 
     return limited_web_search
@@ -89,14 +101,27 @@ def build_deepagents_system_prompt(no_analysis: bool = False) -> str:
         ORCHESTRATOR_SYSTEM_PROMPT.strip(),
         DEEPAGENTS_ORCHESTRATION_GUARD.strip(),
         RUNTIME_DELEGATION_GUARD.strip(),
-    ]
+    ]   
 
     if no_analysis:
         sections.append(RUNTIME_NO_ANALYSIS_GUARD.strip())
+    else:
+        sections.append(
+            """
+            Analysis Requirement]
+                - For comparison, trend, trade-off, or framework evaluation tasks, you must delegate to the analyst subagent after collecting research evidence.
+                - The final answer must include an explicit analysis section.
+                - The analysis must compare dimensions, trade-offs, suitable scenarios, and uncertainty.
+                - Do not ask the user whether to continue analysis.
+                - If the user asks for a conclusion, produce the final analysis and conclusion directly.
+                - Do not stop after listing raw research findings.
+                - After research is collected, synthesize the final answer without asking follow-up permission.
+            """.strip()
+        )
 
     return "\n\n".join(sections)
 
-def build_deepagents_subagents(search_tool) -> list[Any]:
+def build_deepagents_subagents(search_tool, no_analysis: bool = False) -> list[Any]:
     """
     构建 DeepAgents 官方 subagents。
     researcher:
@@ -106,8 +131,7 @@ def build_deepagents_subagents(search_tool) -> list[Any]:
     editor:
         负责审阅草稿，不直接联网。
     """
-
-    return [
+    subagents = [
         {
             "name": "researcher",
             "description": (
@@ -123,32 +147,41 @@ def build_deepagents_subagents(search_tool) -> list[Any]:
                 + "- Return concise findings with source URLs.\n"
             ),
             "tools": [search_tool],
-        },
-        {
-            "name": "analyst",
-            "description": (
-                "Use this subagent for structured comparison, trend analysis, "
-                "trade-off analysis, and uncertainty assessment based on provided research text."
-            ),
-            "system_prompt": ANALYST_SYSTEM_PROMPT,
-            "tools": [],
-        },
+        }
+    ]
+
+    if not no_analysis:
+        subagents.append(
+            {
+                "name": "analyst",
+                "description": (
+                    "Use this subagent after research evidence is collected. "
+                    "It must compare findings, identify trade-offs, separate facts "
+                    "from assumptions, and assess uncertainty."
+                ),
+                "system_prompt": ANALYST_SYSTEM_PROMPT,
+                "tools": [],
+            }
+        )
+    subagents.append(
         {
             "name": "editor",
             "description": (
                 "Use this subagent to review the draft report for clarity, "
-                "consistency, and completeness. It does not need to search the web."
+                "consistency, evidence quality, and completeness."
             ),
             "system_prompt": EDITOR_SYSTEM_PROMPT,
             "tools": [],
         }
-    ]
+    )
+
+    return subagents
 
 async def run_deepagents_workflow(
     topic: str,
     no_analysis: bool = False,
     enabled_skills: list[str] = [],
-) -> str:
+) -> DeepAgentsRunResult:
     """
     运行官方 DeepAgents 工作流。
     第 4 步只建立业务编排入口。
@@ -164,8 +197,13 @@ async def run_deepagents_workflow(
     clean_topic = (topic or "").strip()
 
     system_prompt = build_deepagents_system_prompt(no_analysis=no_analysis)
+    search_budget = SearchBudget(max_calls=6)
+    search_tool = create_limited_web_search(search_budget)
 
-    search_tool = create_limited_web_search(max_calls=6)
+    subagents = build_deepagents_subagents(
+        search_tool,
+        no_analysis=no_analysis,
+    )
 
     config = DeepAgentBuildConfig(
         root_dir=".",
@@ -175,7 +213,7 @@ async def run_deepagents_workflow(
         debug=False,
         name="deep_research_agent",
         tools=[search_tool],
-        subagents=build_deepagents_subagents(search_tool),
+        subagents=subagents,
     )
 
     agent = build_deep_agent(config)
@@ -192,6 +230,20 @@ async def run_deepagents_workflow(
             "注意：官方 SkillsMiddleware 会在第 7 步接入 skills/ 目录后正式生效。"
         )
     
-    return await run_deep_agent_once(agent, user_prompt)
+    final_text = await run_deep_agent_once(agent, user_prompt)
+
+    return DeepAgentsRunResult(
+        final_text=final_text,
+        metadata={
+            "runtime": "deepagents",
+            "skills": ["./skills"],
+            "memory": ["./AGENTS.md"],
+            "subagents": [x["name"] for x in subagents],
+            "no_analysis": no_analysis,
+            "analysis_enabled": not no_analysis,
+            "search_calls": search_budget.call_count,
+            "search_call_limit": search_budget.max_calls,
+        },
+    )
 
 
