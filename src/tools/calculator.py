@@ -65,10 +65,12 @@ async def structured_calculator(
         reverse = operation == "rank_desc"
         ranked = sorted(pairs, key=lambda x: x[1], reverse=reverse)
 
-        lines = ["排名结果："]
+        lines = ["排名结果:"]
 
         for idx, (label, value) in enumerate(ranked, start=1):
             lines.append(f"{idx}. {label}: {value}")
+        
+        return "\n".join(lines)
     
     if operation == "percentage":
         if base_value is None or base_value == 0:

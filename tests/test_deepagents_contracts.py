@@ -1,4 +1,5 @@
 from pathlib import Path
+import asyncio
 
 from src.workflow.deepagents_runner import (
     SearchBudget,
@@ -6,6 +7,7 @@ from src.workflow.deepagents_runner import (
     build_deepagents_subagents,
     create_limited_web_search,
 )
+from src.tools.calculator import structured_calculator
 
 
 def test_deep_research_skill_exists():
@@ -51,7 +53,7 @@ def test_subagents_with_analysis():
 
     assert [x["name"] for x in subagents] == ["researcher", "analyst", "editor"]
     assert subagents[0]["tools"][0].name == "web_search"
-    assert subagents[1]["tools"] == []
+    assert [tool.name for tool in subagents[1]["tools"]] == ["structured_calculator"]
 
 
 def test_subagents_without_analysis():
@@ -68,3 +70,29 @@ def test_limited_web_search_contract():
     assert search_tool.name == "web_search"
     assert search_budget.max_calls == 2
     assert search_budget.call_count == 0
+
+def test_analyst_prompt_requires_calculator():
+    from src.tools.lib.prompts import ANALYST_SYSTEM_PROMPT
+
+    assert "structured_calculator" in ANALYST_SYSTEM_PROMPT
+    assert "禁止凭直觉猜测数字" in ANALYST_SYSTEM_PROMPT
+    assert "禁止手算复杂数字" in ANALYST_SYSTEM_PROMPT
+    assert "/workspace/sources/analysis_" in ANALYST_SYSTEM_PROMPT
+
+def test_structured_calculator_rank_desc():
+    async def run():
+        return await structured_calculator.ainvoke(
+            {
+                "operation": "rank_desc",
+                "values": [10, 30, 20],
+                "labels": ["A", "B", "C"],
+            }
+        )
+
+    result = asyncio.run(run())
+
+    assert "排名结果" in result
+    assert "1. B: 30.0" in result
+    assert "2. C: 20.0" in result
+    assert "3. A: 10.0" in result
+
