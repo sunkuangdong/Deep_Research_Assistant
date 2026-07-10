@@ -17,6 +17,8 @@ from src.tools.lib.prompts import (
 from langchain_core.tools import tool
 from src.tools.search import WebSearchInput, bocha_web_search
 
+from src.tools.calculator import structured_calculator
+
 from dataclasses import dataclass
 
 class SearchBudget:
@@ -162,7 +164,7 @@ def build_deepagents_subagents(search_tool, no_analysis: bool = False) -> list[A
                     "from assumptions, and assess uncertainty."
                 ),
                 "system_prompt": ANALYST_SYSTEM_PROMPT,
-                "tools": [],
+                "tools": [structured_calculator],
             }
         )
     subagents.append(
