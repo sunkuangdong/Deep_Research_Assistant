@@ -59,6 +59,19 @@ async def structured_calculator(
         avg = sum(values) / len(values)
         return f"平均值: {avg}"
     
+    if operation in {"rank_desc", "rank_asc"}:
+        resolved_labels = _validate_labels(values, labels)
+        pairs = list(zip(resolved_labels, values, strict=True))
+        reverse = operation == "rank_desc"
+        ranked = sorted(pairs, key=lambda x: x[1], reverse=reverse)
+
+        lines = ["排名结果："]
+
+        for idx, (label, value) in enumerate(ranked, start=1):
+            lines.append(f"{idx}. {label}: {value}")
+        
+        return "\n".join(lines)
+        
     return (
         "structured_calculator 已收到计算请求："
         f"operation={operation}, values={values}, labels={labels}, base_value={base_value}"
