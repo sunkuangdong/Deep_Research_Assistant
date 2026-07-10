@@ -239,6 +239,10 @@ async def run_deepagents_workflow(
             "analysis_enabled": not no_analysis,
             "search_calls": search_budget.call_count,
             "search_call_limit": search_budget.max_calls,
+            "workspace": "/workspace",
+            "workspace_sources": "/workspace/sources",
+            "workspace_reports": "/workspace/reports",
+            "expected_report_glob": "/workspace/reports/report_*.md",
         },
     )
 

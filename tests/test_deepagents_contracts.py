@@ -8,7 +8,7 @@ from src.workflow.deepagents_runner import (
     create_limited_web_search,
 )
 from src.tools.calculator import structured_calculator
-
+from src.workflow.deepagents_runner import DeepAgentsRunResult
 
 def test_deep_research_skill_exists():
     path = Path("skills/deep-research/SKILL.md")
@@ -95,4 +95,27 @@ def test_structured_calculator_rank_desc():
     assert "1. B: 30.0" in result
     assert "2. C: 20.0" in result
     assert "3. A: 10.0" in result
+
+def test_deepagents_run_result_metadata_contract():
+    result = DeepAgentsRunResult(
+        final_text="ok",
+        metadata={
+            "runtime": "deepagents",
+            "skills": ["./skills"],
+            "memory": ["./AGENTS.md"],
+            "workspace": "/workspace",
+            "workspace_sources": "/workspace/sources",
+            "workspace_reports": "/workspace/reports",
+            "expected_report_glob": "/workspace/reports/report_*.md",
+            "subagents": ["researcher", "analyst", "editor"],
+            "no_analysis": False,
+            "analysis_enabled": True,
+            "search_calls": 1,
+            "search_call_limit": 6,
+        },
+    )
+
+    assert result.final_text == "ok"
+    assert result.metadata["workspace"] == "/workspace"
+    assert result.metadata["expected_report_glob"] == "/workspace/reports/report_*.md"
 
