@@ -69,7 +69,27 @@ async def structured_calculator(
 
         for idx, (label, value) in enumerate(ranked, start=1):
             lines.append(f"{idx}. {label}: {value}")
+    
+    if operation == "percentage":
+        if base_value is None or base_value == 0:
+            return "计算失败：percentage 需要非 0 的 base_value。"
         
+        resolved_labels = _validate_labels(values, labels)
+        lines = ["占比结果："]
+        for label, value in zip(resolved_labels, values, strict=True):
+            lines.append(f"{label}: {value / base_value * 100:.2f}%")
+        
+        return "\n".join(lines)
+    
+    if operation == "growth_rate":
+        if base_value is None or base_value == 0:
+            return "计算失败：growth_rate 需要非 0 的 base_value。"
+        
+        resolved_labels = _validate_labels(values, labels)
+        lines = ["增长率结果："]
+        for label, value in zip(resolved_labels, values, strict=True):
+            lines.append(f"{label}: {(value - base_value) / base_value * 100:.2f}%")
+
         return "\n".join(lines)
         
     return (
