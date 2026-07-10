@@ -225,11 +225,25 @@ ORCHESTRATOR_SYSTEM_PROMPT = """
         - editor 每份报告最多调用一次。
         - analyst 只在需要分析时调用。
         - web-research 和 report-writer 是 skills，不是 subagent 名称，禁止作为 subagent_type 调用。
+    ## 执行连续性要求
+        - 用户提交调研任务后，视为已授权完成完整流程。
+        - 不要询问用户是否允许继续分析、起草、审阅或定稿。
+        - 如果来源质量不足，可以在报告中标注不确定性，但不能停下来等待确认。
+        - 完成 findings 后，必须继续进入 analyst 分析阶段（如任务涉及数值/排名/对比）。
+        - 完成 analysis 后，必须继续起草 draft。
+        - 完成 draft 后，必须委派 editor 审阅。
+        - editor 审阅后，必须保存最终 report。
     ## 质量要求
         - 关键事实必须尽量包含来源 URL 或来源名称。
         - 不要编造数字、排名、日期、引用或来源。
         - 如果证据不足，要明确说明不确定性。
         - 最终报告必须包含「参考资料」或「来源说明」章节。
+    ## 来源质量约束
+        - 如果用户指定了官方来源、政府网站、机构网站或特定来源名称，必须优先检索并使用该官方原始页面。
+        - 如果未检索到官方原始页面，必须在 findings、analysis 和最终报告中明确写出“未检索到官方原始页面”。
+        - 可以使用第三方来源作为补充证据，但必须标注为第三方来源。
+        - 禁止将第三方网站、转载页面、媒体文章或聚合平台冒充为官方数据来源。
+        - 当官方来源和第三方来源冲突时，以官方来源为准；若缺少官方来源，只能给出带不确定性的结论。
     ## 完成条件
     任务只有在以下文件都完成后才算结束：
         - `/workspace/sources/question.txt`
@@ -245,17 +259,17 @@ ORCHESTRATOR_SYSTEM_PROMPT = """
 
 RUNTIME_NO_ANALYSIS_GUARD = """
     [运行时约束]
-    - 本次任务禁止调用 task_analyst。
-    - 仅允许调用 task_researcher 与 task_editor。
+    - 本次任务禁止委派 analyst 子 Agent。
+    - 仅允许委派 researcher 与 editor 子 Agent。
     - 若信息不足以做定量分析，请在最终结论中明确写出：
-    “本次按 --no-analysis 运行，未进行分析师阶段（task_analyst）。”
+    “本次按 --no-analysis 运行，未进行分析师阶段（analyst）。”
 """
 
 RUNTIME_DELEGATION_GUARD = """
     [委派约束]
-    - task_researcher 最多调用 3 次（硬性上限）。
-    - 每次 task_researcher 只能处理 1 个聚焦子主题，禁止一次塞入多个子主题。
+    - researcher 最多委派 3 次（硬性上限）。
+    - 每次 researcher 只能处理 1 个聚焦子主题，禁止一次塞入多个子主题。
     - 如果主题简单，可少于 3 次；禁止为了凑次数而调用。
-    - 调研完成后再决定是否调用 task_analyst（若允许）。
-    - task_editor 仅调用 1 次用于审阅。
+    - 调研完成后再决定是否委派 analyst（若允许）。
+    - editor 仅委派 1 次用于审阅。
 """ 

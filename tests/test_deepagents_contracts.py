@@ -54,7 +54,7 @@ def test_deepagents_prompt_no_analysis_guard():
     prompt = build_deepagents_system_prompt(no_analysis=True)
 
     assert "Analysis Requirement" not in prompt
-    assert "task_analyst" in prompt or "禁止调用" in prompt
+    assert "禁止委派 analyst 子 Agent" in prompt
 
 
 def test_subagents_with_analysis():
@@ -128,4 +128,16 @@ def test_deepagents_run_result_metadata_contract():
     assert result.final_text == "ok"
     assert result.metadata["workspace"] == "/workspace"
     assert result.metadata["expected_report_glob"] == "/workspace/reports/report_*.md"
+
+
+def test_official_source_quality_guardrails():
+    from src.tools.lib.prompts import ORCHESTRATOR_SYSTEM_PROMPT
+
+    web_research = Path("skills/web-research/SKILL.md").read_text(encoding="utf-8")
+    report_writer = Path("skills/report-writer/SKILL.md").read_text(encoding="utf-8")
+
+    for text in [ORCHESTRATOR_SYSTEM_PROMPT, web_research, report_writer]:
+        assert "未检索到官方原始页面" in text
+        assert "第三方来源" in text
+        assert "禁止" in text and "冒充" in text
 

@@ -223,7 +223,9 @@ async def run_deepagents_workflow(
 
     user_prompt = (
         f"请围绕这个主题完成调研并给出最终报告：{clean_topic}\n\n"
-        "要求：所有输出使用中文。"
+        "要求：所有输出使用中文。\n"
+        "用户已授权你完成完整调研流程，不要询问是否继续；"
+        "必须完成 question、research_plan、findings、analysis（如涉及数值）、draft、editor 审阅和 final report。"
     )
     
     final_text = await run_deep_agent_once(agent, user_prompt)
