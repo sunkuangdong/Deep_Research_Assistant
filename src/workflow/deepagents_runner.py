@@ -185,9 +185,9 @@ async def run_deepagents_workflow(
 ) -> DeepAgentsRunResult:
     """
     运行官方 DeepAgents 工作流。
-    第 4 步只建立业务编排入口。
-    第 5 步会在这里接入 deepagents_adapter。
-    第 6 步职责：
+    建立业务编排入口。
+    在这里接入 deepagents_adapter。
+    职责：
         1) 接收 main.py 传来的 topic / skills / no_analysis
         2) 构建 system_prompt
         3) 构建官方 DeepAgent
