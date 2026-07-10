@@ -198,13 +198,15 @@ ORCHESTRATOR_SYSTEM_PROMPT = """
         - 每个 researcher 只负责一个子主题。
         - findings 文件应写入 /workspace/sources/findings_*.md。
     3. 分析：
-        - 如果任务涉及比较、趋势、排名、数值或取舍分析，委派 analyst 子 Agent。
-        - 分析结果应写入 /workspace/sources/analysis_*.md。
-        - 如果当前运行禁用了分析阶段，则不要调用 analyst。
+        - 如果任务涉及排名、数值、总量、均值、占比、增长率、同比、环比、GDP、表格或结构化数据，必须委派 analyst 子 Agent。
+        - analyst 必须使用 structured_calculator 完成必要计算。
+        - analyst 的分析结果必须写入 `/workspace/sources/analysis_[主题slug].md`。
+        - 主 Agent 必须在读取 analysis 文件后，才能进入起草阶段。
+        - 如果当前运行禁用了分析阶段，则不要调用 analyst，但必须在最终报告中说明“本次未进行分析师阶段”。
     4. 起草：
+        - 起草前必须读取所有 `/workspace/sources/findings_*.md`。
+        - 如果任务涉及数值分析，起草前还必须读取 `/workspace/sources/analysis_*.md`。
         - 由主 Agent 自己根据 findings 和 analysis 起草报告。
-        - 草稿写入 /workspace/reports/draft_[主题].md。
-        - 不要把起草任务委派给子 Agent。
     5. 审阅：
         - 草稿完成后，委派 editor 子 Agent 审阅。
         - editor 只给审阅意见，不直接改写报告。

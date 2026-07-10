@@ -10,14 +10,24 @@ from src.workflow.deepagents_runner import (
 from src.tools.calculator import structured_calculator
 from src.workflow.deepagents_runner import DeepAgentsRunResult
 
-def test_deep_research_skill_exists():
-    path = Path("skills/deep-research/SKILL.md")
+def test_web_research_skill_exists():
+    path = Path("skills/web-research/SKILL.md")
     text = path.read_text(encoding="utf-8")
 
     assert path.exists()
-    assert "name: deep-research" in text
+    assert "name: web-research" in text
     assert "description:" in text
-    assert "Research Workflow" in text
+    assert "联网调研技能" in text
+
+
+def test_report_writer_skill_exists():
+    path = Path("skills/report-writer/SKILL.md")
+    text = path.read_text(encoding="utf-8")
+
+    assert path.exists()
+    assert "name: report-writer" in text
+    assert "description:" in text
+    assert "报告撰写技能" in text
 
 
 def test_agents_memory_exists():
