@@ -4,20 +4,18 @@
 调研国家统计局公开的2023年省级地区生产总值（GDP）数据，提取GDP总量排名前6名的省份及其具体数值。
 
 ## 主要步骤
-1. 搜索并获取国家统计局或权威渠道发布的2023年省级GDP数据。
-2. 提取GDP总量排名前6的省份及对应的GDP数值。
-3. 整理数据，形成结构化信息。
-4. 撰写中文调研报告，内容包括：
-   - 2023年GDP总量前6省份名单
-   - 各省份具体GDP数值
-   - 简要分析和总结
+1. 搜索并获取国家统计局或权威官方渠道发布的2023年省级GDP数据。
+2. 提取GDP总量排名前6的省份及其具体GDP数值。
+3. 汇总数据，进行必要的核实和对比。
+4. 生成结构清晰、数据准确的中文调研报告。
 
-## 资源和工具
-- 国家统计局官方网站
-- 相关权威财经新闻或统计数据发布平台
+## 重点关注
+- 优先使用国家统计局官方网站或官方发布的权威数据。
+- 确保数据的准确性和时效性。
+- 明确标注数据来源。
 
-## 输出
-- /workspace/sources/findings_gdp2023.md：调研发现
-- /workspace/reports/report_gdp2023_YYYY-MM-DD.md：最终调研报告
-
-
+## 产出物
+- /workspace/sources/findings_gdp_top6.md：调研发现
+- /workspace/sources/analysis_gdp_top6.md：数据分析（如需要）
+- /workspace/reports/draft_gdp_top6.md：报告草稿
+- /workspace/reports/report_gdp_top6_2026-07-10.md：最终报告

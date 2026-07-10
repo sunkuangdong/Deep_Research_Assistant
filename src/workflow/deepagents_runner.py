@@ -1,4 +1,5 @@
 from __future__ import annotations
+from datetime import date
 from typing import Any
 
 from src.tools.deepagents_adapter import (
@@ -200,6 +201,7 @@ async def run_deepagents_workflow(
     clean_topic = (topic or "").strip()
 
     system_prompt = build_deepagents_system_prompt(no_analysis=no_analysis)
+    run_date = date.today().isoformat()
     search_budget = SearchBudget(max_calls=6)
     search_tool = create_limited_web_search(search_budget)
 
@@ -223,8 +225,10 @@ async def run_deepagents_workflow(
 
     user_prompt = (
         f"请围绕这个主题完成调研并给出最终报告：{clean_topic}\n\n"
+        f"运行日期：{run_date}。报告文件名中的日期必须使用这个运行日期，禁止自行编造日期。\n"
         "要求：所有输出使用中文。\n"
-        "用户已授权你完成完整调研流程，不要询问是否继续；"
+        "用户已授权你完成完整调研流程，不要询问是否继续，也不要要求用户确认数据或来源；"
+        "如果官方来源不足，必须标注不确定性并继续完成 final report；"
         "必须完成 question、research_plan、findings、analysis（如涉及数值）、draft、editor 审阅和 final report。"
     )
     
@@ -239,6 +243,7 @@ async def run_deepagents_workflow(
             "subagents": [x["name"] for x in subagents],
             "no_analysis": no_analysis,
             "analysis_enabled": not no_analysis,
+            "run_date": run_date,
             "search_calls": search_budget.call_count,
             "search_call_limit": search_budget.max_calls,
             "workspace": "/workspace",

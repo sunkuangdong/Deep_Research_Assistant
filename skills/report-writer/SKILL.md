@@ -40,13 +40,14 @@ description: 将调研结果整理为结构清晰、专业的中文情报报告
 - 对比类报告：每项单独一节，再加综合对比节
 - 如果证据不足，必须明确写出“不确定”或“仍需进一步验证”
 - 如果用户指定官方来源，但 findings 中写明“未检索到官方原始页面”，报告中也必须保留这句话。
-- 第三方来源只能标注为第三方来源，禁止包装成官方数据来源。
+- 第三方来源只能标注为第三方来源，禁止冒充或包装成官方数据来源。
 - 参考资料章节必须区分官方来源和第三方来源；没有官方来源时，必须明确说明没有检索到官方原始页面。
 
 ## 文件命名
 
 - 草稿：`/workspace/reports/draft_[主题slug].md`
-- 终稿：`/workspace/reports/report_[主题slug]_[YYYY-MM-DD].md`
+- 终稿：`/workspace/reports/report_[主题slug]_[运行日期].md`
+- `[运行日期]` 必须使用用户消息中提供的“运行日期”，禁止自行编造日期。
 
 ## 工作流程
 
@@ -55,7 +56,7 @@ description: 将调研结果整理为结构清晰、专业的中文情报报告
 3. 用 `write_file` 写入草稿：`/workspace/reports/draft_[主题slug].md`。
 4. 草稿完成后委派 **editor（编辑）** 审阅。
 5. 根据 editor 反馈，用 `edit_file` 或 `write_file` 修订一次。
-6. 保存终稿：`/workspace/reports/report_[主题slug]_[YYYY-MM-DD].md`。
+6. 保存终稿：`/workspace/reports/report_[主题slug]_[运行日期].md`。
 7. 最终回复用户时，必须包含：
    - 终稿保存路径
    - 2–3 条核心发现

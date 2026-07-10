@@ -120,6 +120,7 @@ def test_deepagents_run_result_metadata_contract():
             "subagents": ["researcher", "analyst", "editor"],
             "no_analysis": False,
             "analysis_enabled": True,
+            "run_date": "2026-07-10",
             "search_calls": 1,
             "search_call_limit": 6,
         },
@@ -128,6 +129,7 @@ def test_deepagents_run_result_metadata_contract():
     assert result.final_text == "ok"
     assert result.metadata["workspace"] == "/workspace"
     assert result.metadata["expected_report_glob"] == "/workspace/reports/report_*.md"
+    assert result.metadata["run_date"] == "2026-07-10"
 
 
 def test_official_source_quality_guardrails():
@@ -140,4 +142,23 @@ def test_official_source_quality_guardrails():
         assert "未检索到官方原始页面" in text
         assert "第三方来源" in text
         assert "禁止" in text and "冒充" in text
+
+
+def test_report_date_uses_runtime_date():
+    from src.tools.lib.prompts import ORCHESTRATOR_SYSTEM_PROMPT
+
+    report_writer = Path("skills/report-writer/SKILL.md").read_text(encoding="utf-8")
+
+    assert "运行日期" in ORCHESTRATOR_SYSTEM_PROMPT
+    assert "运行日期" in report_writer
+    assert "YYYY-MM-DD" not in ORCHESTRATOR_SYSTEM_PROMPT
+    assert "YYYY-MM-DD" not in report_writer
+
+
+def test_orchestrator_does_not_ask_for_confirmation():
+    from src.tools.lib.prompts import ORCHESTRATOR_SYSTEM_PROMPT
+
+    assert "禁止要求用户确认数据、来源或是否继续" in ORCHESTRATOR_SYSTEM_PROMPT
+    assert "不要停下来询问用户" in ORCHESTRATOR_SYSTEM_PROMPT
+    assert "必须继续完成 analysis、draft、editor 审阅和 final report" in ORCHESTRATOR_SYSTEM_PROMPT
 
