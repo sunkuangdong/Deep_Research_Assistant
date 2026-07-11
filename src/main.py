@@ -7,6 +7,9 @@ from src.workflow.runtime import healthcheck_env, print_quick_tips_on_error
 from src.workflow.metrics import get_tool_metrics_summary, reset_tool_metrics
 from src.workflow.deepagents_runner import run_deepagents_workflow
 
+from dotenv import load_dotenv
+load_dotenv()
+
 
 async def main():
     args = parse_args()

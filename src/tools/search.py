@@ -1,11 +1,8 @@
 import os
 import httpx
 
-from dotenv import load_dotenv
 from langchain_core.tools import tool
 from pydantic import BaseModel, Field
-
-load_dotenv()
 
 BOCHA_API_URL = "https://api.bochaai.com/v1/web-search"
 

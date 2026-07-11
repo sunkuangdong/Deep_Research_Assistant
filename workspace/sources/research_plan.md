@@ -1,30 +1,23 @@
 # 调研计划
 
 ## 研究目标
-调研并比较 LangGraph 和 AutoGen 两个框架的区别，涵盖它们的定义、核心功能、技术架构、应用场景、优缺点等方面，形成结构化的对比分析。
+调研并比较 LangGraph 和 AutoGen 两个框架的区别，涵盖它们的定义、功能特点、应用场景、技术架构、优势劣势等方面，形成结构化的中文调研报告。
 
 ## 研究内容拆解
-1. LangGraph 的定义、核心功能、技术架构、应用场景
-2. AutoGen 的定义、核心功能、技术架构、应用场景
-3. 两者的异同点对比，包括技术实现、适用场景、优势和劣势
+1. LangGraph 的定义、功能、技术架构及应用场景
+2. AutoGen 的定义、功能、技术架构及应用场景
+3. 两者的主要区别和对比分析
 
 ## 研究方法
-- 通过网络搜索获取官方文档、技术博客、权威媒体报道等信息
+- 通过网络搜索收集官方文档、技术博客、权威媒体报道等信息
 - 委派 researcher 子 Agent 分别调研 LangGraph 和 AutoGen
-- 汇总调研结果后，委派 analyst 子 Agent 进行对比分析
+- 委派 analyst 子 Agent 进行对比分析
+- 主 Agent 根据 findings 和 analysis 起草报告
+- 委派 editor 审阅报告草稿，主 Agent 修订后形成最终报告
 
 ## 预期产出
-- 至少两份 findings 文件，分别覆盖 LangGraph 和 AutoGen
-- 一份分析报告文件，结构化对比两者
-- 一份中文调研报告草稿
-- 一份经 editor 审阅的最终报告
-
-## 时间安排
-- 调研阶段：立即开始，预计1-2小时完成
-- 分析阶段：调研完成后立即进行
-- 起草阶段：分析完成后进行
-- 审阅和定稿：起草完成后进行
-
----
-
-调研负责人：主 Agent
+- /workspace/sources/findings_langgraph.md
+- /workspace/sources/findings_autogen.md
+- /workspace/sources/analysis_langgraph_autogen.md
+- /workspace/reports/draft_langgraph_autogen.md
+- /workspace/reports/report_langgraph_autogen_2026-07-10.md
