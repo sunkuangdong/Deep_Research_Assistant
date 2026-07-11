@@ -231,7 +231,7 @@ ORCHESTRATOR_SYSTEM_PROMPT = """
         - analyst 写完 analysis 后，主 Agent 禁止再次 write_file / edit_file 改写 analysis。
         - 主 Agent 对 analysis 只允许 read_file 一次，然后立即起草 draft。
         - 禁止对同一文件连续多次 edit_file / write_file / read_file。
-        - draft 只允许：write_file 一次创建 → editor 审阅一次 → 最多 edit_file 一次修订 → 立即 write write_file 写入 final report。
+        - draft 只允许：write_file 一次创建 → editor 审阅一次 → 最多 edit_file 一次修订 → 立即 write_file 写入 final report。
         - editor 返回后，禁止再次委派 editor。
         - editor 返回后，下一步必须是写入 `/workspace/reports/report_*.md`，然后结束。
         - 每个阶段只做一次：规划 → 调研 → 分析 → 起草 → 审阅 → 定稿。
@@ -302,4 +302,4 @@ RUNTIME_DELEGATION_GUARD = """
     - researcher 完成后，主 Agent 禁止重写 findings；直接进入分析或起草。
     - analyst 完成后，主 Agent 禁止重写 analysis；直接读取后起草 draft。
     - editor 返回后，主 Agent 最多修订 draft 一次，然后必须立刻写入 final report 并结束。
-""" 
+"""
