@@ -229,15 +229,20 @@ ORCHESTRATOR_SYSTEM_PROMPT = """
         - researcher 写完 findings 后，主 Agent 禁止再次 write_file / edit_file 改写 findings。
         - 主 Agent 对 findings 只允许 read_file，不允许重写、复制、改名或微调。
         - analyst 写完 analysis 后，主 Agent 禁止再次 write_file / edit_file 改写 analysis。
-        - 禁止对同一文件连续多次 edit_file / write_file。
+        - 主 Agent 对 analysis 只允许 read_file 一次，然后立即起草 draft。
+        - 禁止对同一文件连续多次 edit_file / write_file / read_file。
+        - draft 只允许：write_file 一次创建 → editor 审阅一次 → 最多 edit_file 一次修订 → 立即 write write_file 写入 final report。
+        - editor 返回后，禁止再次委派 editor。
+        - editor 返回后，下一步必须是写入 `/workspace/reports/report_*.md`，然后结束。
         - 每个阶段只做一次：规划 → 调研 → 分析 → 起草 → 审阅 → 定稿。
         - 禁止调用 general-purpose 子 Agent。
-        - 禁止为了“完善格式”反复读写同一 findings / analysis 文件。
+        - 禁止为了“完善格式”反复读写同一 findings / analysis / draft 文件。
+        - 如果已经存在 draft 和 editor 反馈，却还没有 report，必须立刻写 report，不要再做任何额外搜索或审阅。
     ## 子 Agent 委派规则
         - 每份报告最多委派 3 个 researcher。
         - 每个 researcher 只处理一个聚焦子主题。
         - 不要为了凑数量而委派子 Agent。
-        - editor 每份报告最多调用一次。
+        - editor 每份报告最多调用一次；禁止第二次调用 editor。
         - analyst 每份报告最多调用一次。
         - 禁止调用 general-purpose。
         - web-research 和 report-writer 是 skills，不是 subagent 名称，禁止作为 subagent_type 调用。
@@ -292,8 +297,9 @@ RUNTIME_DELEGATION_GUARD = """
     - 每次 researcher 只能处理 1 个聚焦子主题，禁止一次塞入多个子主题。
     - 如果主题简单，可少于 3 次；禁止为了凑次数而调用。
     - 调研完成后再决定是否委派 analyst（若允许）；analyst 最多 1 次。
-    - editor 仅委派 1 次用于审阅。
+    - editor 仅委派 1 次用于审阅；禁止第二次委派 editor。
     - 禁止委派 general-purpose。
     - researcher 完成后，主 Agent 禁止重写 findings；直接进入分析或起草。
     - analyst 完成后，主 Agent 禁止重写 analysis；直接读取后起草 draft。
+    - editor 返回后，主 Agent 最多修订 draft 一次，然后必须立刻写入 final report 并结束。
 """ 

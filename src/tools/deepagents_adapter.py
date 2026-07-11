@@ -1,12 +1,17 @@
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from deepagents import create_deep_agent
 from deepagents.backends.filesystem import FilesystemBackend
 
 from src.tools.lib.model import get_model
+
+DEFAULT_TODOS_EXPORT_PATH = Path("tmp.json")
+
 
 @dataclass(frozen=True)
 class DeepAgentBuildConfig:
@@ -25,6 +30,7 @@ class DeepAgentBuildConfig:
     virtual_mode: bool = True
     tools: list[Any] | None = None
     subagents: list[Any] | None = None
+
 
 def build_deep_agent(config: DeepAgentBuildConfig) -> Any:
     """
@@ -72,6 +78,67 @@ def _extract_final_text(output: Any) -> str | None:
     return None
 
 
+def _normalize_todos(raw_todos: Any) -> list[dict[str, str]]:
+    if not isinstance(raw_todos, list):
+        return []
+
+    normalized: list[dict[str, str]] = []
+    for item in raw_todos:
+        if not isinstance(item, dict):
+            continue
+
+        content = str(item.get("content") or "").strip()
+        status = str(item.get("status") or "pending").strip() or "pending"
+        if not content:
+            continue
+
+        normalized.append(
+            {
+                "content": content,
+                "status": status,
+            }
+        )
+
+    return normalized
+
+
+def _extract_todos_from_payload(payload: Any) -> list[dict[str, str]] | None:
+    if isinstance(payload, dict):
+        if "todos" in payload:
+            return _normalize_todos(payload.get("todos"))
+
+        nested_input = payload.get("input")
+        if isinstance(nested_input, dict) and "todos" in nested_input:
+            return _normalize_todos(nested_input.get("todos"))
+
+        nested_output = payload.get("output")
+        if isinstance(nested_output, dict) and "todos" in nested_output:
+            return _normalize_todos(nested_output.get("todos"))
+
+    return None
+
+
+def export_todos_to_tmp_json(
+    todos: list[dict[str, str]],
+    path: Path | str = DEFAULT_TODOS_EXPORT_PATH,
+) -> Path:
+    """
+    将 write_todos 状态导出为老师同款 tmp.json：
+    {
+      "todos": [
+        {"content": "...", "status": "pending|in_progress|completed"}
+      ]
+    }
+    """
+    export_path = Path(path)
+    payload = {"todos": _normalize_todos(todos)}
+    export_path.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return export_path
+
+
 def _summarize_tool_input(name: str, data: dict[str, Any]) -> str:
     tool_input = (data or {}).get("input")
     if not isinstance(tool_input, dict):
@@ -83,6 +150,11 @@ def _summarize_tool_input(name: str, data: dict[str, Any]) -> str:
         if query:
             count_text = f", count={count}" if count is not None else ""
             return f" query={query!r}{count_text}"
+
+    if name == "write_todos":
+        todos = _normalize_todos(tool_input.get("todos"))
+        if todos:
+            return f" count={len(todos)}"
 
     if name == "task":
         description = tool_input.get("description") or tool_input.get("task")
@@ -124,9 +196,21 @@ def _format_deepagents_event(event: dict[str, Any]) -> str | None:
     return None
 
 
-async def run_deep_agent_once(agent: Any, topic: str) -> str:
+@dataclass(frozen=True)
+class DeepAgentRunOnceResult:
+    final_text: str
+    todos: list[dict[str, str]]
+    todos_export_path: str
+
+
+async def run_deep_agent_once(
+    agent: Any,
+    topic: str,
+    todos_export_path: Path | str = DEFAULT_TODOS_EXPORT_PATH,
+) -> DeepAgentRunOnceResult:
     """
-    执行一次 DeepAgent 调用，默认打印 streaming events，并提取最终文本。
+    执行一次 DeepAgent 调用，默认打印 streaming events，
+    并持续把 write_todos 状态导出到 tmp.json。
     """
 
     cleaned_topic = (topic or "").strip()
@@ -135,33 +219,54 @@ async def run_deep_agent_once(agent: Any, topic: str) -> str:
         raise ValueError("topic 不能为空")
 
     final_text = None
+    latest_todos: list[dict[str, str]] = []
+    export_path = Path(todos_export_path)
+    export_todos_to_tmp_json(latest_todos, export_path)
 
-    async for event in agent.astream_events(
-        {
-            "messages": [
-                {"role": "user", "content": cleaned_topic}
-            ]
-        },
-        config={"recursion_limit": 50},
-        version="v2",
-    ):
-        formatted = _format_deepagents_event(event)
-        if formatted:
-            print(formatted)
+    try:
+        async for event in agent.astream_events(
+            {
+                "messages": [
+                    {"role": "user", "content": cleaned_topic}
+                ]
+            },
+            config={"recursion_limit": 80},
+            version="v2",
+        ):
+            formatted = _format_deepagents_event(event)
+            if formatted:
+                print(formatted)
 
-        if event.get("event") == "on_chain_end":
-            extracted = _extract_final_text((event.get("data") or {}).get("output"))
-            if extracted:
-                final_text = extracted
+            event_type = event.get("event", "")
+            name = event.get("name", "")
+            data = event.get("data") or {}
+
+            if event_type == "on_tool_start" and name == "write_todos":
+                extracted_todos = _extract_todos_from_payload(data)
+                if extracted_todos is not None:
+                    latest_todos = extracted_todos
+                    export_todos_to_tmp_json(latest_todos, export_path)
+                    print(f"[todos] exported -> {export_path} ({len(latest_todos)} items)")
+
+            if event_type == "on_chain_end":
+                output = data.get("output")
+                extracted = _extract_final_text(output)
+                if extracted:
+                    final_text = extracted
+
+                extracted_todos = _extract_todos_from_payload(output)
+                if extracted_todos is not None:
+                    latest_todos = extracted_todos
+                    export_todos_to_tmp_json(latest_todos, export_path)
+    finally:
+        # 即使中途 recursion limit / 异常，也尽量保留最后一次 todos。
+        export_todos_to_tmp_json(latest_todos, export_path)
 
     if not final_text:
         raise ValueError("deep agent 没有返回 messages")
 
-    return final_text
-
-
-
-
-
-
-
+    return DeepAgentRunOnceResult(
+        final_text=final_text,
+        todos=latest_todos,
+        todos_export_path=str(export_path),
+    )

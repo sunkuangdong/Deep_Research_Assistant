@@ -1,7 +1,11 @@
 from pathlib import Path
 import asyncio
+import json
 
-from src.tools.deepagents_adapter import _format_deepagents_event
+from src.tools.deepagents_adapter import (
+    _format_deepagents_event,
+    export_todos_to_tmp_json,
+)
 from src.workflow.deepagents_runner import (
     SearchBudget,
     build_deepagents_system_prompt,
@@ -173,6 +177,8 @@ def test_orchestrator_anti_loop_rules():
     assert "禁止调用 general-purpose" in ORCHESTRATOR_SYSTEM_PROMPT
     assert "analyst 每份报告最多调用一次" in ORCHESTRATOR_SYSTEM_PROMPT
     assert "禁止委派 general-purpose" in RUNTIME_DELEGATION_GUARD
+    assert "禁止第二次委派 editor" in RUNTIME_DELEGATION_GUARD
+    assert "必须立刻写入 final report" in RUNTIME_DELEGATION_GUARD
 
 
 def test_event_formatter_shows_web_search_query():
@@ -200,9 +206,37 @@ def test_reset_workspace_run_artifacts_keeps_readme():
     stale_source.write_text("stale", encoding="utf-8")
     stale_report.write_text("stale", encoding="utf-8")
 
+    tmp_json = Path("tmp.json")
+    tmp_json.write_text(
+        '{"todos":[{"content":"old","status":"pending"}]}',
+        encoding="utf-8",
+    )
+
     reset_workspace_run_artifacts()
 
     assert not stale_source.exists()
     assert not stale_report.exists()
+    assert not tmp_json.exists()
     assert (sources / "README.md").exists() or (Path("workspace/README.md")).exists()
 
+
+def test_export_todos_to_tmp_json_matches_teacher_shape(tmp_path: Path):
+    export_path = tmp_path / "tmp.json"
+    todos = [
+        {
+            "content": "搜索国家统计局官网发布的《2023年国民经济和社会发展统计公报》",
+            "status": "in_progress",
+        },
+        {
+            "content": "写入 findings 文件",
+            "status": "pending",
+        },
+    ]
+
+    written = export_todos_to_tmp_json(todos, export_path)
+    payload = json.loads(written.read_text(encoding="utf-8"))
+
+    assert written == export_path
+    assert list(payload.keys()) == ["todos"]
+    assert payload["todos"][0]["status"] == "in_progress"
+    assert payload["todos"][1]["content"] == "写入 findings 文件"

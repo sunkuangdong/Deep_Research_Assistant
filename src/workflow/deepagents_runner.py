@@ -7,6 +7,7 @@ from src.tools.deepagents_adapter import (
     build_deep_agent,
     run_deep_agent_once,
     DeepAgentBuildConfig,
+    DEFAULT_TODOS_EXPORT_PATH,
 )
 from src.tools.lib.prompts import (
     ORCHESTRATOR_SYSTEM_PROMPT,
@@ -44,6 +45,10 @@ def reset_workspace_run_artifacts() -> None:
             if not file_path.is_file() or file_path.name in keep_names:
                 continue
             file_path.unlink()
+
+    # 与老师项目对齐：每次运行前重置 todo 导出文件
+    if DEFAULT_TODOS_EXPORT_PATH.exists():
+        DEFAULT_TODOS_EXPORT_PATH.unlink()
 
 @dataclass(frozen=True)
 class DeepAgentsRunResult:
@@ -256,14 +261,16 @@ async def run_deepagents_workflow(
         "禁止跳过调研直接进入起草；"
         "researcher 写完 findings 后禁止主 Agent 再改 findings；"
         "analyst 最多调用 1 次，写完 analysis 后禁止主 Agent 再改 analysis；"
+        "editor 最多调用 1 次；editor 返回后最多修订 draft 一次，然后必须立刻写入 final report 并结束；"
+        "禁止二次委派 editor，禁止在 draft 上反复 edit/read 空转；"
         "禁止委派 general-purpose；报告起草必须由主 Agent 自己完成；"
         "必须完成 question、research_plan、findings、analysis（如涉及对比/数值）、draft、editor 审阅和 final report。"
     )
     
-    final_text = await run_deep_agent_once(agent, user_prompt)
+    run_result = await run_deep_agent_once(agent, user_prompt)
 
     return DeepAgentsRunResult(
-        final_text=final_text,
+        final_text=run_result.final_text,
         metadata={
             "runtime": "deepagents",
             "skills": ["./skills"],
@@ -278,6 +285,8 @@ async def run_deepagents_workflow(
             "workspace_sources": "/workspace/sources",
             "workspace_reports": "/workspace/reports",
             "expected_report_glob": "/workspace/reports/report_*.md",
+            "todos": run_result.todos,
+            "todos_export_path": run_result.todos_export_path,
         },
     )
 
