@@ -194,19 +194,25 @@ ORCHESTRATOR_SYSTEM_PROMPT = """
         - 将调研计划写入 /workspace/sources/research_plan.md。
     2. 调研：
         - 按 web-research 技能执行调研。
+        - 完成 research_plan 后，必须立即进入调研阶段。
+        - 必须通过 web_search 或委派 researcher 子 Agent 获取外部证据。
+        - 禁止跳过调研，禁止复用与当前问题无关的旧 findings / analysis / report。
         - 委派 researcher 子 Agent 调研聚焦子主题。
         - 每个 researcher 只负责一个子主题。
         - findings 文件应写入 /workspace/sources/findings_*.md。
+        - 在进入起草阶段前，必须至少生成 1 份与当前主题匹配的 findings 文件。
     3. 分析：
-        - 如果任务涉及排名、数值、总量、均值、占比、增长率、同比、环比、GDP、表格或结构化数据，必须委派 analyst 子 Agent。
+        - 如果任务涉及排名、数值、总量、均值、占比、增长率、同比、环比、GDP、表格、结构化数据，或框架对比/取舍，必须委派 analyst 子 Agent。
+        - analyst 每份报告最多调用 1 次。
         - analyst 必须使用 structured_calculator 完成必要计算。
         - analyst 的分析结果必须写入 `/workspace/sources/analysis_[主题slug].md`。
         - 主 Agent 必须在读取 analysis 文件后，才能进入起草阶段。
         - 如果当前运行禁用了分析阶段，则不要调用 analyst，但必须在最终报告中说明“本次未进行分析师阶段”。
     4. 起草：
         - 起草前必须读取所有 `/workspace/sources/findings_*.md`。
-        - 如果任务涉及数值分析，起草前还必须读取 `/workspace/sources/analysis_*.md`。
-        - 由主 Agent 自己根据 findings 和 analysis 起草报告。
+        - 如果任务涉及数值分析或对比，起草前还必须读取 `/workspace/sources/analysis_*.md`。
+        - 由主 Agent 自己根据 findings 和 analysis 起草报告，写入 `/workspace/reports/draft_*.md`。
+        - 禁止把报告起草委派给 general-purpose、researcher、analyst 或 editor。
     5. 审阅：
         - 草稿完成后，委派 editor 子 Agent 审阅。
         - editor 只给审阅意见，不直接改写报告。
@@ -219,13 +225,23 @@ ORCHESTRATOR_SYSTEM_PROMPT = """
         - 文件名中的运行日期必须使用用户消息中提供的“运行日期”，禁止自行编造日期。
         - 只有成功写入 report 文件后，才允许向用户回复任务完成。
         - 最终回复用户时，必须说明最终报告保存路径、2-3 条核心发现、局限性或信息缺口。
+    ## 防空转规则（非常重要）
+        - researcher 写完 findings 后，主 Agent 禁止再次 write_file / edit_file 改写 findings。
+        - 主 Agent 对 findings 只允许 read_file，不允许重写、复制、改名或微调。
+        - analyst 写完 analysis 后，主 Agent 禁止再次 write_file / edit_file 改写 analysis。
+        - 禁止对同一文件连续多次 edit_file / write_file。
+        - 每个阶段只做一次：规划 → 调研 → 分析 → 起草 → 审阅 → 定稿。
+        - 禁止调用 general-purpose 子 Agent。
+        - 禁止为了“完善格式”反复读写同一 findings / analysis 文件。
     ## 子 Agent 委派规则
         - 每份报告最多委派 3 个 researcher。
         - 每个 researcher 只处理一个聚焦子主题。
         - 不要为了凑数量而委派子 Agent。
         - editor 每份报告最多调用一次。
-        - analyst 只在需要分析时调用。
+        - analyst 每份报告最多调用一次。
+        - 禁止调用 general-purpose。
         - web-research 和 report-writer 是 skills，不是 subagent 名称，禁止作为 subagent_type 调用。
+        - 报告起草、修订、定稿必须由主 Agent 自己用 write_file / edit_file 完成。
     ## 执行连续性要求
         - 用户提交调研任务后，视为已授权完成完整流程。
         - 不要询问用户是否允许继续分析、起草、审阅或定稿。
@@ -275,6 +291,9 @@ RUNTIME_DELEGATION_GUARD = """
     - researcher 最多委派 3 次（硬性上限）。
     - 每次 researcher 只能处理 1 个聚焦子主题，禁止一次塞入多个子主题。
     - 如果主题简单，可少于 3 次；禁止为了凑次数而调用。
-    - 调研完成后再决定是否委派 analyst（若允许）。
+    - 调研完成后再决定是否委派 analyst（若允许）；analyst 最多 1 次。
     - editor 仅委派 1 次用于审阅。
+    - 禁止委派 general-purpose。
+    - researcher 完成后，主 Agent 禁止重写 findings；直接进入分析或起草。
+    - analyst 完成后，主 Agent 禁止重写 analysis；直接读取后起草 draft。
 """ 

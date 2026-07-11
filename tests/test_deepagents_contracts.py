@@ -1,11 +1,13 @@
 from pathlib import Path
 import asyncio
 
+from src.tools.deepagents_adapter import _format_deepagents_event
 from src.workflow.deepagents_runner import (
     SearchBudget,
     build_deepagents_system_prompt,
     build_deepagents_subagents,
     create_limited_web_search,
+    reset_workspace_run_artifacts,
 )
 from src.tools.calculator import structured_calculator
 from src.workflow.deepagents_runner import DeepAgentsRunResult
@@ -161,4 +163,46 @@ def test_orchestrator_does_not_ask_for_confirmation():
     assert "禁止要求用户确认数据、来源或是否继续" in ORCHESTRATOR_SYSTEM_PROMPT
     assert "不要停下来询问用户" in ORCHESTRATOR_SYSTEM_PROMPT
     assert "必须继续完成 analysis、draft、editor 审阅和 final report" in ORCHESTRATOR_SYSTEM_PROMPT
+    assert "禁止跳过调研" in ORCHESTRATOR_SYSTEM_PROMPT
+
+
+def test_orchestrator_anti_loop_rules():
+    from src.tools.lib.prompts import ORCHESTRATOR_SYSTEM_PROMPT, RUNTIME_DELEGATION_GUARD
+
+    assert "禁止再次 write_file / edit_file 改写 findings" in ORCHESTRATOR_SYSTEM_PROMPT
+    assert "禁止调用 general-purpose" in ORCHESTRATOR_SYSTEM_PROMPT
+    assert "analyst 每份报告最多调用一次" in ORCHESTRATOR_SYSTEM_PROMPT
+    assert "禁止委派 general-purpose" in RUNTIME_DELEGATION_GUARD
+
+
+def test_event_formatter_shows_web_search_query():
+    formatted = _format_deepagents_event(
+        {
+            "event": "on_tool_start",
+            "name": "web_search",
+            "data": {"input": {"query": "2023年省级GDP", "count": 5}},
+        }
+    )
+
+    assert formatted is not None
+    assert "web_search" in formatted
+    assert "2023年省级GDP" in formatted
+
+
+def test_reset_workspace_run_artifacts_keeps_readme():
+    sources = Path("workspace/sources")
+    reports = Path("workspace/reports")
+    sources.mkdir(parents=True, exist_ok=True)
+    reports.mkdir(parents=True, exist_ok=True)
+
+    stale_source = sources / "stale_findings.md"
+    stale_report = reports / "stale_report.md"
+    stale_source.write_text("stale", encoding="utf-8")
+    stale_report.write_text("stale", encoding="utf-8")
+
+    reset_workspace_run_artifacts()
+
+    assert not stale_source.exists()
+    assert not stale_report.exists()
+    assert (sources / "README.md").exists() or (Path("workspace/README.md")).exists()
 

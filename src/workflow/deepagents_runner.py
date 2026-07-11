@@ -1,5 +1,6 @@
 from __future__ import annotations
 from datetime import date
+from pathlib import Path
 from typing import Any
 
 from src.tools.deepagents_adapter import (
@@ -27,6 +28,23 @@ class SearchBudget:
         self.max_calls = max_calls
         self.call_count = 0
 
+
+def reset_workspace_run_artifacts() -> None:
+    """
+    清理上一次运行留下的过程文件，避免 Agent 误用旧 findings / 旧计划。
+    保留 README.md 与 .gitkeep。
+    """
+    keep_names = {".gitkeep", "README.md"}
+
+    for folder in (Path("workspace/sources"), Path("workspace/reports")):
+        if not folder.exists():
+            continue
+
+        for file_path in folder.iterdir():
+            if not file_path.is_file() or file_path.name in keep_names:
+                continue
+            file_path.unlink()
+
 @dataclass(frozen=True)
 class DeepAgentsRunResult:
     final_text: str
@@ -45,8 +63,11 @@ DEEPAGENTS_ORCHESTRATION_GUARD = """
     - Use at most 3 researcher delegations.
     - Each researcher delegation must cover exactly one focused subtopic.
     - Do not ask one researcher to investigate multiple unrelated subtopics.
-    - Use analyst only after research evidence is available.
+    - Use analyst at most once after research evidence is available.
     - Use editor once near the end to review the draft.
+    - Never use general-purpose subagent.
+    - Do not rewrite findings or analysis after subagents finish writing them.
+    - Drafting and final report writing must be done by the main agent, not by task/subagents.
     - Do not delegate unnecessary work just to use subagents.
     Search budget:
     - For simple lookup tasks, use at most 1 direct web_search call.
@@ -200,6 +221,7 @@ async def run_deepagents_workflow(
 
     clean_topic = (topic or "").strip()
 
+    reset_workspace_run_artifacts()
     system_prompt = build_deepagents_system_prompt(no_analysis=no_analysis)
     run_date = date.today().isoformat()
     search_budget = SearchBudget(max_calls=6)
@@ -229,7 +251,13 @@ async def run_deepagents_workflow(
         "要求：所有输出使用中文。\n"
         "用户已授权你完成完整调研流程，不要询问是否继续，也不要要求用户确认数据或来源；"
         "如果官方来源不足，必须标注不确定性并继续完成 final report；"
-        "必须完成 question、research_plan、findings、analysis（如涉及数值）、draft、editor 审阅和 final report。"
+        "workspace 已清空，禁止复用任何与本次主题无关的旧 findings / analysis / draft / report；"
+        "完成 research_plan 后，必须通过 web_search 或委派 researcher 子 Agent 完成联网调研，"
+        "禁止跳过调研直接进入起草；"
+        "researcher 写完 findings 后禁止主 Agent 再改 findings；"
+        "analyst 最多调用 1 次，写完 analysis 后禁止主 Agent 再改 analysis；"
+        "禁止委派 general-purpose；报告起草必须由主 Agent 自己完成；"
+        "必须完成 question、research_plan、findings、analysis（如涉及对比/数值）、draft、editor 审阅和 final report。"
     )
     
     final_text = await run_deep_agent_once(agent, user_prompt)

@@ -52,9 +52,81 @@ def build_deep_agent(config: DeepAgentBuildConfig) -> Any:
     )
     return agent
 
+
+def _get_message_content(message: Any) -> str:
+    if hasattr(message, "content"):
+        return str(message.content)
+
+    if isinstance(message, dict):
+        return str(message.get("content") or "")
+
+    return str(message or "")
+
+
+def _extract_final_text(output: Any) -> str | None:
+    if isinstance(output, dict):
+        messages = output.get("messages")
+        if messages:
+            return _get_message_content(messages[-1])
+
+    return None
+
+
+def _summarize_tool_input(name: str, data: dict[str, Any]) -> str:
+    tool_input = (data or {}).get("input")
+    if not isinstance(tool_input, dict):
+        return ""
+
+    if name == "web_search":
+        query = tool_input.get("query")
+        count = tool_input.get("count")
+        if query:
+            count_text = f", count={count}" if count is not None else ""
+            return f" query={query!r}{count_text}"
+
+    if name == "task":
+        description = tool_input.get("description") or tool_input.get("task")
+        subagent_type = tool_input.get("subagent_type")
+        parts: list[str] = []
+        if subagent_type:
+            parts.append(f"subagent={subagent_type}")
+        if description:
+            parts.append(f"task={str(description)[:80]!r}")
+        if parts:
+            return " " + ", ".join(parts)
+
+    if name in {"write_file", "edit_file", "read_file"}:
+        file_path = tool_input.get("file_path") or tool_input.get("path")
+        if file_path:
+            return f" path={file_path!r}"
+
+    return ""
+
+
+def _format_deepagents_event(event: dict[str, Any]) -> str | None:
+    event_type = event.get("event", "")
+    name = event.get("name", "")
+    data = event.get("data") or {}
+
+    if event_type in {"on_chat_model_start", "on_llm_start"}:
+        return f"[event] model_start: {name}"
+
+    if event_type in {"on_chat_model_end", "on_llm_end"}:
+        return f"[event] model_end: {name}"
+
+    if event_type == "on_tool_start":
+        detail = _summarize_tool_input(name, data)
+        return f"[event] tool_start: {name}{detail}"
+
+    if event_type == "on_tool_end":
+        return f"[event] tool_end: {name}"
+
+    return None
+
+
 async def run_deep_agent_once(agent: Any, topic: str) -> str:
     """
-    执行一次 DeepAgent 调用，并提取最终文本。
+    执行一次 DeepAgent 调用，默认打印 streaming events，并提取最终文本。
     """
 
     cleaned_topic = (topic or "").strip()
@@ -62,18 +134,30 @@ async def run_deep_agent_once(agent: Any, topic: str) -> str:
     if not cleaned_topic:
         raise ValueError("topic 不能为空")
 
-    result = await agent.ainvoke({
-        "messages": [
-            {"role": "user", "content": cleaned_topic}
-        ]
-    })
+    final_text = None
 
-    messages = result.get("messages", [])
+    async for event in agent.astream_events(
+        {
+            "messages": [
+                {"role": "user", "content": cleaned_topic}
+            ]
+        },
+        config={"recursion_limit": 50},
+        version="v2",
+    ):
+        formatted = _format_deepagents_event(event)
+        if formatted:
+            print(formatted)
 
-    if not messages:
+        if event.get("event") == "on_chain_end":
+            extracted = _extract_final_text((event.get("data") or {}).get("output"))
+            if extracted:
+                final_text = extracted
+
+    if not final_text:
         raise ValueError("deep agent 没有返回 messages")
 
-    return messages[-1].content
+    return final_text
 
 
 
