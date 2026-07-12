@@ -30,6 +30,7 @@ class DeepAgentBuildConfig:
     virtual_mode: bool = True
     tools: list[Any] | None = None
     subagents: list[Any] | None = None
+    middleware: list[Any] | None = None
 
 
 def build_deep_agent(config: DeepAgentBuildConfig) -> Any:
@@ -55,6 +56,7 @@ def build_deep_agent(config: DeepAgentBuildConfig) -> Any:
         system_prompt=config.system_prompt,
         debug=config.debug,
         subagents=config.subagents or [],
+        middleware=config.middleware or [],
     )
     return agent
 

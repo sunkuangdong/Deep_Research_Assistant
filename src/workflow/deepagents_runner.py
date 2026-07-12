@@ -9,6 +9,8 @@ from src.tools.deepagents_adapter import (
     DeepAgentBuildConfig,
     DEFAULT_TODOS_EXPORT_PATH,
 )
+from src.workflow.delegation_guard import DelegationLimitMiddleware
+
 from src.tools.lib.prompts import (
     ORCHESTRATOR_SYSTEM_PROMPT,
     RUNTIME_DELEGATION_GUARD,
@@ -28,7 +30,13 @@ class SearchBudget:
     def __init__(self, max_calls: int):
         self.max_calls = max_calls
         self.call_count = 0
-
+    
+class DelegationBudget:
+    def __init__(self, max_analyst: int = 1, max_editor: int = 1):
+        self.max_analyst = max_analyst
+        self.max_editor = max_editor
+        self.analyst_calls = 0
+        self.editor_calls = 0
 
 def reset_workspace_run_artifacts() -> None:
     """
@@ -236,6 +244,8 @@ async def run_deepagents_workflow(
         search_tool,
         no_analysis=no_analysis,
     )
+    delegation_budget = DelegationBudget(max_analyst=1, max_editor=1)
+    delegation_guard = DelegationLimitMiddleware(delegation_budget)
 
     config = DeepAgentBuildConfig(
         root_dir=".",
@@ -246,6 +256,7 @@ async def run_deepagents_workflow(
         name="deep_research_agent",
         tools=[search_tool],
         subagents=subagents,
+        middleware=[delegation_guard],
     )
 
     agent = build_deep_agent(config)
