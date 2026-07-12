@@ -15,6 +15,15 @@ def make_request(subagent_type: str):
         }
     )
 
+def make_file_request(tool_name: str, file_path: str):
+    return SimpleNamespace(
+        tool_call={
+            "name": tool_name,
+            "args": {"file_path": file_path},
+            "id": f"call-{tool_name}",
+        }
+    )
+
 
 def main() -> None:
     budget = DelegationBudget(max_analyst=1, max_editor=1)
@@ -51,6 +60,30 @@ def main() -> None:
     assert guard.wrap_tool_call(make_request("researcher"), handler) == "OK"
 
     print("硬限制第 1 步单元测试 OK")
+
+    # 禁止写 analysis
+    blocked = guard.wrap_tool_call(
+        make_file_request("write_file", "/workspace/sources/analysis_x.md"),
+        handler,
+    )
+    assert isinstance(blocked, ToolMessage)
+    assert "写入被拒绝" in blocked.content
+    # 禁止 edit findings
+    blocked2 = guard.wrap_tool_call(
+        make_file_request("edit_file", "/workspace/sources/findings_langgraph.md"),
+        handler,
+    )
+    assert isinstance(blocked2, ToolMessage)
+    # 允许写 draft
+    assert guard.wrap_tool_call(
+        make_file_request("write_file", "/workspace/reports/draft_x.md"),
+        handler,
+    ) == "OK"
+    # 允许写 question
+    assert guard.wrap_tool_call(
+        make_file_request("write_file", "/workspace/sources/question.txt"),
+        handler,
+    ) == "OK"
 
 
 if __name__ == "__main__":

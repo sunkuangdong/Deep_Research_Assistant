@@ -18,43 +18,71 @@ class DelegationLimitMiddleware(AgentMiddleware):
         super().__init__()
         self.budget = budget
     
+    def _extract_file_path(self, args: dict) -> str:
+        return str(
+            args.get("file_path")
+            or args.get("path")
+            or args.get("filePath")
+            or ""
+        )
+    
+    def _is_protected_source_file(self, file_path: str) -> bool:
+        normalized = file_path.replace("\\", "/")
+        name = normalized.rsplit("/", 1)[-1].lower()
+
+        return name.startswith("findings_") or name.startswith("analysis_")
+    
     def _check_or_rehect(self, request: ToolCallRequest) -> ToolMessage | None:
         tool_call = request.tool_call or {}
         name = tool_call.get("name")
-        if name != "task":
-            return None
         
         args = tool_call.get("args") or {}
-        subagent_type = args.get("subagent_type") or args.get("subagent") or ""
         tool_call_id = tool_call.get("id") or ""
 
-        if subagent_type == "analyst":
-            if self.budget.analyst_calls >= self.budget.max_analyst:
+        if name in {"write_file", "edit_file"}:
+            file_path = self._extract_file_path(args)
+            if self._is_protected_source_file(file_path):
                 return ToolMessage(
                     content=(
-                        f"委派被拒绝：analyst 最多允许 {self.budget.max_analyst} 次。"
-                        "请基于已有 analysis 继续起草 draft，不要再次委派 analyst。"
+                        f"写入被拒绝：主 Agent 禁止修改受保护文件 `{file_path}`。"
+                        "findings/analysis 应由子 Agent 产出；请直接读取后起草 draft，"
+                        "或写入 /workspace/reports/ 下的 draft/report。"
                     ),
                     tool_call_id=tool_call_id,
-                    name="task",
+                    name=name,
                     status="error",
                 )
-            self.budget.analyst_calls += 1
             return None
-        
-        if subagent_type == "editor":
-            if self.budget.editor_calls >= self.budget.max_editor:
-                return ToolMessage(
-                    content=(
-                        f"委派被拒绝：editor 最多允许 {self.budget.max_editor} 次。"
-                        "请根据已有审阅意见修订 draft，并立刻写入 final report。"
-                    ),
-                    tool_call_id=tool_call_id,
-                    name="task",
-                    status="error",
-                )
-            self.budget.editor_calls += 1
-            return None
+        if name == "task":
+            subagent_type = args.get("subagent_type") or args.get("subagent") or ""
+
+            if subagent_type == "analyst":
+                if self.budget.analyst_calls >= self.budget.max_analyst:
+                    return ToolMessage(
+                        content=(
+                            f"委派被拒绝：analyst 最多允许 {self.budget.max_analyst} 次。"
+                            "请基于已有 analysis 继续起草 draft，不要再次委派 analyst。"
+                        ),
+                        tool_call_id=tool_call_id,
+                        name="task",
+                        status="error",
+                    )
+                self.budget.analyst_calls += 1
+                return None
+            
+            if subagent_type == "editor":
+                if self.budget.editor_calls >= self.budget.max_editor:
+                    return ToolMessage(
+                        content=(
+                            f"委派被拒绝：editor 最多允许 {self.budget.max_editor} 次。"
+                            "请根据已有审阅意见修订 draft，并立刻写入 final report。"
+                        ),
+                        tool_call_id=tool_call_id,
+                        name="task",
+                        status="error",
+                    )
+                self.budget.editor_calls += 1
+                return None
         
         return None
 

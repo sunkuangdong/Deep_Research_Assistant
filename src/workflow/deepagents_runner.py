@@ -298,6 +298,11 @@ async def run_deepagents_workflow(
             "expected_report_glob": "/workspace/reports/report_*.md",
             "todos": run_result.todos,
             "todos_export_path": run_result.todos_export_path,
+
+            "analyst_calls": delegation_budget.analyst_calls,
+            "editor_calls": delegation_budget.editor_calls,
+            "analyst_call_limit": delegation_budget.max_analyst,
+            "editor_call_limit": delegation_budget.max_editor,
         },
     )
 

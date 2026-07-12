@@ -240,3 +240,67 @@ def test_export_todos_to_tmp_json_matches_teacher_shape(tmp_path: Path):
     assert list(payload.keys()) == ["todos"]
     assert payload["todos"][0]["status"] == "in_progress"
     assert payload["todos"][1]["content"] == "写入 findings 文件"
+
+def test_delegation_limit_middleware_blocks_second_analyst_and_editor():
+    from types import SimpleNamespace
+    from langchain_core.messages import ToolMessage
+    from src.workflow.deepagents_runner import DelegationBudget
+    from src.workflow.delegation_guard import DelegationLimitMiddleware
+    budget = DelegationBudget(max_analyst=1, max_editor=1)
+    guard = DelegationLimitMiddleware(budget)
+    def make_task(subagent_type: str):
+        return SimpleNamespace(
+            tool_call={
+                "name": "task",
+                "args": {"subagent_type": subagent_type},
+                "id": f"call-{subagent_type}",
+            }
+        )
+    handler_called = {"n": 0}
+    def handler(_req):
+        handler_called["n"] += 1
+        return "OK"
+    assert guard.wrap_tool_call(make_task("analyst"), handler) == "OK"
+    second = guard.wrap_tool_call(make_task("analyst"), handler)
+    assert isinstance(second, ToolMessage)
+    assert "委派被拒绝" in second.content
+    assert handler_called["n"] == 1
+    assert guard.wrap_tool_call(make_task("editor"), handler) == "OK"
+    second_editor = guard.wrap_tool_call(make_task("editor"), handler)
+    assert isinstance(second_editor, ToolMessage)
+    assert "editor" in second_editor.content
+def test_delegation_limit_middleware_blocks_protected_source_writes():
+    from types import SimpleNamespace
+    from langchain_core.messages import ToolMessage
+    from src.workflow.deepagents_runner import DelegationBudget
+    from src.workflow.delegation_guard import DelegationLimitMiddleware
+    guard = DelegationLimitMiddleware(DelegationBudget())
+    def make_file(tool_name: str, file_path: str):
+        return SimpleNamespace(
+            tool_call={
+                "name": tool_name,
+                "args": {"file_path": file_path},
+                "id": f"call-{tool_name}",
+            }
+        )
+    def handler(_req):
+        return "OK"
+    blocked = guard.wrap_tool_call(
+        make_file("write_file", "/workspace/sources/analysis_x.md"),
+        handler,
+    )
+    assert isinstance(blocked, ToolMessage)
+    assert "写入被拒绝" in blocked.content
+    blocked2 = guard.wrap_tool_call(
+        make_file("edit_file", "/workspace/sources/findings_langgraph.md"),
+        handler,
+    )
+    assert isinstance(blocked2, ToolMessage)
+    assert guard.wrap_tool_call(
+        make_file("write_file", "/workspace/reports/draft_x.md"),
+        handler,
+    ) == "OK"
+    assert guard.wrap_tool_call(
+        make_file("write_file", "/workspace/sources/question.txt"),
+        handler,
+    ) == "OK"
