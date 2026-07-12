@@ -160,7 +160,7 @@ def build_deepagents_system_prompt(no_analysis: bool = False) -> str:
 
     return "\n\n".join(sections)
 
-def build_deepagents_subagents(search_tool, no_analysis: bool = False) -> list[Any]:
+def build_deepagents_subagents(search_tool, no_analysis: bool = False, path_guard = None) -> list[Any]:
     """
     构建 DeepAgents 官方 subagents。
     researcher:
@@ -170,6 +170,7 @@ def build_deepagents_subagents(search_tool, no_analysis: bool = False) -> list[A
     editor:
         负责审阅草稿，不直接联网。
     """
+    subagent_middleware = [path_guard] if path_guard is not None else []
     subagents = [
         {
             "name": "researcher",
@@ -186,6 +187,7 @@ def build_deepagents_subagents(search_tool, no_analysis: bool = False) -> list[A
                 + "- Return concise findings with source URLs.\n"
             ),
             "tools": [search_tool],
+            "middleware": subagent_middleware,
         }
     ]
 
@@ -200,6 +202,7 @@ def build_deepagents_subagents(search_tool, no_analysis: bool = False) -> list[A
                 ),
                 "system_prompt": ANALYST_SYSTEM_PROMPT,
                 "tools": [structured_calculator],
+                "middleware": subagent_middleware,
             }
         )
     subagents.append(
@@ -234,6 +237,11 @@ async def run_deepagents_workflow(
 
     clean_topic = (topic or "").strip()
 
+    path_guard = DelegationLimitMiddleware(
+        DelegationBudget(max_analyst=0, max_editor=0),
+        block_artifact_rewrites=False,
+    )
+
     reset_workspace_run_artifacts()
     system_prompt = build_deepagents_system_prompt(no_analysis=no_analysis)
     run_date = date.today().isoformat()
@@ -243,9 +251,11 @@ async def run_deepagents_workflow(
     subagents = build_deepagents_subagents(
         search_tool,
         no_analysis=no_analysis,
+        path_guard=path_guard,
     )
+
     delegation_budget = DelegationBudget(max_analyst=1, max_editor=1)
-    delegation_guard = DelegationLimitMiddleware(delegation_budget)
+    main_guard = DelegationLimitMiddleware(delegation_budget, block_artifact_rewrites=True)
 
     config = DeepAgentBuildConfig(
         root_dir=".",
@@ -256,7 +266,7 @@ async def run_deepagents_workflow(
         name="deep_research_agent",
         tools=[search_tool],
         subagents=subagents,
-        middleware=[delegation_guard],
+        middleware=[main_guard],
     )
 
     agent = build_deep_agent(config)

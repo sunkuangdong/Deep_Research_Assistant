@@ -2,7 +2,7 @@ from types import SimpleNamespace
 
 from langchain_core.messages import ToolMessage
 
-from src.workflow.deepagents_runner import DelegationBudget
+from src.workflow.deepagents_runner import DelegationBudget, build_deepagents_subagents
 from src.workflow.delegation_guard import DelegationLimitMiddleware
 
 
@@ -85,6 +85,42 @@ def main() -> None:
         handler,
     ) == "OK"
 
+    # 子 Agent 路径模式：拦根路径，放行 /workspace/sources/
+    path_guard = DelegationLimitMiddleware(
+        DelegationBudget(max_analyst=0, max_editor=0),
+        block_artifact_rewrites=False,
+    )
+    bad = path_guard.wrap_tool_call(
+        make_file_request("write_file", "/findings_langgraph.md"),
+        handler,
+    )
+    assert isinstance(bad, ToolMessage)
+    assert "路径非法" in bad.content
+    assert (
+        path_guard.wrap_tool_call(
+            make_file_request("write_file", "/workspace/sources/findings_langgraph.md"),
+            handler,
+        )
+        == "OK"
+    )
+    assert (
+        path_guard.wrap_tool_call(
+            make_file_request("write_file", "/workspace/sources/analysis_x.md"),
+            handler,
+        )
+        == "OK"
+    )
+
+    # wiring：researcher / analyst 挂 path_guard，editor 不挂
+    subs = build_deepagents_subagents(search_tool=lambda: None, path_guard=path_guard)
+    by_name = {s["name"]: s for s in subs}
+    assert by_name["researcher"]["middleware"] == [path_guard]
+    assert by_name["analyst"]["middleware"] == [path_guard]
+    assert "middleware" not in by_name["editor"]
+
+    print("路径校验第 1 步单元测试 OK")
+
 
 if __name__ == "__main__":
     main()
+

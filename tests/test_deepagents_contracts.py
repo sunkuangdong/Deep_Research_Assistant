@@ -304,3 +304,75 @@ def test_delegation_limit_middleware_blocks_protected_source_writes():
         make_file("write_file", "/workspace/sources/question.txt"),
         handler,
     ) == "OK"
+
+
+def test_path_guard_rejects_root_artifact_paths_but_allows_sources():
+    from types import SimpleNamespace
+    from langchain_core.messages import ToolMessage
+    from src.workflow.deepagents_runner import DelegationBudget
+    from src.workflow.delegation_guard import DelegationLimitMiddleware
+
+    path_guard = DelegationLimitMiddleware(
+        DelegationBudget(max_analyst=0, max_editor=0),
+        block_artifact_rewrites=False,
+    )
+
+    def make_file(tool_name: str, file_path: str):
+        return SimpleNamespace(
+            tool_call={
+                "name": tool_name,
+                "args": {"file_path": file_path},
+                "id": f"call-{tool_name}",
+            }
+        )
+
+    def handler(_req):
+        return "OK"
+
+    bad_root = path_guard.wrap_tool_call(
+        make_file("write_file", "/findings_langgraph.md"),
+        handler,
+    )
+    assert isinstance(bad_root, ToolMessage)
+    assert "路径非法" in bad_root.content
+
+    bad_analysis = path_guard.wrap_tool_call(
+        make_file("write_file", "/analysis_x.md"),
+        handler,
+    )
+    assert isinstance(bad_analysis, ToolMessage)
+    assert "路径非法" in bad_analysis.content
+
+    assert (
+        path_guard.wrap_tool_call(
+            make_file("write_file", "/workspace/sources/findings_langgraph.md"),
+            handler,
+        )
+        == "OK"
+    )
+    assert (
+        path_guard.wrap_tool_call(
+            make_file("write_file", "/workspace/sources/analysis_x.md"),
+            handler,
+        )
+        == "OK"
+    )
+
+
+def test_path_guard_wired_to_researcher_and_analyst_only():
+    from src.workflow.deepagents_runner import DelegationBudget
+    from src.workflow.delegation_guard import DelegationLimitMiddleware
+
+    path_guard = DelegationLimitMiddleware(
+        DelegationBudget(max_analyst=0, max_editor=0),
+        block_artifact_rewrites=False,
+    )
+    subagents = build_deepagents_subagents(
+        search_tool=lambda: None,
+        path_guard=path_guard,
+    )
+    by_name = {s["name"]: s for s in subagents}
+
+    assert by_name["researcher"]["middleware"] == [path_guard]
+    assert by_name["analyst"]["middleware"] == [path_guard]
+    assert "middleware" not in by_name["editor"]

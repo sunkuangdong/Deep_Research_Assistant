@@ -14,9 +14,10 @@ class DelegationLimitMiddleware(AgentMiddleware):
     超限时不真正调用子 Agent，直接返回拒绝 ToolMessage。
     """
 
-    def __init__(self, budget: any):
+    def __init__(self, budget: Any, block_artifact_rewrites: bool = True):
         super().__init__()
         self.budget = budget
+        self.block_artifact_rewrites = block_artifact_rewrites
     
     def _extract_file_path(self, args: dict) -> str:
         return str(
@@ -25,6 +26,39 @@ class DelegationLimitMiddleware(AgentMiddleware):
             or args.get("filePath")
             or ""
         )
+    def _artifact_write_error(self, file_path: str) -> str | None:
+        """
+        若不允许写入，返回错误文案；允许则返回 None。
+        """
+
+        normalized = file_path.replace("\\", "/")
+        filename = normalized.rsplit("/", 1)[-1].lower()
+
+        is_artifact = filename.startswith("findings_") or filename.startswith("analysis_")
+
+        if not is_artifact:
+            return None
+        
+        in_sources = "/workspace/sources/" in normalized or normalized.startswith("workspace/sources")
+
+        if not self.block_artifact_rewrites:
+            if not in_sources:
+                return (
+                    f"路径非法：`{file_path}`。"
+                    "findings_/analysis_ 必须写到 `/workspace/sources/` 下，"
+                    "例如 `/workspace/sources/findings_langgraph.md`。"
+                    "禁止写到 `/findings_xxx.md` 这种根路径。"
+                )
+            
+            return None
+        
+        return (
+            f"写入被拒绝：主 Agent 禁止修改受保护文件 `{file_path}`。"
+            "findings/analysis 应由子 Agent 写入 `/workspace/sources/`；"
+            "主 Agent 只读，然后起草 `/workspace/reports/` 下的 draft/report。"
+        )
+        
+
     
     def _is_protected_source_file(self, file_path: str) -> bool:
         normalized = file_path.replace("\\", "/")
@@ -32,7 +66,7 @@ class DelegationLimitMiddleware(AgentMiddleware):
 
         return name.startswith("findings_") or name.startswith("analysis_")
     
-    def _check_or_rehect(self, request: ToolCallRequest) -> ToolMessage | None:
+    def _check_or_reject(self, request: ToolCallRequest) -> ToolMessage | None:
         tool_call = request.tool_call or {}
         name = tool_call.get("name")
         
@@ -41,13 +75,11 @@ class DelegationLimitMiddleware(AgentMiddleware):
 
         if name in {"write_file", "edit_file"}:
             file_path = self._extract_file_path(args)
-            if self._is_protected_source_file(file_path):
+            err = self._artifact_write_error(file_path)
+            if err:
+                print(f"[guard] blocked {name} path={file_path!r}")
                 return ToolMessage(
-                    content=(
-                        f"写入被拒绝：主 Agent 禁止修改受保护文件 `{file_path}`。"
-                        "findings/analysis 应由子 Agent 产出；请直接读取后起草 draft，"
-                        "或写入 /workspace/reports/ 下的 draft/report。"
-                    ),
+                    content=err,
                     tool_call_id=tool_call_id,
                     name=name,
                     status="error",
@@ -92,7 +124,7 @@ class DelegationLimitMiddleware(AgentMiddleware):
         handler: Callable[[ToolCallRequest], Any]
     ) -> Any:
 
-        rejected = self._check_or_rehect(request)
+        rejected = self._check_or_reject(request)
         if rejected is not None:
             print(f"[guard] blocked task subagent={ (request.tool_call or {}).get('args', {}).get('subagent_type') }")
             return rejected
@@ -104,7 +136,7 @@ class DelegationLimitMiddleware(AgentMiddleware):
         request: ToolCallRequest,
         handler: Callable[[ToolCallRequest], Any]
     ) -> Any:
-        rejected = self._check_or_rehect(request)
+        rejected = self._check_or_reject(request)
         if rejected is not None:
             print(f"[guard] blocked task subagent={ (request.tool_call or {}).get('args', {}).get('subagent_type') }")
             return rejected
