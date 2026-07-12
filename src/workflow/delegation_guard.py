@@ -1,10 +1,15 @@
 from __future__ import annotations
 
+import re
 from typing import Any, Callable
 
 from langchain.agents.middleware import AgentMiddleware
 from langchain_core.messages import ToolMessage
 from langgraph.prebuilt.tool_node import ToolCallRequest
+
+# findings_langgraph.md / analysis_langgraph_vs_autogen.md
+ARTIFACT_FILENAME_RE = re.compile(r"^(findings|analysis)_[a-z0-9][a-z0-9_-]*\.md$")
+
 
 class DelegationLimitMiddleware(AgentMiddleware):
     """
@@ -12,6 +17,7 @@ class DelegationLimitMiddleware(AgentMiddleware):
     - analyst 最多 N 次
     - editor 最多 M 次
     超限时不真正调用子 Agent，直接返回拒绝 ToolMessage。
+    同时校验 findings_/analysis_ 的路径与小写 slug 文件名。
     """
 
     def __init__(self, budget: Any, block_artifact_rewrites: bool = True):
@@ -26,18 +32,29 @@ class DelegationLimitMiddleware(AgentMiddleware):
             or args.get("filePath")
             or ""
         )
+
     def _artifact_write_error(self, file_path: str) -> str | None:
         """
         若不允许写入，返回错误文案；允许则返回 None。
         """
 
         normalized = file_path.replace("\\", "/")
-        filename = normalized.rsplit("/", 1)[-1].lower()
+        raw_filename = normalized.rsplit("/", 1)[-1]
+        filename = raw_filename.lower()
 
         is_artifact = filename.startswith("findings_") or filename.startswith("analysis_")
 
         if not is_artifact:
             return None
+
+        if not ARTIFACT_FILENAME_RE.match(raw_filename):
+            return (
+                f"文件名非法：`{file_path}`。"
+                "findings_/analysis_ 必须全小写 ASCII slug，"
+                "例如 `/workspace/sources/findings_langgraph.md`、"
+                "`/workspace/sources/analysis_langgraph_vs_autogen.md`。"
+                "禁止 CamelCase、空格，或 `*_research.md` 这类别名。"
+            )
         
         in_sources = "/workspace/sources/" in normalized or normalized.startswith("workspace/sources")
 

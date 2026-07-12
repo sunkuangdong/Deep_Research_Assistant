@@ -27,14 +27,15 @@ description: 结构化多来源联网调研，支持并行委派调研员子 Age
 ```text
 调研【具体子主题】。可用 write_todos 列出最多 3 条中文步骤（可选）。
 使用 web_search 搜索（每个 researcher 最多 3 次；整次运行共享搜索预算，当前默认最多 6 次）。
-将 findings 保存到 /workspace/sources/findings_[子主题slug].md，写入后结束。
+将 findings 保存到 /workspace/sources/findings_[子主题slug].md（slug 必须全小写，例如 findings_langgraph.md），写入后结束。
+禁止使用 CamelCase、*_research.md 或根路径。
 ```
 
 子主题相互独立时，最多并行 3 个调研员。**总数不超过 3 个。**
 
 ### 3. 综合
 
-1. 读取所有 `/workspace/sources/findings_*.md`
+1. 先 `ls /workspace/sources/`，再读取所有实际存在的 `/workspace/sources/findings_*.md`
 2. 整合为连贯分析
 3. 定稿前委派 **editor（编辑）** 子 Agent 审阅
 
@@ -45,6 +46,9 @@ description: 结构化多来源联网调研，支持并行委派调研员子 Age
 ```text
 /workspace/sources/findings_[子主题slug].md
 ```
+
+`[子主题slug]` 规则：只允许小写字母、数字、下划线，例如 `langgraph`、`autogen`。
+禁止：`findings_LangGraph.md`、`LangGraph_research.md`、`/findings_langgraph.md`。
 
 文件内容必须包含：
 

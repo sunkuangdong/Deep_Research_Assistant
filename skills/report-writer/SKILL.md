@@ -47,7 +47,9 @@ description: 将调研结果整理为结构清晰、专业的中文情报报告
 
 - 草稿：`/workspace/reports/draft_[主题slug].md`
 - 终稿：`/workspace/reports/report_[主题slug]_[运行日期].md`
+- `[主题slug]` 必须全小写 ASCII（`[a-z0-9_]+`），例如 `langgraph_vs_autogen`
 - `[运行日期]` 必须使用用户消息中提供的“运行日期”，禁止自行编造日期。
+- 读取 findings/analysis 前先 `ls /workspace/sources/`，只使用真实文件名，禁止臆造或改写大小写。
 
 ## 工作流程
 

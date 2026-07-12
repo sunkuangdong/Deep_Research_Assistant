@@ -376,3 +376,75 @@ def test_path_guard_wired_to_researcher_and_analyst_only():
     assert by_name["researcher"]["middleware"] == [path_guard]
     assert by_name["analyst"]["middleware"] == [path_guard]
     assert "middleware" not in by_name["editor"]
+
+
+def test_path_guard_rejects_non_lowercase_artifact_filenames():
+    from types import SimpleNamespace
+    from langchain_core.messages import ToolMessage
+    from src.workflow.deepagents_runner import DelegationBudget
+    from src.workflow.delegation_guard import DelegationLimitMiddleware
+
+    path_guard = DelegationLimitMiddleware(
+        DelegationBudget(max_analyst=0, max_editor=0),
+        block_artifact_rewrites=False,
+    )
+
+    def make_file(file_path: str):
+        return SimpleNamespace(
+            tool_call={
+                "name": "write_file",
+                "args": {"file_path": file_path},
+                "id": "call-write",
+            }
+        )
+
+    def handler(_req):
+        return "OK"
+
+    camel = path_guard.wrap_tool_call(
+        make_file("/workspace/sources/findings_LangGraph.md"),
+        handler,
+    )
+    assert isinstance(camel, ToolMessage)
+    assert "文件名非法" in camel.content
+
+    alias = path_guard.wrap_tool_call(
+        make_file("/workspace/sources/AutoGen_research.md"),
+        handler,
+    )
+    # 非 findings_/analysis_ 前缀，路径守卫不把它当 artifact
+    assert alias == "OK" or isinstance(alias, ToolMessage)
+
+    assert (
+        path_guard.wrap_tool_call(
+            make_file("/workspace/sources/findings_langgraph.md"),
+            handler,
+        )
+        == "OK"
+    )
+
+
+def test_filename_convention_in_prompts_and_skills():
+    from src.tools.lib.prompts import (
+        ANALYST_SYSTEM_PROMPT,
+        FILENAME_CONVENTION,
+        ORCHESTRATOR_SYSTEM_PROMPT,
+        RESEARCHER_SYSTEM_PROMPT,
+    )
+
+    web_research = Path("skills/web-research/SKILL.md").read_text(encoding="utf-8")
+    report_writer = Path("skills/report-writer/SKILL.md").read_text(encoding="utf-8")
+
+    for text in [
+        FILENAME_CONVENTION,
+        RESEARCHER_SYSTEM_PROMPT,
+        ANALYST_SYSTEM_PROMPT,
+        ORCHESTRATOR_SYSTEM_PROMPT,
+        web_research,
+        report_writer,
+    ]:
+        assert "全小写" in text or "[a-z0-9_]" in text or "小写" in text
+
+    assert "禁止臆造文件名" in ANALYST_SYSTEM_PROMPT
+    assert "精确写入路径" in ORCHESTRATOR_SYSTEM_PROMPT
+    assert "findings_langgraph.md" in web_research

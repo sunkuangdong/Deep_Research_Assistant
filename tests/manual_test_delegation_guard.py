@@ -111,6 +111,14 @@ def main() -> None:
         == "OK"
     )
 
+    # CamelCase / 非法 slug 文件名应被硬拦截
+    camel = path_guard.wrap_tool_call(
+        make_file_request("write_file", "/workspace/sources/findings_LangGraph.md"),
+        handler,
+    )
+    assert isinstance(camel, ToolMessage)
+    assert "文件名非法" in camel.content
+
     # wiring：researcher / analyst 挂 path_guard，editor 不挂
     subs = build_deepagents_subagents(search_tool=lambda: None, path_guard=path_guard)
     by_name = {s["name"]: s for s in subs}
