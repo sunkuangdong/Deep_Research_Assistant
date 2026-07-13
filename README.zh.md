@@ -36,44 +36,7 @@
 
 子 Agent 之间**不共享对话上下文**，只通过 `workspace/` 里的 Markdown 文件交换信息：
 
-```mermaid
-flowchart LR
-    subgraph col1 [ ]
-        direction TB
-        User[用户主题]
-        Main[主 Agent 编排者]
-        User ==> Main
-    end
-
-    subgraph col2 [ ]
-        direction TB
-        Researcher[Researcher]
-        Analyst[Analyst]
-        Editor[Editor]
-    end
-
-    subgraph col3 [ ]
-        direction TB
-        Web[互联网]
-        Board[文件黑板 workspace]
-    end
-
-    Main ==>|task 委派| Researcher
-    Main ==>|task 委派| Analyst
-    Main ==>|task 委派| Editor
-
-    Researcher -.->|结果返回| Main
-    Analyst -.->|结果返回| Main
-    Editor -.->|审阅意见返回| Main
-
-    Researcher ==>|web_search| Web
-    Researcher ==>|写入 findings| Board
-    Analyst ==>|读 findings / 写 analysis| Board
-    Editor ==>|只读 draft + sources| Board
-    Main ==>|读材料 / 写 draft & report| Board
-
-    linkStyle default stroke-width:3px
-```
+![架构图](./docs/images/architecture-zh.jpg)
 
 这样设计的原因：
 

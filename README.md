@@ -33,44 +33,7 @@ A real research team has a project lead (orchestration) and specialists (executi
 
 Sub-agents **do not share chat history**. They exchange information via Markdown files under `workspace/`:
 
-```mermaid
-flowchart LR
-    subgraph col1 [ ]
-        direction TB
-        User[User topic]
-        Main[Main orchestrator]
-        User ==> Main
-    end
-
-    subgraph col2 [ ]
-        direction TB
-        Researcher[Researcher]
-        Analyst[Analyst]
-        Editor[Editor]
-    end
-
-    subgraph col3 [ ]
-        direction TB
-        Web[Internet]
-        Board[Blackboard workspace]
-    end
-
-    Main ==>|task| Researcher
-    Main ==>|task| Analyst
-    Main ==>|task| Editor
-
-    Researcher -.->|return result| Main
-    Analyst -.->|return result| Main
-    Editor -.->|return review| Main
-
-    Researcher ==>|web_search| Web
-    Researcher ==>|write findings| Board
-    Analyst ==>|read findings / write analysis| Board
-    Editor ==>|read-only draft + sources| Board
-    Main ==>|read materials / write draft & report| Board
-
-    linkStyle default stroke-width:3px
-```
+![Architecture](./docs/images/architecture-en.jpg)
 
 Why:
 
