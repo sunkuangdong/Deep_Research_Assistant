@@ -451,23 +451,23 @@ PYTHONPATH=. python -m src.main "AI Agent 框架对比" --mode deepagents
 
 ## 项目亮点
 
-1. **Orchestrator + Specialized Sub-Agents**  
-   主 Agent 负责编排与定稿；`researcher` / `analyst` / `editor` 分角色执行，工具权限与 prompt 边界清晰，避免单 Agent 角色混乱。
+1. **项目架构**  
+   基于官方 DeepAgents 构建编排型多智能体调研系统。主 Agent 负责规划、委派、起草与定稿，研究、分析、审阅由专业化子 Agent 在明确职责边界内完成，避免由单一通用 Agent 包揽全流程带来的不稳定与角色混乱。
 
-2. **文件黑板（Blackboard）传递状态**  
-   子 Agent 不共享对话历史，通过 `workspace/` 落盘协作；过程可审计、可并行、可测试。
+2. **状态传递**  
+   采用文件黑板机制完成跨 Agent 协作，而非依赖共享对话记忆。调研笔记、分析结果、报告草稿与终稿均以工作区文件形式持久化传递，使流程可审计、可并行、可复现。
 
-3. **软约束 + 硬约束双轨护栏**  
-   Prompt / Skills / Memory 负责「应该怎么做」；`SearchBudget`、`DelegationBudget`、`DelegationLimitMiddleware` 负责「禁止做什么」，超限直接拒绝工具调用。
+3. **软约束与硬约束双轨控制**  
+   软约束通过提示词、技能说明与长期记忆定义期望行为；硬约束在工具调用边界执行预算与策略拦截，例如超限搜索与重复委派会在真正执行前被拒绝。引导层与强制层共同构成系统护栏。
 
 4. **路径与文件名硬校验**  
-   findings/analysis 必须落在 `/workspace/sources/`，且全小写 slug；拦截根路径、CamelCase、主 Agent 覆盖子 Agent 产物等真实失控点。
+   调研与分析产物必须遵循固定目录结构及小写命名约定。非法路径、不一致命名，以及对专家产物的越权覆盖都会被自动拒绝，从源头减少后续阶段因文件缺失或命名错乱导致的失败。
 
-5. **契约测试 + 真实任务回归**  
-   pytest 覆盖 prompt / 中间件 / 路径规则；CLI 端到端跑通后用 `workspace/` 产物与 `--json` metadata（`search_calls`、`analyst_calls` 等）验收闭环。
+5. **单元测试覆盖**  
+   通过契约测试覆盖提示词约束、子 Agent 装配与护栏拦截逻辑，且无需调用外部付费接口即可回归。端到端真实任务进一步验证完整调研闭环是否产出预期工作区文件与运行元数据。
 
-6. **官方 DeepAgents 工程实践**  
-   基于 `create_deep_agent`、`FilesystemBackend`、`skills/`、`AGENTS.md`，把 Deep Research 模式落到可运行、可约束、可复现的工程样例。
+6. **输入上下文限制**  
+   在模型配置中显式声明最大输入上下文容量，使多智能体长链路运行与真实上下文窗口保持一致，降低上下文无限膨胀带来的截断与失控风险。
 
 ---
 

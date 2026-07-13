@@ -406,12 +406,23 @@ Plus `analysis_*.md` for comparison/numeric tasks (unless `--no-analysis`). Draf
 
 ## Highlights
 
-1. **Orchestrator + specialized sub-agents** — clear roles, tools, and prompt boundaries.  
-2. **Blackboard file state** — auditable, parallelizable, testable collaboration.  
-3. **Soft + hard dual guardrails** — prompts guide; budgets/middleware enforce.  
-4. **Hard path/filename validation** — blocks real failure modes from path hallucination.  
-5. **Contract tests + live regression** — deterministic guards + end-to-end closure checks.  
-6. **Official DeepAgents practice** — `create_deep_agent` + FS + skills + memory in a runnable sample.
+1. **Project architecture**  
+   Built as an orchestrated multi-agent research system on official DeepAgents. A main agent owns planning, delegation, drafting, and finalization, while specialized sub-agents handle research, analysis, and review under clear role boundaries. This avoids the instability of a single general-purpose agent attempting every stage alone.
+
+2. **State transfer**  
+   Agents collaborate through a file-based blackboard rather than shared conversation memory. Intermediate results are persisted as research notes, analysis artifacts, drafts, and final reports in the workspace, enabling auditability, parallel execution, and reproducible handoffs across stages.
+
+3. **Soft constraints with hard enforcement**  
+   Soft constraints encode workflow expectations through prompts, skills, and long-term memory. Hard constraints enforce budgets and policy at the tool boundary, rejecting over-limit searches and repeated specialist delegations before they execute. Guidance and enforcement operate as complementary control layers.
+
+4. **Strict path and filename validation**  
+   Research and analysis outputs must follow a fixed directory layout and a lowercase naming convention. Invalid locations, inconsistent naming, and unauthorized overwrite of specialist artifacts are rejected automatically, preventing downstream failures caused by missing or mismatched files.
+
+5. **Unit test coverage**  
+   Contract tests verify prompt requirements, sub-agent assembly, and guardrail behavior without calling external APIs. End-to-end regression runs further confirm that a complete research job produces the expected workspace artifacts and runtime metadata.
+
+6. **Input context limit**  
+   The model profile is configured with an explicit maximum input context size. This keeps long multi-agent research runs aligned with the real context window and reduces failures caused by uncontrolled context growth.
 
 ---
 
