@@ -251,11 +251,15 @@ pip install deepagents langchain langchain-openai langgraph langchain-core \
 ### 3. 配置环境变量
 
 ```bash
-cp .env_template .env
+# 中文注释模板
+cp .env_template.zh .env
+
+# 或英文注释模板
+# cp .env_template .env
 ```
 
 编辑 `.env`，填入 `OPENAI_API_KEY` 与 `BOCHA_API_KEY`（启动时会检查这两项，缺一不可）。  
-变量说明见 `.env_template` 内注释。
+变量说明见对应模板内注释。
 
 ### 4. 跑一次真实调研
 
