@@ -35,17 +35,41 @@ Sub-agents **do not share chat history**. They exchange information via Markdown
 
 ```mermaid
 flowchart LR
-    User[User topic] --> Orchestrator[Main orchestrator]
+    subgraph col1 [ ]
+        direction TB
+        User[User topic]
+        Main[Main orchestrator]
+        User ==> Main
+    end
 
-    Orchestrator -->|task| Researcher[Researcher]
-    Orchestrator -->|task| Analyst[Analyst]
-    Orchestrator -->|task| Editor[Editor]
+    subgraph col2 [ ]
+        direction TB
+        Researcher[Researcher]
+        Analyst[Analyst]
+        Editor[Editor]
+    end
 
-    Researcher -->|web_search| Web[Internet]
-    Researcher -->|write findings| Board[Blackboard workspace]
-    Analyst -->|read findings / write analysis| Board
-    Editor -->|read-only draft + sources| Board
-    Orchestrator -->|read / write draft & report| Board
+    subgraph col3 [ ]
+        direction TB
+        Web[Internet]
+        Board[Blackboard workspace]
+    end
+
+    Main ==>|task| Researcher
+    Main ==>|task| Analyst
+    Main ==>|task| Editor
+
+    Researcher -.->|return result| Main
+    Analyst -.->|return result| Main
+    Editor -.->|return review| Main
+
+    Researcher ==>|web_search| Web
+    Researcher ==>|write findings| Board
+    Analyst ==>|read findings / write analysis| Board
+    Editor ==>|read-only draft + sources| Board
+    Main ==>|read materials / write draft & report| Board
+
+    linkStyle default stroke-width:3px
 ```
 
 Why:
