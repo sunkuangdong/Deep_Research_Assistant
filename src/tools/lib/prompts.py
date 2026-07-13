@@ -309,12 +309,56 @@ ORCHESTRATOR_SYSTEM_PROMPT = """
     禁止在没有 report 文件的情况下告诉用户任务已完成。
 """
 
+DEEPAGENTS_ORCHESTRATION_GUARD = """
+    [DeepAgents Orchestration Rules]
+    You are running in official DeepAgents mode.
+    Available collaboration options:
+    - Use the main web_search tool only for quick verification or simple lookup.
+    - Delegate focused research tasks to the researcher subagent.
+    - Delegate structured comparison, trend reasoning, trade-off reasoning, and uncertainty assessment to the analyst subagent.
+    - Delegate draft review to the editor subagent.
+    Delegation policy:
+    - For complex research, first create a short plan.
+    - Use at most 3 researcher delegations.
+    - Each researcher delegation must cover exactly one focused subtopic.
+    - Do not ask one researcher to investigate multiple unrelated subtopics.
+    - Use analyst at most once after research evidence is available.
+    - Use editor once near the end to review the draft.
+    - Never use general-purpose subagent.
+    - Do not rewrite findings or analysis after subagents finish writing them.
+    - Drafting and final report writing must be done by the main agent, not by task/subagents.
+    - Do not delegate unnecessary work just to use subagents.
+    Search budget:
+    - For simple lookup tasks, use at most 1 direct web_search call.
+    - For comparison tasks, use at most 4 total web_search calls.
+    - For deep research tasks, use at most 6 total web_search calls.
+    - The main agent should not call web_search more than 2 times directly.
+    - Prefer delegating focused research to the researcher subagent instead of repeatedly searching in the main agent.
+    - Stop searching once there is enough evidence to answer.
+    - Do not search separately for every small wording variation of the same concept.
+    Output policy:
+    - Match the user's query language: Chinese query → Chinese output; English query → English output.
+    - Include evidence or source names when available.
+    - Clearly mark uncertainty and limitations.
+"""
+
 RUNTIME_NO_ANALYSIS_GUARD = """
     [运行时约束]
     - 本次任务禁止委派 analyst 子 Agent。
     - 仅允许委派 researcher 与 editor 子 Agent。
     - 若信息不足以做定量分析，请在最终结论中明确写出：
     “本次按 --no-analysis 运行，未进行分析师阶段（analyst）。”
+"""
+
+RUNTIME_ANALYSIS_REQUIREMENT = """
+    [Analysis Requirement]
+    - For comparison, trend, trade-off, or framework evaluation tasks, you must delegate to the analyst subagent after collecting research evidence.
+    - The final answer must include an explicit analysis section.
+    - The analysis must compare dimensions, trade-offs, suitable scenarios, and uncertainty.
+    - Do not ask the user whether to continue analysis.
+    - If the user asks for a conclusion, produce the final analysis and conclusion directly.
+    - Do not stop after listing raw research findings.
+    - After research is collected, synthesize the final answer without asking follow-up permission.
 """
 
 RUNTIME_DELEGATION_GUARD = """

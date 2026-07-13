@@ -13,8 +13,10 @@ from src.workflow.delegation_guard import DelegationLimitMiddleware
 
 from src.tools.lib.prompts import (
     ORCHESTRATOR_SYSTEM_PROMPT,
+    DEEPAGENTS_ORCHESTRATION_GUARD,
     RUNTIME_DELEGATION_GUARD,
     RUNTIME_NO_ANALYSIS_GUARD,
+    RUNTIME_ANALYSIS_REQUIREMENT,
     RESEARCHER_SYSTEM_PROMPT,
     ANALYST_SYSTEM_PROMPT,
     EDITOR_SYSTEM_PROMPT,
@@ -54,7 +56,6 @@ def reset_workspace_run_artifacts() -> None:
                 continue
             file_path.unlink()
 
-    # 与老师项目对齐：每次运行前重置 todo 导出文件
     if DEFAULT_TODOS_EXPORT_PATH.exists():
         DEFAULT_TODOS_EXPORT_PATH.unlink()
 
@@ -62,39 +63,6 @@ def reset_workspace_run_artifacts() -> None:
 class DeepAgentsRunResult:
     final_text: str
     metadata: dict
-
-DEEPAGENTS_ORCHESTRATION_GUARD = """
-    [DeepAgents Orchestration Rules]
-    You are running in official DeepAgents mode.
-    Available collaboration options:
-    - Use the main web_search tool only for quick verification or simple lookup.
-    - Delegate focused research tasks to the researcher subagent.
-    - Delegate structured comparison, trend reasoning, trade-off reasoning, and uncertainty assessment to the analyst subagent.
-    - Delegate draft review to the editor subagent.
-    Delegation policy:
-    - For complex research, first create a short plan.
-    - Use at most 3 researcher delegations.
-    - Each researcher delegation must cover exactly one focused subtopic.
-    - Do not ask one researcher to investigate multiple unrelated subtopics.
-    - Use analyst at most once after research evidence is available.
-    - Use editor once near the end to review the draft.
-    - Never use general-purpose subagent.
-    - Do not rewrite findings or analysis after subagents finish writing them.
-    - Drafting and final report writing must be done by the main agent, not by task/subagents.
-    - Do not delegate unnecessary work just to use subagents.
-    Search budget:
-    - For simple lookup tasks, use at most 1 direct web_search call.
-    - For comparison tasks, use at most 4 total web_search calls.
-    - For deep research tasks, use at most 6 total web_search calls.
-    - The main agent should not call web_search more than 2 times directly.
-    - Prefer delegating focused research to the researcher subagent instead of repeatedly searching in the main agent.
-    - Stop searching once there is enough evidence to answer.
-    - Do not search separately for every small wording variation of the same concept.
-    Output policy:
-    - Match the user's query language: Chinese query → Chinese output; English query → English output.
-    - Include evidence or source names when available.
-    - Clearly mark uncertainty and limitations.
-"""
 
 def create_limited_web_search(search_budget: SearchBudget) -> Any:
     """
@@ -132,31 +100,21 @@ def build_deepagents_system_prompt(no_analysis: bool = False) -> str:
     构建 DeepAgents 主 Agent 的 system_prompt。
     注意：
         - ORCHESTRATOR_SYSTEM_PROMPT 是主 Agent 的长期角色设定
+        - DEEPAGENTS_ORCHESTRATION_GUARD 是 DeepAgents 编排规则
         - RUNTIME_DELEGATION_GUARD 是委派约束
-        - RUNTIME_NO_ANALYSIS_GUARD 是本次运行的 no_analysis 约束
+        - RUNTIME_NO_ANALYSIS_GUARD / RUNTIME_ANALYSIS_REQUIREMENT 是本次运行的分析约束
     """
 
     sections = [
         ORCHESTRATOR_SYSTEM_PROMPT.strip(),
         DEEPAGENTS_ORCHESTRATION_GUARD.strip(),
         RUNTIME_DELEGATION_GUARD.strip(),
-    ]   
+    ]
 
     if no_analysis:
         sections.append(RUNTIME_NO_ANALYSIS_GUARD.strip())
     else:
-        sections.append(
-            """
-            [Analysis Requirement]
-                - For comparison, trend, trade-off, or framework evaluation tasks, you must delegate to the analyst subagent after collecting research evidence.
-                - The final answer must include an explicit analysis section.
-                - The analysis must compare dimensions, trade-offs, suitable scenarios, and uncertainty.
-                - Do not ask the user whether to continue analysis.
-                - If the user asks for a conclusion, produce the final analysis and conclusion directly.
-                - Do not stop after listing raw research findings.
-                - After research is collected, synthesize the final answer without asking follow-up permission.
-            """.strip()
-        )
+        sections.append(RUNTIME_ANALYSIS_REQUIREMENT.strip())
 
     return "\n\n".join(sections)
 
