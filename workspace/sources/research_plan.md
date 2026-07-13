@@ -1,28 +1,25 @@
-# 调研计划：对比 LangGraph 与 AutoGen
+# Research Plan for Comparing LangGraph and AutoGen
 
-## 目标
-全面调研并对比 LangGraph 与 AutoGen 两个框架的核心特性、架构设计、应用场景、优势与劣势。
+## Objective
+To compare LangGraph and AutoGen in terms of their features, use cases, architecture, advantages, limitations, and ecosystem support.
 
-## 子主题拆解
+## Subtopics and Output Files
 
-1. LangGraph 调研
-  - 内容：LangGraph 的定义、核心功能、架构设计、技术特点、应用案例
-  - 产出文件：/workspace/sources/findings_langgraph.md
+1. LangGraph Overview and Features
+   - Write findings to /workspace/sources/findings_langgraph.md
 
-2. AutoGen 调研
-  - 内容：AutoGen 的定义、核心功能、架构设计、技术特点、应用案例
-  - 产出文件：/workspace/sources/findings_autogen.md
+2. AutoGen Overview and Features
+   - Write findings to /workspace/sources/findings_autogen.md
 
-3. 对比分析
-  - 内容：基于以上两份 findings，进行结构化对比分析，包括功能对比、技术架构对比、适用场景、优缺点、发展趋势等
-  - 产出文件：/workspace/sources/analysis_langgraph_autogen.md
+3. Comparative Analysis of LangGraph and AutoGen
+   - Write analysis to /workspace/sources/analysis_langgraph_autogen.md
 
+## Workflow
+- Delegate two researchers to separately research LangGraph and AutoGen.
+- After findings are collected, delegate an analyst to perform a structured comparison and trade-off analysis.
+- Finally, draft the report based on findings and analysis.
 
-## 后续流程
-- 完成以上调研后，进行分析
-- 根据分析结果起草报告草稿
-- 委派 editor 审阅草稿
-- 根据审阅意见修订并完成最终报告
-
-
-请依次委派 researcher 进行 LangGraph 和 AutoGen 的调研。
+## Notes
+- Prioritize official sources and documentation.
+- Include URLs or source names when possible.
+- Mark uncertainties if official sources are insufficient.

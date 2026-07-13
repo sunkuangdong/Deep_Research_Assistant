@@ -14,7 +14,7 @@ description: 结构化多来源联网调研，支持并行委派调研员子 Age
 ### 1. 规划
 
 1. 将用户问题写入 `/workspace/sources/question.txt`
-2. 创建 `/workspace/sources/research_plan.md`，包含（**中文撰写**）：
+2. 创建 `/workspace/sources/research_plan.md`，包含（**语言跟随用户提问**）：
    - 主调研问题
    - 2–4 个互不重叠的子主题
    - 每个子主题的预期产出
@@ -25,7 +25,7 @@ description: 结构化多来源联网调研，支持并行委派调研员子 Age
 对每个子主题，用 `task` 工具启动 **researcher（调研员）** 子 Agent：
 
 ```text
-调研【具体子主题】。可用 write_todos 列出最多 3 条中文步骤（可选）。
+调研【具体子主题】。可用 write_todos 列出最多 3 条执行步骤（语言跟随用户，可选）。
 使用 web_search 搜索（每个 researcher 最多 3 次；整次运行共享搜索预算，当前默认最多 6 次）。
 将 findings 保存到 /workspace/sources/findings_[子主题slug].md（slug 必须全小写，例如 findings_langgraph.md），写入后结束。
 禁止使用 CamelCase、*_research.md 或根路径。
@@ -81,7 +81,7 @@ description: 结构化多来源联网调研，支持并行委派调研员子 Age
 - 委派前必须先写 `/workspace/sources/research_plan.md`
 - 每个调研员只负责一个聚焦子主题
 - Agent 之间通过文件传递信息，不要依赖对话历史
-- 搜索关键词优先使用中文，专有名词可保留英文
+- 搜索关键词优先使用与用户提问相同的语言，专有名词可保留英文
 - 不要重复搜索语义相同的关键词
 - 关键事实必须保留来源 URL 或来源名称
 - 不要编造来源、日期、数字、排名或引用

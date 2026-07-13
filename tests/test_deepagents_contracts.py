@@ -428,6 +428,7 @@ def test_filename_convention_in_prompts_and_skills():
     from src.tools.lib.prompts import (
         ANALYST_SYSTEM_PROMPT,
         FILENAME_CONVENTION,
+        LANGUAGE_POLICY,
         ORCHESTRATOR_SYSTEM_PROMPT,
         RESEARCHER_SYSTEM_PROMPT,
     )
@@ -448,3 +449,13 @@ def test_filename_convention_in_prompts_and_skills():
     assert "禁止臆造文件名" in ANALYST_SYSTEM_PROMPT
     assert "精确写入路径" in ORCHESTRATOR_SYSTEM_PROMPT
     assert "findings_langgraph.md" in web_research
+
+    assert "跟随用户" in LANGUAGE_POLICY
+    assert "中文提问" in LANGUAGE_POLICY
+    assert "英文提问" in LANGUAGE_POLICY
+    assert "跟随用户" in ORCHESTRATOR_SYSTEM_PROMPT
+    assert "语言跟随用户" in report_writer or "跟随用户提问" in report_writer
+
+    agents_md = Path("AGENTS.md").read_text(encoding="utf-8")
+    assert "Match the user's query language" in agents_md
+    assert "Chinese-first" not in agents_md

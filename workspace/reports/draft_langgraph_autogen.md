@@ -1,48 +1,109 @@
-# LangGraph 与 AutoGen 框架对比调研报告（草稿）
+# Comparative Report: LangGraph vs AutoGen
 
-## 一、背景介绍
-随着人工智能技术的发展，多智能体协作框架成为构建复杂AI应用的重要工具。LangGraph和AutoGen作为当前较为活跃的两种框架，分别代表了不同的设计理念和技术路线。本报告基于最新调研资料，系统对比分析两者的核心功能、架构设计、技术特点、应用场景及优势劣势，旨在为相关技术选型和应用提供参考。
+> Note: This report is based primarily on secondary sources such as technical blogs and community articles. Official documentation and authoritative sources are limited, which may affect the comprehensiveness and reliability of some conclusions.
 
-## 二、调研发现摘要
+## 1. Introduction
+This report provides a detailed comparison between LangGraph and AutoGen, two emerging open-source frameworks designed for building multi-agent AI applications leveraging large language models (LLMs). The comparison covers their features, architecture, use cases, advantages, limitations, and ecosystem support.
 
-### 1. LangGraph框架
-- 由LangChain团队推出，基于状态图的AI Agent框架，采用有向无环图（DAG）结构进行流程编排，支持复杂状态管理和多主体协作。
-- 适合需要循环逻辑、条件分支、持久化状态管理的复杂AI应用。
-- 依托LangChain生态，支持本地及边缘计算场景。
-- 目前细节实现和源码尚未完全公开，生态相对较新。
+## 2. Overview of LangGraph
+LangGraph is developed by the LangChain team and focuses on constructing complex, stateful, multi-agent applications based on LLMs. It represents workflows as graph structures, supporting loops, state management, and multi-agent collaboration, offering high flexibility and control.
 
-### 2. AutoGen框架
-- 微软研究院开源的多智能体协作框架，采用事件驱动架构，支持多角色智能体对话、工具调用、代码执行和记忆机制。
-- 支持分布式云端部署，扩展性强，适合自动化任务执行和多角色对话系统。
-- 内置丰富工具和开发者支持，生态活跃但版本更新快，需持续关注。
+### Key Features
+- Supports complex loops and branching workflows.
+- Persistent context and memory management.
+- Human-machine collaboration.
+- Multi-agent workflows with fine-grained process and state control.
 
-## 三、详细对比分析
+### Architecture
+LangGraph centers on a graph structure where nodes represent tasks or agents and edges represent workflow control. It supports stateful execution and looping, differing from traditional Directed Acyclic Graph (DAG) architectures.
 
-| 维度       | LangGraph                                   | AutoGen                                    |
-|------------|---------------------------------------------|--------------------------------------------|
-| 核心功能   | 状态图框架，支持复杂AI Agent应用，图结构编排，状态管理，多主体协作 | 多智能体协作框架，支持多角色对话、工具调用、代码执行、记忆机制 |
-| 架构设计   | 有向无环图（DAG）流程，节点、边、状态、图，支持可视化和持久化状态 | 事件驱动架构，三层核心：Core（事件总线）、AgentChat（对话编排）、Extensions（工具集成），支持分布式部署 |
-| 技术特点   | 支持循环流程、条件分支、持久化状态、多代理协作、人机协作 | 灵活多智能体对话，内置丰富工具（浏览器代理、代码执行沙箱）、人机混合、状态持久化、断点续跑 |
-| 应用场景   | 个人助理、AI教师、软件用户体验优化、空间计算、智能操作系统 | AI编程助手、自动化数据分析、多角色专家团队对话、自动化任务执行 |
-| 优势       | 强大的图结构编排能力，适合复杂状态管理和多主体协作 | 多角色智能体协作灵活，工具丰富，支持自动化任务和代码执行 |
-| 劣势       | 细节实现和源码未完全公开，生态相对较新 | 版本更新快，生态扩展需持续关注，复杂度较高 |
+### Use Cases
+Suitable for personal assistants, AI tutors, software user experience optimization, spatial computing, and intelligent operating system construction.
 
-## 四、结论与建议
-- LangGraph适合需要复杂流程控制和状态持久化的AI Agent应用，尤其在本地及边缘计算环境中表现优异。
-- AutoGen适合多角色协作和自动化任务执行，尤其适合云端分布式部署和复杂多智能体对话系统。
-- 选择框架应结合具体应用需求和生态支持情况。
-- 建议持续关注两者的生态发展，收集更多实际应用案例和性能数据，进行更深入的技术评估。
+### Advantages
+- Handles complex loops and branching logic.
+- Persistent context state.
+- Flexible multi-agent collaboration.
+- Suitable for building complex and reliable intelligent applications.
 
-## 五、局限性与信息缺口
-- LangGraph的官方文档和源码细节尚未完全公开，存在一定信息缺口。
-- AutoGen的最新版本特性和生态扩展需持续关注官方更新。
-- 缺乏公开的性能对比数据和用户体验反馈，限制了定量分析的深度。
+### Limitations
+- Dependent on the LangChain ecosystem.
+- Steep learning curve.
+- Relatively new ecosystem and documentation.
 
-## 六、参考资料
-- LangGraph 框架深度解析:从理论到实践的完整指南 - 博客园，链接：https://www.cnblogs.com/chuanhua-blogs/p/19710634
-- AutoGen 智能体框架教程 - CSDN博客，链接：https://cancloud.blog.csdn.net/article/details/150931558
-- AutoGen 框架深度解析：构建多智能体协作的事件驱动架构 - CSDN博客，链接：https://m.blog.csdn.net/fudaihb/article/details/147592849
-- LangGraph基础 - 博客园，链接：https://www.cnblogs.com/rpup/p/19017825
-- AutoGen 详解:微软多智能体开发框架深度解析 - CSDN博客，链接：https://blog.csdn.net/weixin_47242663/article/details/149987921
+### Ecosystem Support
+As a key part of the LangChain ecosystem, LangGraph integrates seamlessly with LangChain tools and components, benefiting from rich model interfaces and toolchains.
 
-（注：部分内容基于第三方技术博客，官方原始页面未完全公开，存在不确定性。）
+## 3. Overview of AutoGen
+AutoGen is an open-source programming framework developed by Microsoft, focusing on building multi-agent AI applications with autonomous agent actions and human collaboration.
+
+### Key Features
+- Standardized multi-agent interfaces.
+- Supports synchronous and asynchronous communication.
+- Built-in LLM integration (e.g., GPT series).
+- Customizable dialogues between agents.
+- Human-machine mixed participation.
+
+### Architecture
+Defines agent roles supporting multi-agent collaborative workflows, message passing, task allocation, asynchronous and synchronous interactions, with LLMs as core reasoning engines.
+
+### Use Cases
+Typical applications include automated customer service, multi-agent collaborative decision-making, automated data processing workflows, educational training simulations, and game AI development.
+
+### Advantages
+- Simplifies multi-agent system development.
+- Supports complex multi-role collaboration.
+- Enhances automation and efficiency of LLM applications.
+- Open-source ecosystem with active community and Microsoft backing.
+
+### Limitations
+- Ecosystem and documentation still maturing.
+- Performance and security challenges in complex multi-agent systems.
+- Requires developers to have multi-agent system design skills.
+
+### Ecosystem Support
+Provides developer tools, sample code, configuration management, supports multiple LLM configurations, with an active community and ongoing Microsoft investment.
+
+## 4. Comparative Analysis
+
+| Dimension       | LangGraph                                                                 | AutoGen                                                                                   |
+|-----------------|---------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
+| Features        | Complex loops and branching, persistent context, multi-agent and human collaboration, fine-grained control | Standardized multi-agent interfaces, sync/async communication, built-in LLM integration, customizable agent dialogues, human-machine mixed participation |
+| Architecture    | Graph-based core, nodes as tasks/agents, supports stateful execution and loops, differs from DAG | Multi-agent role definitions, supports collaborative workflows, message passing, task allocation, sync/async interactions, LLM core reasoning engine |
+| Use Cases       | Personal assistants, AI tutors, software UX optimization, spatial computing, intelligent OS | Automated customer service, multi-agent decision-making, automated data workflows, education simulations, game AI |
+| Advantages      | Supports complex workflows, persistent state, flexible multi-agent collaboration, suitable for complex reliable apps | Simplifies multi-agent development, supports complex multi-role collaboration, improves LLM automation and efficiency, active open-source ecosystem |
+| Limitations     | Dependent on LangChain, steep learning curve, new ecosystem and docs | Ecosystem and docs maturing, performance and security challenges, requires multi-agent design skills |
+| Ecosystem       | Part of LangChain ecosystem, seamless integration with tools and models | Developer tools, sample code, config management, active community, Microsoft support |
+
+## 5. Conclusions and Recommendations
+- Both frameworks support multi-agent collaboration and human-machine interaction, are open-source, and have growing ecosystems and documentation.
+- LangGraph emphasizes graph-based complex workflow control and state persistence, suitable for applications requiring complex loops and multi-role process management.
+- AutoGen focuses on standardized multi-agent interfaces and flexible communication, ideal for multi-agent collaboration and automation tasks.
+- Choose LangGraph for complex intelligent applications with high workflow and state management demands.
+- Choose AutoGen for rapid development of multi-agent collaboration systems, especially where diverse communication modes and flexible task allocation are needed.
+
+## 6. Limitations and Uncertainties
+- Both frameworks are relatively new, with limited official documentation and authoritative performance or security evaluations.
+- LangGraph depends heavily on the LangChain ecosystem, which may limit its maturity and adoption.
+- AutoGen faces challenges in performance and security typical of complex multi-agent systems, with limited public data on mitigation strategies.
+- Both frameworks require developers to have a certain level of expertise in multi-agent system design.
+- More real-world use cases, detailed benchmarks, and community feedback are needed to fully validate their strengths and limitations.
+
+## 7. User and Developer Suitability
+- LangGraph's steeper learning curve and reliance on graph-based workflow concepts may be better suited for experienced developers and projects requiring fine-grained process control.
+- AutoGen's standardized interfaces and communication flexibility may lower the barrier for developers familiar with multi-agent programming but still require understanding of asynchronous and synchronous interactions.
+- Beginners may find both frameworks challenging; however, active community support and ongoing documentation improvements could ease adoption over time.
+
+## 8. Ecosystem Details
+- LangGraph benefits from seamless integration within the LangChain ecosystem, leveraging its extensive model interfaces and toolchains, but is limited by LangChain's overall ecosystem maturity.
+- AutoGen offers developer tools, sample code, and configuration management, supported by an active community and sustained Microsoft investment.
+- Both ecosystems are evolving, with ongoing efforts to improve documentation, tooling, and third-party plugin support.
+- Community activity, update frequency, and third-party integrations should be monitored by potential adopters to assess long-term viability.
+
+## 7. References
+- LangGraph sources: [博客园 - LangGraph基础](https://www.cnblogs.com/rpup/p/19017825), [CSDN - LangGraph系列1](https://m.blog.csdn.net/weixin_42475060/article/details/144428028), [至顶网 - LangGraph文章列表](https://www.zhiding.cn/files/klist-0-352787-1.htm)
+- AutoGen sources: [AutoGen 技术杂烩](https://blog.iamdev.cn/tags/AutoGen/), [AutoGen开源平台介绍 - CSDN](https://m.blog.csdn.net/l35633/article/details/146364977), [AutoGen与FastGPT 优缺点全面解析 - 今日头条](https://www.toutiao.com/article/7356163451036647970/)
+
+---
+
+*Report generated on 2026-07-12.*

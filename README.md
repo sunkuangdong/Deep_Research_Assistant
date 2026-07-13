@@ -1,6 +1,6 @@
 # Deep Research Assistant
 
-> 基于官方 [DeepAgents](https://github.com/langchain-ai/deepagents) 的多 Agent 深度调研助手：从主题输入到结构化中文情报报告，全流程可追踪、可约束、可复现。
+> 基于官方 [DeepAgents](https://github.com/langchain-ai/deepagents) 的多 Agent 深度调研助手：从主题输入到结构化情报报告，全流程可追踪、可约束、可复现；输出语言跟随用户提问。
 
 ---
 
@@ -71,7 +71,7 @@ flowchart LR
 | **`SearchBudget` 包装搜索工具** | 整次运行共享搜索次数上限（默认 6 次） | 真实跑通过程中，Agent 容易对同一概念换词反复搜索；预算耗尽后直接返回提示，比无限 API 调用更可控 |
 | **`structured_calculator`** | analyst 做排名、占比等数值计算 | LLM 容易「手算」或编造数字；把数值结论交给确定性工具，analysis 才可复现 |
 | **`skills/` 技能包** | 分场景流程指南（`web-research`、`report-writer`） | 把「怎么调研、怎么写报告」从 system prompt 拆出去，主 Agent 按需加载，减少 prompt 臃肿 |
-| **`AGENTS.md` 长期记忆** | 全局规范：中文输出、证据诚信、输出结构 | DeepAgents 原生支持 memory 注入；适合放**长期不变**的项目级规则 |
+| **`AGENTS.md` 长期记忆** | 全局规范：语言跟随用户、证据诚信、输出结构 | DeepAgents 原生支持 memory 注入；适合放**长期不变**的项目级规则 |
 | **`prompts.py` + `user_prompt`** | 运行时软约束：流程顺序、文件名约定、委派策略 | 每次运行的主题不同，需要把「本次任务禁止什么」写进 user 消息 |
 | **LangSmith** | Trace 每次 tool/model 调用 | 本地 `astream_events` 看实时日志；LangSmith 适合事后分析长链路 |
 | **`pytest` 单元测试** | 验证 prompt、子 Agent 结构、中间件拦截规则 | Agent 系统难做传统单元测试；对**可确定的契约**（路径规则、委派上限）做回归，防止改 prompt 后护栏失效 |
@@ -175,7 +175,7 @@ flowchart LR
 
 ### 它解决什么问题？
 
-当你需要一份**有来源、有结构、有分析、有局限性说明**的中文调研报告时，手工流程通常包括：
+当你需要一份**有来源、有结构、有分析、有局限性说明**的调研报告时，手工流程通常包括：
 
 1. 拆分子问题、列调研计划  
 2. 分主题搜索并整理 findings  
@@ -194,7 +194,7 @@ flowchart LR
 | **联网搜索** | 集成 Bocha `web_search`，整次运行共享搜索预算（默认最多 6 次） |
 | **文件驱动工作流** | 所有中间产物写入 `workspace/sources/` 与 `workspace/reports/`，Agent 通过读写文件协作 |
 | **硬限制防失控** | 委派次数上限、主 Agent 禁止改写 findings/analysis、路径与文件名校验 |
-| **中文优先输出** | 报告、todo、过程文件默认中文；保留必要英文专有名词与 URL |
+| **语言跟随用户** | 中文提问 → 中文报告；英文提问 → 英文报告；专有名词与 URL 可保留原文 |
 
 ### 一次完整运行会产出什么？
 
@@ -444,3 +444,33 @@ PYTHONPATH=. python -m src.main "AI Agent 框架对比" --mode deepagents
 
 对比 / 数值类任务（未加 `--no-analysis`）还应有 `analysis_*.md`。  
 只有 draft、没有 report，不算完成。
+
+---
+
+## 项目亮点
+
+1. **Orchestrator + Specialized Sub-Agents**  
+   主 Agent 负责编排与定稿；`researcher` / `analyst` / `editor` 分角色执行，工具权限与 prompt 边界清晰，避免单 Agent 角色混乱。
+
+2. **文件黑板（Blackboard）传递状态**  
+   子 Agent 不共享对话历史，通过 `workspace/` 落盘协作；过程可审计、可并行、可测试。
+
+3. **软约束 + 硬约束双轨护栏**  
+   Prompt / Skills / Memory 负责「应该怎么做」；`SearchBudget`、`DelegationBudget`、`DelegationLimitMiddleware` 负责「禁止做什么」，超限直接拒绝工具调用。
+
+4. **路径与文件名硬校验**  
+   findings/analysis 必须落在 `/workspace/sources/`，且全小写 slug；拦截根路径、CamelCase、主 Agent 覆盖子 Agent 产物等真实失控点。
+
+5. **契约测试 + 真实任务回归**  
+   pytest 覆盖 prompt / 中间件 / 路径规则；CLI 端到端跑通后用 `workspace/` 产物与 `--json` metadata（`search_calls`、`analyst_calls` 等）验收闭环。
+
+6. **官方 DeepAgents 工程实践**  
+   基于 `create_deep_agent`、`FilesystemBackend`、`skills/`、`AGENTS.md`，把 Deep Research 模式落到可运行、可约束、可复现的工程样例。
+
+---
+
+## License
+
+本项目采用 [MIT License](./LICENSE)。
+
+Copyright (c) 2026 Kuangdong Sun
