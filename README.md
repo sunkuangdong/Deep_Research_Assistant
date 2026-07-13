@@ -223,7 +223,6 @@ workspace/
 - **测试**：`pytest` 契约测试 + 手动 guard 脚本 + CLI 真实任务回归
 
 ---
-
 ## 快速开始
 
 ### 1. 环境准备
@@ -305,3 +304,143 @@ workspace/reports/
 PYTHONPATH=. python -m pytest tests/test_deepagents_contracts.py -q
 PYTHONPATH=. python tests/manual_test_delegation_guard.py
 ```
+
+---
+
+## 测试与回归
+
+本项目把测试分成两层：**不耗 API 的契约/护栏测试**，以及 **消耗 API 的真实任务回归**。
+
+### 1. 单元 / 契约测试（推荐每次改代码后跑）
+
+```bash
+source .venv/bin/activate
+PYTHONPATH=. python -m pytest tests/test_deepagents_contracts.py -q
+PYTHONPATH=. python tests/manual_test_delegation_guard.py
+```
+
+| 覆盖面 | 说明 |
+|--------|------|
+| Skills / Memory | `web-research`、`report-writer`、`AGENTS.md` 存在且含关键约束 |
+| Prompt 契约 | 编排规则、`--no-analysis` 守卫、防空转、不向用户确认 |
+| 子 Agent 装配 | 有/无 analyst 时的 subagent 列表与工具绑定 |
+| 搜索预算 | `SearchBudget` 封装后的 `web_search` 契约 |
+| 计算器 | `structured_calculator` 排名结果可复现 |
+| 中间件护栏 | 二次委派 analyst/editor 拦截；主 Agent 禁止改 findings/analysis |
+| 路径与文件名 | 拒绝根路径 `/findings_*.md`、拒绝 CamelCase；放行 `/workspace/sources/findings_*.md` |
+| Wiring | `path_guard` 只挂到 researcher/analyst，不挂 editor |
+
+不调用真实 LLM / Bocha，适合作为提交前的快速回归。
+
+### 2. 真实任务回归（改护栏或流程后建议跑）
+
+```bash
+PYTHONPATH=. python -m src.main "对比 LangGraph 与 AutoGen" --json
+```
+
+跑完后按下面清单验收：
+
+| 检查项 | 期望 |
+|--------|------|
+| `workspace/sources/` | 有 `question.txt`、`research_plan.md`、至少一个 `findings_*.md` |
+| `analysis_*.md` | 未加 `--no-analysis` 时应存在 |
+| `workspace/reports/` | 有 `draft_*.md` 与 `report_*_<运行日期>.md` |
+| 文件名 | 全小写 slug；无 `*_research.md`、无根路径产物 |
+| JSON `deepagents.analyst_calls` | 通常为 `1`（对比类任务） |
+| JSON `deepagents.editor_calls` | 通常为 `1` |
+| JSON `deepagents.search_calls` | ≤ `search_call_limit`（默认 6） |
+| 终端日志 | 可出现 `[guard] blocked ...`（说明硬限制生效）；不应反复空转 |
+
+只改 prompt / middleware / 路径规则时，优先跑第 1 层；确认闭环质量时再跑第 2 层。
+
+---
+
+## CLI 参数
+
+入口：`python -m src.main`
+
+| 参数 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| `topic` | 位置参数（必填） | — | 调研主题，例如 `"对比 LangGraph 与 AutoGen"` |
+| `--json` | flag | `false` | 输出 JSON（含 `final_text`、`total_ms`、`deepagents` metadata、`tool_metrics`） |
+| `--no-analysis` | flag | `false` | 跳过 analyst；不生成 analysis 阶段要求，最终报告需说明未进行分析师阶段 |
+| `--mode` | 枚举 | `deepagents` | 目前仅支持 `deepagents`（官方 `create_deep_agent` 流程） |
+
+示例：
+
+```bash
+PYTHONPATH=. python -m src.main "AI Agent 框架对比"
+PYTHONPATH=. python -m src.main "AI Agent 框架对比" --json
+PYTHONPATH=. python -m src.main "AI Agent 框架对比" --no-analysis --json
+PYTHONPATH=. python -m src.main "AI Agent 框架对比" --mode deepagents
+```
+
+`--json` 时，重点关注 `deepagents` 字段：
+
+- `search_calls` / `search_call_limit`
+- `analyst_calls` / `analyst_call_limit`
+- `editor_calls` / `editor_call_limit`
+- `run_date`、`expected_report_glob`、`todos`
+
+---
+
+## 产物约定
+
+所有运行产物落在虚拟路径 `/workspace/...`（映射到本地 `workspace/`）。  
+每次运行开始前会清空旧产物（保留 `README.md` / `.gitkeep`），避免误读上一次结果。
+
+### 目录分工
+
+| 目录 | 用途 |
+|------|------|
+| `workspace/sources/` | 问题、计划、findings、analysis |
+| `workspace/reports/` | draft、最终 report |
+
+### 命名规则（强制）
+
+`slug` 只允许：小写英文字母、数字、下划线（`[a-z0-9_]+`）。
+
+| 产物 | 路径模板 | 写入者 |
+|------|----------|--------|
+| 原始问题 | `/workspace/sources/question.txt` | 主 Agent |
+| 调研计划 | `/workspace/sources/research_plan.md` | 主 Agent |
+| 调研结果 | `/workspace/sources/findings_<slug>.md` | `researcher` |
+| 分析结果 | `/workspace/sources/analysis_<slug>.md` | `analyst` |
+| 报告草稿 | `/workspace/reports/draft_<slug>.md` | 主 Agent |
+| 最终报告 | `/workspace/reports/report_<slug>_<YYYY-MM-DD>.md` | 主 Agent |
+
+示例：
+
+```text
+/workspace/sources/findings_langgraph.md
+/workspace/sources/findings_autogen.md
+/workspace/sources/analysis_langgraph_vs_autogen.md
+/workspace/reports/draft_langgraph_vs_autogen.md
+/workspace/reports/report_langgraph_vs_autogen_2026-07-12.md
+```
+
+报告日期必须使用本次运行 `user_prompt` 中的「运行日期」，禁止模型自行编造。
+
+### 禁止写法
+
+中间件会对 findings/analysis 的非法写入硬拒绝，例如：
+
+| 非法示例 | 原因 |
+|----------|------|
+| `/findings_langgraph.md` | 根路径，不在 `/workspace/sources/` |
+| `/workspace/sources/findings_LangGraph.md` | CamelCase，非全小写 slug |
+| `/workspace/sources/AutoGen_research.md` | 非 `findings_` / `analysis_` 约定名（易导致后续读空） |
+| 主 Agent 改写已有 `findings_*.md` / `analysis_*.md` | 主 Agent 对受保护产物只读 |
+
+### 完成条件（闭环）
+
+一次完整任务至少应具备：
+
+1. `question.txt`
+2. `research_plan.md`
+3. 至少一个 `findings_*.md`
+4. `draft_*.md`
+5. `report_*_<运行日期>.md`
+
+对比 / 数值类任务（未加 `--no-analysis`）还应有 `analysis_*.md`。  
+只有 draft、没有 report，不算完成。
