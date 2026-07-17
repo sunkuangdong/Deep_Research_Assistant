@@ -215,8 +215,7 @@ source .venv/bin/activate
 
 ```bash
 pip install -U pip
-pip install deepagents langchain langchain-openai langgraph langchain-core \
-  python-dotenv pydantic httpx pytest
+pip install -r requirements.txt
 ```
 
 ### 3. Configure env

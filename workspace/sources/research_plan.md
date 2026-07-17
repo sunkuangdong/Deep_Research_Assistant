@@ -1,21 +1,20 @@
-# 调研计划
+# 调研计划：对比 LangGraph 与 AutoGen
 
-## 主题
-今日比特币涨幅情况
+## 目标
+全面调研并对比 LangGraph 和 AutoGen 两个框架，涵盖以下子主题：
 
-## 子主题拆解
-1. 今日比特币的最新价格及涨幅数据
-2. 今日比特币涨幅的主要驱动因素（如市场消息、政策影响、技术面等）
+1. 框架简介与定位
+2. 核心功能与技术架构
+3. 应用场景与优势
+4. 社区活跃度与生态支持
+5. 发展趋势与未来展望
 
-## 产出文件路径
-- /workspace/sources/findings_bitcoin_price.md
-- /workspace/sources/findings_bitcoin_factors.md
+## 子主题与产出路径
 
-调研完成后，若涉及数值对比和涨幅分析，委派 analyst 进行结构化分析，分析结果写入：
-- /workspace/sources/analysis_bitcoin.md
+- 框架简介与定位：/workspace/sources/findings_langgraph.md
+- 核心功能与技术架构：/workspace/sources/findings_autogen.md
+- 应用场景与优势：/workspace/sources/findings_langgraph.md
+- 社区活跃度与生态支持：/workspace/sources/findings_autogen.md
+- 发展趋势与未来展望：/workspace/sources/findings_langgraph.md
 
-最终报告草稿写入：
-- /workspace/reports/draft_bitcoin.md
-
-最终报告写入：
-- /workspace/reports/report_bitcoin_2026-07-14.md
+注：为避免文件混乱，LangGraph 相关内容统一写入 findings_langgraph.md，AutoGen 相关内容统一写入 findings_autogen.md。
