@@ -16,6 +16,8 @@ def get_model() -> ChatOpenAI:
         "model": model_name,
         "temperature": 0,
         "api_key": api_key,
+        # 流式调用时也返回 token 用量（astream_events 场景下统计成本需要）
+        "stream_usage": True,
     }
     if base_url:
         llm_kwargs["base_url"] = base_url

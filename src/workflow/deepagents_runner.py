@@ -311,6 +311,8 @@ async def run_deepagents_workflow(
             "editor_calls": delegation_budget.editor_calls,
             "analyst_call_limit": delegation_budget.max_analyst,
             "editor_call_limit": delegation_budget.max_editor,
+
+            "usage": run_result.usage,
         },
     )
 

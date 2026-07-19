@@ -1,20 +1,26 @@
-# 调研计划：对比 LangGraph 与 AutoGen
+# 调研计划：对比 RAG 与长上下文 LLM 在企业知识问答中的优劣
 
-## 目标
-全面调研并对比 LangGraph 和 AutoGen 两个框架，涵盖以下子主题：
+## 研究目标
+- 明确 RAG（Retrieval-Augmented Generation）和长上下文大语言模型（LLM）在企业知识问答场景中的定义和技术原理
+- 调研两者在企业知识问答中的应用现状和典型案例
+- 对比两者在准确性、响应速度、成本、扩展性、维护难度、用户体验等关键维度的优劣
+- 分析适用场景和未来发展趋势
 
-1. 框架简介与定位
-2. 核心功能与技术架构
-3. 应用场景与优势
-4. 社区活跃度与生态支持
-5. 发展趋势与未来展望
+## 子主题划分与产出路径
 
-## 子主题与产出路径
+1. RAG 技术及其在企业知识问答中的应用
+   - 产出文件：/workspace/sources/findings_rag.md
 
-- 框架简介与定位：/workspace/sources/findings_langgraph.md
-- 核心功能与技术架构：/workspace/sources/findings_autogen.md
-- 应用场景与优势：/workspace/sources/findings_langgraph.md
-- 社区活跃度与生态支持：/workspace/sources/findings_autogen.md
-- 发展趋势与未来展望：/workspace/sources/findings_langgraph.md
+2. 长上下文 LLM 技术及其在企业知识问答中的应用
+   - 产出文件：/workspace/sources/findings_longcontext_llm.md
 
-注：为避免文件混乱，LangGraph 相关内容统一写入 findings_langgraph.md，AutoGen 相关内容统一写入 findings_autogen.md。
+3. 两者对比分析
+   - 产出文件：/workspace/sources/analysis_rag_vs_longcontext_llm.md
+
+## 计划说明
+- 先委派两个 researcher 分别调研 RAG 和长上下文 LLM 的技术及应用
+- 结合调研结果，委派 analyst 进行结构化对比分析
+- 主 Agent 根据 findings 和 analysis 起草报告
+- 委派 editor 审阅，完成最终报告
+
+报告文件路径：/workspace/reports/report_rag_vs_longcontext_llm_2026-07-18.md

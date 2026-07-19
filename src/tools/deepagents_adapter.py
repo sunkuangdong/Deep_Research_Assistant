@@ -203,6 +203,7 @@ class DeepAgentRunOnceResult:
     final_text: str
     todos: list[dict[str, str]]
     todos_export_path: str
+    usage: dict[str, int]
 
 
 async def run_deep_agent_once(
@@ -225,6 +226,14 @@ async def run_deep_agent_once(
     export_path = Path(todos_export_path)
     export_todos_to_tmp_json(latest_todos, export_path)
 
+    # 累计整次运行（主 Agent + 所有 subagent）的 LLM 调用与 token 用量
+    usage_totals = {
+        "llm_calls": 0,
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "total_tokens": 0,
+    }
+
     try:
         async for event in agent.astream_events(
             {
@@ -242,6 +251,13 @@ async def run_deep_agent_once(
             event_type = event.get("event", "")
             name = event.get("name", "")
             data = event.get("data") or {}
+
+            if event_type in {"on_chat_model_end", "on_llm_end"}:
+                usage_totals["llm_calls"] += 1
+                usage = getattr(data.get("output"), "usage_metadata", None) or {}
+                usage_totals["input_tokens"] += int(usage.get("input_tokens") or 0)
+                usage_totals["output_tokens"] += int(usage.get("output_tokens") or 0)
+                usage_totals["total_tokens"] += int(usage.get("total_tokens") or 0)
 
             if event_type == "on_tool_start" and name == "write_todos":
                 extracted_todos = _extract_todos_from_payload(data)
@@ -270,4 +286,5 @@ async def run_deep_agent_once(
         final_text=final_text,
         todos=latest_todos,
         todos_export_path=str(export_path),
+        usage=usage_totals,
     )
