@@ -156,6 +156,7 @@ The following values are fixed by the current implementation or protocol:
 
 ```yaml
 temperature: 0
+reasoning_effort: none
 concurrency: 1
 search_call_limit: 6
 analyst_call_limit: 1

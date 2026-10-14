@@ -52,7 +52,7 @@ Why:
 | **LangGraph** (under DeepAgents) | Stateful agent loop; `astream_events` observability | Event stream is better than a single `ainvoke` for debugging “how many searches / what was written” |
 | **LangChain `AgentMiddleware`** | Intercept tool calls before execution (`wrap_tool_call`) | Prompts only *suggest*; middleware can **hard-deny** runaway tool use |
 | **`FilesystemBackend` (`virtual_mode`)** | `read_file` / `write_file` / `edit_file` / `ls` | Persist research notes; map paths under `/workspace/...` safely |
-| **OpenAI-compatible LLM** (default `gpt-4.1-mini`) | Reasoning & generation for all agents | Switch model / `max_input_tokens` via `.env`; comparison tasks need long context |
+| **OpenAI-compatible LLM** (default `gpt-6-luna`) | Reasoning & generation for all agents | Switch model / `max_input_tokens` via `.env`; comparison tasks need long context |
 | **Bocha `web_search`** | Web retrieval with source URLs | Simple API; works well as a LangChain `@tool` for research workflows |
 | **`SearchBudget`** | Shared search-call cap per run (default 6) | Agents rewrite similar queries; budget exhaustion is cheaper than unbounded API spend |
 | **`structured_calculator`** | Ranking / ratios / numeric ops for analyst | Keeps numeric conclusions reproducible instead of LLM “mental math” |
@@ -190,7 +190,7 @@ Filenames must use **lowercase ASCII slugs** (e.g. `findings_langgraph.md`).
 ### Stack
 
 - **Python 3** + `langchain` / `langgraph` / `deepagents`
-- **Model**: OpenAI-compatible API (default `gpt-4.1-mini` via `.env`)
+- **Model**: OpenAI-compatible API (default `gpt-6-luna` with `MODEL_REASONING_EFFORT=none` via `.env`)
 - **Search**: Bocha Web Search API
 - **Observability**: optional LangSmith
 - **Tests**: pytest contracts + manual guard script + live CLI regression

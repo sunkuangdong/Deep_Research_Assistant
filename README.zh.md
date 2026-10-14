@@ -55,7 +55,7 @@
 | **LangGraph**（DeepAgents 底层） | 状态机式执行 Agent 循环；支持 `astream_events` 流式观测 | 需要看清 model/tool 事件来调试空转；事件流比单次 `ainvoke` 更适合排查「搜了几次、写了什么」 |
 | **LangChain `AgentMiddleware`** | 在工具真正执行前拦截调用（`wrap_tool_call`） | Prompt 只能「建议」Agent 别乱搜、别重复委派；中间件能在**工具层硬拒绝**，把失控成本从「浪费 5 分钟」降到「立刻返回错误」 |
 | **`FilesystemBackend`（virtual_mode）** | 给 Agent 提供 `read_file` / `write_file` / `edit_file` / `ls` | Agent 需要持久化调研笔记；虚拟模式把路径统一映射到 `/workspace/...`，避免 Agent 写穿真实磁盘 |
-| **OpenAI 兼容 LLM**（默认 `gpt-4.1-mini`） | 主/子 Agent 的推理与生成 | 通过 `.env` 可切换模型与 `max_input_tokens`；对比类任务需要较长上下文读多份 findings |
+| **OpenAI 兼容 LLM**（默认 `gpt-6-luna`） | 主/子 Agent 的推理与生成 | 通过 `.env` 可切换模型与 `max_input_tokens`；对比类任务需要较长上下文读多份 findings |
 | **Bocha `web_search`** | 联网检索事实与来源 URL | 项目面向中文调研场景；Bocha 对中文查询和摘要较友好，API 简单，适合封装为 LangChain `@tool` |
 | **`SearchBudget` 包装搜索工具** | 整次运行共享搜索次数上限（默认 6 次） | 真实跑通过程中，Agent 容易对同一概念换词反复搜索；预算耗尽后直接返回提示，比无限 API 调用更可控 |
 | **`structured_calculator`** | analyst 做排名、占比等数值计算 | LLM 容易「手算」或编造数字；把数值结论交给确定性工具，analysis 才可复现 |
@@ -206,7 +206,7 @@ workspace/
 ### 技术栈
 
 - **Python 3** + `langchain` / `langgraph` / `deepagents`
-- **模型**：OpenAI 兼容 API（默认 `gpt-4.1-mini`，可通过 `.env` 配置）
+- **模型**：OpenAI 兼容 API（默认 `gpt-6-luna`，通过 `.env` 设置 `MODEL_REASONING_EFFORT=none`）
 - **搜索**：Bocha Web Search API
 - **可观测**：支持 LangSmith tracing（可选）
 - **测试**：`pytest` 契约测试 + 手动 guard 脚本 + CLI 真实任务回归
