@@ -1,32 +1,32 @@
 from __future__ import annotations
-from datetime import date
+
+from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from src.tools.deepagents_adapter import (
-    build_deep_agent,
-    run_deep_agent_once,
-    DeepAgentBuildConfig,
-    DEFAULT_TODOS_EXPORT_PATH,
-)
-from src.workflow.delegation_guard import DelegationLimitMiddleware
-
-from src.tools.lib.prompts import (
-    ORCHESTRATOR_SYSTEM_PROMPT,
-    DEEPAGENTS_ORCHESTRATION_GUARD,
-    RUNTIME_DELEGATION_GUARD,
-    RUNTIME_NO_ANALYSIS_GUARD,
-    RUNTIME_ANALYSIS_REQUIREMENT,
-    RESEARCHER_SYSTEM_PROMPT,
-    ANALYST_SYSTEM_PROMPT,
-    EDITOR_SYSTEM_PROMPT,
-)
 from langchain_core.tools import tool
-from src.tools.search import WebSearchInput, bocha_web_search
 
 from src.tools.calculator import structured_calculator
+from src.tools.deepagents_adapter import (
+    DEFAULT_TODOS_EXPORT_PATH,
+    DeepAgentBuildConfig,
+    build_deep_agent,
+    run_deep_agent_once,
+)
+from src.tools.lib.prompts import (
+    ANALYST_SYSTEM_PROMPT,
+    DEEPAGENTS_ORCHESTRATION_GUARD,
+    EDITOR_SYSTEM_PROMPT,
+    ORCHESTRATOR_SYSTEM_PROMPT,
+    RESEARCHER_SYSTEM_PROMPT,
+    RUNTIME_ANALYSIS_REQUIREMENT,
+    RUNTIME_DELEGATION_GUARD,
+    RUNTIME_NO_ANALYSIS_GUARD,
+)
+from src.tools.search import WebSearchInput, bocha_web_search
+from src.workflow.delegation_guard import DelegationLimitMiddleware
 
-from dataclasses import dataclass
 
 class SearchBudget:
     def __init__(self, max_calls: int):
@@ -40,14 +40,21 @@ class DelegationBudget:
         self.analyst_calls = 0
         self.editor_calls = 0
 
-def reset_workspace_run_artifacts() -> None:
+def reset_workspace_run_artifacts(
+    root_dir: Path | str = ".",
+    todos_export_path: Path | str | None = None,
+) -> None:
     """
     清理上一次运行留下的过程文件，避免 Agent 误用旧 findings / 旧计划。
     保留 README.md 与 .gitkeep。
     """
     keep_names = {".gitkeep", "README.md"}
 
-    for folder in (Path("workspace/sources"), Path("workspace/reports")):
+    root_path = Path(root_dir)
+    for folder in (
+        root_path / "workspace/sources",
+        root_path / "workspace/reports",
+    ):
         if not folder.exists():
             continue
 
@@ -56,8 +63,13 @@ def reset_workspace_run_artifacts() -> None:
                 continue
             file_path.unlink()
 
-    if DEFAULT_TODOS_EXPORT_PATH.exists():
-        DEFAULT_TODOS_EXPORT_PATH.unlink()
+    export_path = (
+        Path(todos_export_path)
+        if todos_export_path is not None
+        else root_path / DEFAULT_TODOS_EXPORT_PATH
+    )
+    if export_path.exists():
+        export_path.unlink()
 
 @dataclass(frozen=True)
 class DeepAgentsRunResult:
@@ -180,6 +192,8 @@ def build_deepagents_subagents(search_tool, no_analysis: bool = False, path_guar
 async def run_deepagents_workflow(
     topic: str,
     no_analysis: bool = False,
+    root_dir: Path | str = ".",
+    todos_export_path: Path | str | None = None,
 ) -> DeepAgentsRunResult:
     """
     运行官方 DeepAgents 工作流。
@@ -200,9 +214,15 @@ async def run_deepagents_workflow(
         block_artifact_rewrites=False,
     )
 
-    reset_workspace_run_artifacts()
+    root_path = Path(root_dir).resolve()
+    resolved_todos_path = (
+        Path(todos_export_path)
+        if todos_export_path is not None
+        else root_path / DEFAULT_TODOS_EXPORT_PATH
+    )
+    reset_workspace_run_artifacts(root_path, resolved_todos_path)
     system_prompt = build_deepagents_system_prompt(no_analysis=no_analysis)
-    run_date = date.today().isoformat()
+    run_date = datetime.now(UTC).date().isoformat()
     search_budget = SearchBudget(max_calls=6)
     search_tool = create_limited_web_search(search_budget)
 
@@ -216,7 +236,7 @@ async def run_deepagents_workflow(
     main_guard = DelegationLimitMiddleware(delegation_budget, block_artifact_rewrites=True)
 
     config = DeepAgentBuildConfig(
-        root_dir=".",
+        root_dir=str(root_path),
         skills=["./skills"],
         memory=["./AGENTS.md"],
         system_prompt=system_prompt,
@@ -286,7 +306,11 @@ async def run_deepagents_workflow(
             "draft, editor review, and final report."
         )
     
-    run_result = await run_deep_agent_once(agent, user_prompt)
+    run_result = await run_deep_agent_once(
+        agent,
+        user_prompt,
+        todos_export_path=resolved_todos_path,
+    )
 
     return DeepAgentsRunResult(
         final_text=run_result.final_text,

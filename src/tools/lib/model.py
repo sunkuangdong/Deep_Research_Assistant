@@ -1,7 +1,7 @@
 import os
-from langchain_openai import ChatOpenAI
-from langchain_core.language_models import ModelProfile
 
+from langchain_core.language_models import ModelProfile
+from langchain_openai import ChatOpenAI
 
 _SUPPORTED_REASONING_EFFORTS = {
     "none",
@@ -39,6 +39,7 @@ def get_model() -> ChatOpenAI:
     reasoning_effort = _resolve_reasoning_effort(model_name)
 
     max_input_tokens = int((os.getenv("MODEL_MAX_INPUT_TOKENS") or "131072").strip())
+    max_retries = int((os.getenv("MODEL_MAX_RETRIES") or "2").strip())
 
     llm_kwargs = {
         "model": model_name,
@@ -46,6 +47,7 @@ def get_model() -> ChatOpenAI:
         "api_key": api_key,
         # 流式调用时也返回 token 用量（astream_events 场景下统计成本需要）
         "stream_usage": True,
+        "max_retries": max_retries,
     }
     if base_url:
         llm_kwargs["base_url"] = base_url

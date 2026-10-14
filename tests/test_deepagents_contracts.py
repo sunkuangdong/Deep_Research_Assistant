@@ -195,29 +195,31 @@ def test_event_formatter_shows_web_search_query():
     assert "2023年省级GDP" in formatted
 
 
-def test_reset_workspace_run_artifacts_keeps_readme():
-    sources = Path("workspace/sources")
-    reports = Path("workspace/reports")
+def test_reset_workspace_run_artifacts_keeps_readme(tmp_path: Path):
+    sources = tmp_path / "workspace/sources"
+    reports = tmp_path / "workspace/reports"
     sources.mkdir(parents=True, exist_ok=True)
     reports.mkdir(parents=True, exist_ok=True)
 
     stale_source = sources / "stale_findings.md"
     stale_report = reports / "stale_report.md"
+    readme = sources / "README.md"
     stale_source.write_text("stale", encoding="utf-8")
     stale_report.write_text("stale", encoding="utf-8")
+    readme.write_text("keep", encoding="utf-8")
 
-    tmp_json = Path("tmp.json")
+    tmp_json = tmp_path / "tmp.json"
     tmp_json.write_text(
         '{"todos":[{"content":"old","status":"pending"}]}',
         encoding="utf-8",
     )
 
-    reset_workspace_run_artifacts()
+    reset_workspace_run_artifacts(tmp_path, tmp_json)
 
-    assert not stale_source.exists()
+    assert readme.exists()
     assert not stale_report.exists()
     assert not tmp_json.exists()
-    assert (sources / "README.md").exists() or (Path("workspace/README.md")).exists()
+    assert not stale_source.exists()
 
 
 def test_export_todos_to_tmp_json_matches_teacher_shape(tmp_path: Path):
