@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -32,13 +33,36 @@ class SearchBudget:
     def __init__(self, max_calls: int):
         self.max_calls = max_calls
         self.call_count = 0
+        self.retrieved_source_urls: set[str] = set()
+        self.queries: list[dict[str, Any]] = []
+
+
+SEARCH_RESULT_URL_RE = re.compile(
+    r"^\s*URL:\s*(https?://\S+)\s*$", re.IGNORECASE | re.MULTILINE
+)
+
+
+def extract_search_result_urls(result: str) -> set[str]:
+    """Extract only explicit result URL fields, excluding summary and icon URLs."""
+
+    return {match.group(1) for match in SEARCH_RESULT_URL_RE.finditer(result)}
     
 class DelegationBudget:
-    def __init__(self, max_analyst: int = 1, max_editor: int = 1):
+    def __init__(
+        self,
+        max_researcher: int = 3,
+        max_analyst: int = 1,
+        max_editor: int = 1,
+        max_draft_edits: int = 1,
+    ):
+        self.max_researcher = max_researcher
         self.max_analyst = max_analyst
         self.max_editor = max_editor
+        self.max_draft_edits = max_draft_edits
+        self.researcher_calls = 0
         self.analyst_calls = 0
         self.editor_calls = 0
+        self.draft_edit_calls = 0
 
 def reset_workspace_run_artifacts(
     root_dir: Path | str = ".",
@@ -95,13 +119,16 @@ def create_limited_web_search(search_budget: SearchBudget) -> Any:
             )
         search_budget.call_count += 1
         safe_count = min(count, 5)
+        search_budget.queries.append({"query": query, "count": safe_count})
 
         print(
             f"  🔎 搜索[{search_budget.call_count}/{search_budget.max_calls}]: "
             f"{query}（{safe_count} 条）"
         )
         
-        return await bocha_web_search(query, safe_count)
+        result = await bocha_web_search(query, safe_count)
+        search_budget.retrieved_source_urls.update(extract_search_result_urls(result))
+        return result
 
     return limited_web_search
 
@@ -130,7 +157,27 @@ def build_deepagents_system_prompt(no_analysis: bool = False) -> str:
 
     return "\n\n".join(sections)
 
-def build_deepagents_subagents(search_tool, no_analysis: bool = False, path_guard = None) -> list[Any]:
+def _subagent_language_instruction(output_language: str) -> str:
+    if output_language == "zh":
+        return (
+            "\n\n[本次运行语言硬约束]\n"
+            "- 用户使用中文提问。你的回复、研究或分析内容、审阅意见及写入文件必须使用中文。\n"
+            "- 专有名词、模型名、库名和 URL 可以保留原文。"
+        )
+    return (
+        "\n\n[Run Language Constraint]\n"
+        "- The user asked in English. Your response, research or analysis content, "
+        "review comments, and every file you write MUST be in English.\n"
+        "- Proper nouns, model names, library names, and URLs may remain unchanged."
+    )
+
+
+def build_deepagents_subagents(
+    search_tool,
+    no_analysis: bool = False,
+    path_guard=None,
+    output_language: str = "en",
+) -> list[Any]:
     """
     构建 DeepAgents 官方 subagents。
     researcher:
@@ -141,6 +188,7 @@ def build_deepagents_subagents(search_tool, no_analysis: bool = False, path_guar
         负责审阅草稿，不直接联网。
     """
     subagent_middleware = [path_guard] if path_guard is not None else []
+    language_instruction = _subagent_language_instruction(output_language)
     subagents = [
         {
             "name": "researcher",
@@ -150,6 +198,7 @@ def build_deepagents_subagents(search_tool, no_analysis: bool = False, path_guar
             ),
             "system_prompt": (
                 RESEARCHER_SYSTEM_PROMPT.strip()
+                + language_instruction
                 + "\n\n[Search Budget]\n"
                 + "- You may call web_search at most 2 times for one delegated subtopic.\n"
                 + "- Use focused queries, not many small wording variations.\n"
@@ -170,7 +219,7 @@ def build_deepagents_subagents(search_tool, no_analysis: bool = False, path_guar
                     "It must compare findings, identify trade-offs, separate facts "
                     "from assumptions, and assess uncertainty."
                 ),
-                "system_prompt": ANALYST_SYSTEM_PROMPT,
+                "system_prompt": ANALYST_SYSTEM_PROMPT + language_instruction,
                 "tools": [structured_calculator],
                 "middleware": subagent_middleware,
             }
@@ -182,7 +231,7 @@ def build_deepagents_subagents(search_tool, no_analysis: bool = False, path_guar
                 "Use this subagent to review the draft report for clarity, "
                 "consistency, evidence quality, and completeness."
             ),
-            "system_prompt": EDITOR_SYSTEM_PROMPT,
+            "system_prompt": EDITOR_SYSTEM_PROMPT + language_instruction,
             "tools": [],
         }
     )
@@ -195,6 +244,7 @@ async def run_deepagents_workflow(
     root_dir: Path | str = ".",
     todos_export_path: Path | str | None = None,
     callbacks: list[Any] | None = None,
+    run_date: str | None = None,
 ) -> DeepAgentsRunResult:
     """
     运行官方 DeepAgents 工作流。
@@ -209,9 +259,16 @@ async def run_deepagents_workflow(
     """
 
     clean_topic = (topic or "").strip()
+    use_chinese = any("\u4e00" <= ch <= "\u9fff" for ch in clean_topic)
+    output_language = "zh" if use_chinese else "en"
 
     path_guard = DelegationLimitMiddleware(
-        DelegationBudget(max_analyst=0, max_editor=0),
+        DelegationBudget(
+            max_researcher=0,
+            max_analyst=0,
+            max_editor=0,
+            max_draft_edits=0,
+        ),
         block_artifact_rewrites=False,
     )
 
@@ -223,7 +280,7 @@ async def run_deepagents_workflow(
     )
     reset_workspace_run_artifacts(root_path, resolved_todos_path)
     system_prompt = build_deepagents_system_prompt(no_analysis=no_analysis)
-    run_date = datetime.now(UTC).date().isoformat()
+    effective_run_date = run_date or datetime.now().astimezone().date().isoformat()
     search_budget = SearchBudget(max_calls=6)
     search_tool = create_limited_web_search(search_budget)
 
@@ -231,9 +288,15 @@ async def run_deepagents_workflow(
         search_tool,
         no_analysis=no_analysis,
         path_guard=path_guard,
+        output_language=output_language,
     )
 
-    delegation_budget = DelegationBudget(max_analyst=1, max_editor=1)
+    delegation_budget = DelegationBudget(
+        max_researcher=3,
+        max_analyst=1,
+        max_editor=1,
+        max_draft_edits=1,
+    )
     main_guard = DelegationLimitMiddleware(delegation_budget, block_artifact_rewrites=True)
 
     config = DeepAgentBuildConfig(
@@ -250,12 +313,10 @@ async def run_deepagents_workflow(
 
     agent = build_deep_agent(config)
 
-    # 粗粒度语言跟随：主题含中日韩汉字 → 中文指令；否则英文指令。
-    use_chinese = any("\u4e00" <= ch <= "\u9fff" for ch in clean_topic)
     if use_chinese:
         user_prompt = (
             f"请围绕这个主题完成调研并给出最终报告：{clean_topic}\n\n"
-            f"运行日期：{run_date}。报告文件名中的日期必须使用这个运行日期，禁止自行编造日期。\n"
+            f"运行日期：{effective_run_date}。报告文件名中的日期必须使用这个运行日期，禁止自行编造日期。\n"
             "【语言】用户用中文提问，因此 todo、findings、analysis、draft、report、最终回复都必须使用中文；"
             "专有名词与 URL 可保留原文。\n"
             "【文件名约定】slug 必须全小写 ASCII（[a-z0-9_]+）；"
@@ -274,6 +335,7 @@ async def run_deepagents_workflow(
             "researcher 写完 findings 后禁止主 Agent 再改 findings；"
             "analyst 最多调用 1 次，写完 analysis 后禁止主 Agent 再改 analysis；"
             "editor 最多调用 1 次；editor 返回后最多修订 draft 一次，然后必须立刻写入 final report 并结束；"
+            "整个运行最多调用 1 次 edit_file 修改 draft；必须把所有修改合并到这一次调用中，禁止拆成多次 edit_file；"
             "禁止二次委派 editor，禁止在 draft 上反复 edit/read 空转；"
             "禁止委派 general-purpose；报告起草必须由主 Agent 自己完成；"
             "必须完成 question、research_plan、findings、analysis（如涉及对比/数值）、draft、editor 审阅和 final report。"
@@ -281,7 +343,7 @@ async def run_deepagents_workflow(
     else:
         user_prompt = (
             f"Please research this topic and produce a final report: {clean_topic}\n\n"
-            f"Run date: {run_date}. The date in the report filename MUST use this run date; do not invent dates.\n"
+            f"Run date: {effective_run_date}. The date in the report filename MUST use this run date; do not invent dates.\n"
             "[Language] The user asked in English, so todos, findings, analysis, draft, report, "
             "and the final reply MUST be in English. Keep proper nouns and URLs in original form when appropriate.\n"
             "[Filename rules] slug must be lowercase ASCII ([a-z0-9_]+); "
@@ -301,6 +363,7 @@ async def run_deepagents_workflow(
             "after researcher writes findings, the main agent must not rewrite findings; "
             "analyst at most once; after analysis is written, the main agent must not rewrite analysis; "
             "editor at most once; after editor returns, revise draft at most once, then write the final report and stop; "
+            "across the entire run, call edit_file on the draft at most once; combine all draft changes into that single call; "
             "do not re-delegate editor; do not loop on edit/read of draft; "
             "do not delegate general-purpose; the main agent must draft the report; "
             "you must complete question, research_plan, findings, analysis (if comparison/numeric), "
@@ -323,9 +386,11 @@ async def run_deepagents_workflow(
             "subagents": [x["name"] for x in subagents],
             "no_analysis": no_analysis,
             "analysis_enabled": not no_analysis,
-            "run_date": run_date,
+            "run_date": effective_run_date,
             "search_calls": search_budget.call_count,
             "search_call_limit": search_budget.max_calls,
+            "search_queries": search_budget.queries,
+            "retrieved_source_urls": sorted(search_budget.retrieved_source_urls),
             "workspace": "/workspace",
             "workspace_sources": "/workspace/sources",
             "workspace_reports": "/workspace/reports",
@@ -333,10 +398,14 @@ async def run_deepagents_workflow(
             "todos": run_result.todos,
             "todos_export_path": run_result.todos_export_path,
 
+            "researcher_calls": delegation_budget.researcher_calls,
             "analyst_calls": delegation_budget.analyst_calls,
             "editor_calls": delegation_budget.editor_calls,
+            "draft_edit_calls": delegation_budget.draft_edit_calls,
+            "researcher_call_limit": delegation_budget.max_researcher,
             "analyst_call_limit": delegation_budget.max_analyst,
             "editor_call_limit": delegation_budget.max_editor,
+            "draft_edit_call_limit": delegation_budget.max_draft_edits,
 
             "usage": run_result.usage,
         },

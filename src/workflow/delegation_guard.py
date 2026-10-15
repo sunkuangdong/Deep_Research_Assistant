@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from langchain.agents.middleware import AgentMiddleware
 from langchain_core.messages import ToolMessage
@@ -9,13 +10,14 @@ from langgraph.prebuilt.tool_node import ToolCallRequest
 
 # findings_langgraph.md / analysis_langgraph_vs_autogen.md
 ARTIFACT_FILENAME_RE = re.compile(r"^(findings|analysis)_[a-z0-9][a-z0-9_-]*\.md$")
+DRAFT_FILENAME_RE = re.compile(r"^draft_[a-z0-9][a-z0-9_-]*\.md$")
 
 
 class DelegationLimitMiddleware(AgentMiddleware):
     """
     硬限制主 Agent 的 task 委派次数：
-    - analyst 最多 N 次
-    - editor 最多 M 次
+    - researcher / analyst / editor 各自最多允许 N 次
+    - draft 最多允许配置数量的 edit_file 调用
     超限时不真正调用子 Agent，直接返回拒绝 ToolMessage。
     同时校验 findings_/analysis_ 的路径与小写 slug 文件名。
     """
@@ -42,7 +44,7 @@ class DelegationLimitMiddleware(AgentMiddleware):
         raw_filename = normalized.rsplit("/", 1)[-1]
         filename = raw_filename.lower()
 
-        is_artifact = filename.startswith("findings_") or filename.startswith("analysis_")
+        is_artifact = filename.startswith(("findings_", "analysis_"))
 
         if not is_artifact:
             return None
@@ -81,7 +83,41 @@ class DelegationLimitMiddleware(AgentMiddleware):
         normalized = file_path.replace("\\", "/")
         name = normalized.rsplit("/", 1)[-1].lower()
 
-        return name.startswith("findings_") or name.startswith("analysis_")
+        return name.startswith(("findings_", "analysis_"))
+
+    def _is_draft_file(self, file_path: str) -> bool:
+        normalized = file_path.replace("\\", "/")
+        filename = normalized.rsplit("/", 1)[-1]
+        in_reports = "/workspace/reports/" in normalized or normalized.startswith(
+            "workspace/reports/"
+        )
+        return in_reports and bool(DRAFT_FILENAME_RE.match(filename))
+
+    def _count_or_reject(
+        self,
+        *,
+        counter_name: str,
+        limit_name: str,
+        label: str,
+        tool_call_id: str,
+        tool_name: str,
+        guidance: str,
+    ) -> ToolMessage | None:
+        calls = int(getattr(self.budget, counter_name, 0)) + 1
+        setattr(self.budget, counter_name, calls)
+        limit = int(getattr(self.budget, limit_name, 0))
+        if calls <= limit:
+            return None
+        action = "委派" if tool_name == "task" else "调用"
+        return ToolMessage(
+            content=(
+                f"{action}被拒绝：{label} 最多允许 {limit} 次，本次是第 {calls} 次尝试。"
+                f"{guidance}"
+            ),
+            tool_call_id=tool_call_id,
+            name=tool_name,
+            status="error",
+        )
     
     def _check_or_reject(self, request: ToolCallRequest) -> ToolMessage | None:
         tool_call = request.tool_call or {}
@@ -101,37 +137,46 @@ class DelegationLimitMiddleware(AgentMiddleware):
                     name=name,
                     status="error",
                 )
+            if name == "edit_file" and self._is_draft_file(file_path):
+                return self._count_or_reject(
+                    counter_name="draft_edit_calls",
+                    limit_name="max_draft_edits",
+                    label="draft edit_file",
+                    tool_call_id=tool_call_id,
+                    tool_name=name,
+                    guidance="请一次性完成草稿修订，然后写入 final report。",
+                )
             return None
         if name == "task":
             subagent_type = args.get("subagent_type") or args.get("subagent") or ""
 
-            if subagent_type == "analyst":
-                if self.budget.analyst_calls >= self.budget.max_analyst:
-                    return ToolMessage(
-                        content=(
-                            f"委派被拒绝：analyst 最多允许 {self.budget.max_analyst} 次。"
-                            "请基于已有 analysis 继续起草 draft，不要再次委派 analyst。"
-                        ),
-                        tool_call_id=tool_call_id,
-                        name="task",
-                        status="error",
-                    )
-                self.budget.analyst_calls += 1
-                return None
-            
-            if subagent_type == "editor":
-                if self.budget.editor_calls >= self.budget.max_editor:
-                    return ToolMessage(
-                        content=(
-                            f"委派被拒绝：editor 最多允许 {self.budget.max_editor} 次。"
-                            "请根据已有审阅意见修订 draft，并立刻写入 final report。"
-                        ),
-                        tool_call_id=tool_call_id,
-                        name="task",
-                        status="error",
-                    )
-                self.budget.editor_calls += 1
-                return None
+            task_limits = {
+                "researcher": (
+                    "researcher_calls",
+                    "max_researcher",
+                    "请使用已有 findings 继续后续流程。",
+                ),
+                "analyst": (
+                    "analyst_calls",
+                    "max_analyst",
+                    "请基于已有 analysis 继续起草 draft，不要再次委派 analyst。",
+                ),
+                "editor": (
+                    "editor_calls",
+                    "max_editor",
+                    "请根据已有审阅意见修订 draft，并立刻写入 final report。",
+                ),
+            }
+            if subagent_type in task_limits:
+                counter_name, limit_name, guidance = task_limits[subagent_type]
+                return self._count_or_reject(
+                    counter_name=counter_name,
+                    limit_name=limit_name,
+                    label=subagent_type,
+                    tool_call_id=tool_call_id,
+                    tool_name="task",
+                    guidance=guidance,
+                )
         
         return None
 

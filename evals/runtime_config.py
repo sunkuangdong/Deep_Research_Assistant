@@ -48,7 +48,7 @@ def capture_runtime_config(
 ) -> dict[str, object]:
     base_url = sanitize_base_url(os.getenv("OPENAI_BASE_URL"))
     return {
-        "protocol_version": "1.0.0-draft",
+        "protocol_version": "1.2.0-draft",
         "dataset_version": "v1",
         "dataset_path": str(dataset_path.relative_to(project_root)),
         "dataset_sha256": dataset_sha256(dataset_path),
@@ -63,8 +63,10 @@ def capture_runtime_config(
         "max_provider_retries": int(os.getenv("MODEL_MAX_RETRIES") or "2"),
         "concurrency": 1,
         "search_call_limit": 6,
+        "researcher_call_limit": 3,
         "analyst_call_limit": 1,
         "editor_call_limit": 1,
+        "draft_edit_call_limit": 1,
         "langfuse_tracing_enabled": langfuse_tracing_enabled(),
         "langfuse_environment": (
             os.getenv("LANGFUSE_TRACING_ENVIRONMENT") or "default"

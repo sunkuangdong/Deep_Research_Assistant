@@ -102,6 +102,24 @@ class CaseTrace:
                 value=float(score.get("citation_count") or 0),
                 data_type="NUMERIC",
             )
+            if "language_compliance" in score:
+                self.span.score_trace(
+                    name="language_compliance",
+                    value=1 if score.get("language_compliance") else 0,
+                    data_type="BOOLEAN",
+                )
+            if score.get("report_date_compliance") is not None:
+                self.span.score_trace(
+                    name="report_date_compliance",
+                    value=1 if score.get("report_date_compliance") else 0,
+                    data_type="BOOLEAN",
+                )
+            for check_name, passed in (score.get("source_link_checks") or {}).items():
+                self.span.score_trace(
+                    name=f"source_{check_name}",
+                    value=1 if passed else 0,
+                    data_type="BOOLEAN",
+                )
             for budget_name, passed in (score.get("budget_checks") or {}).items():
                 self.span.score_trace(
                     name=f"{budget_name}_budget_compliance",

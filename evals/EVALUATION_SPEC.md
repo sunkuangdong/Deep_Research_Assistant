@@ -1,7 +1,7 @@
 # Deep Research Assistant Evaluation Protocol
 
 - **Status:** DRAFT
-- **Version:** 1.0.0
+- **Version:** 1.2.0
 - **Protocol Owner:** Kuangdong Sun
 - **Dataset Version:** v1
 - **Last Updated:** 2026-10-14
@@ -28,7 +28,9 @@ non-isolated architecture.
 - A stratified ten-task repeated-run stability subset
 - Workflow completion rate
 - Artifact completeness
-- Search and delegation budget compliance
+- Output-language compliance across required artifacts, todos, and final reply
+- Citation URL syntax, evidence provenance, and in-run retrieval checks
+- Search, researcher, analyst, editor, and draft-edit budget compliance
 - Input, output, and total token usage
 - Model-call, search-call, analyst-call, and editor-call counts
 - End-to-end latency
@@ -101,9 +103,13 @@ A task is `completed` only when all of the following are true:
 3. Every artifact required by the test case exists.
 4. Artifact paths comply with the configured workspace path and filename
    rules.
-5. Search, analyst, and editor call limits are not exceeded.
+5. Search, researcher, analyst, editor, and draft-edit call limits are not exceeded.
 6. The final report contains every case-specific required section.
 7. The final report meets the case-specific minimum citation count.
+8. Required artifacts, todos, and the final reply follow the case language.
+9. Every report citation is a valid HTTP(S) URL, appears in findings or analysis,
+   and was returned by a successful search during the same run.
+10. The final report filename ends with the explicitly recorded run date.
 
 A task that violates any condition is not completed, even if it returns a
 natural-language final response.
@@ -127,8 +133,12 @@ natural-language final response.
 - Output tokens
 - Model-call count
 - Search-call count
+- Researcher-call count
 - Analyst-call count
 - Editor-call count
+- Draft-edit call count
+- Language-violation paths
+- Citations missing evidence provenance or in-run retrieval evidence
 - Failure type and failed stage
 
 ### Stability Metrics
@@ -159,8 +169,10 @@ temperature: 0
 reasoning_effort: none
 concurrency: 1
 search_call_limit: 6
+researcher_call_limit: 3
 analyst_call_limit: 1
 editor_call_limit: 1
+draft_edit_call_limit: 1
 ```
 
 The following values must be captured in the frozen protocol and every live
@@ -172,6 +184,7 @@ model_name: <record before freeze>
 model_base_url: <record without credentials>
 model_max_input_tokens: <record before freeze>
 timeout_seconds: <record after smoke runs>
+run_date: <explicit YYYY-MM-DD value>
 max_provider_retries: 2
 ```
 
@@ -230,6 +243,10 @@ from `raw_runs.jsonl`. Every result set records:
   may not be perfectly reproducible.
 - Structural completion and citation counts do not establish factual
   correctness or citation support quality.
+- In-run retrieval proves that a URL was returned by the configured search
+  provider, not that every claim is entailed by that page. HTTP reachability is
+  not a completion gate because transient 403, rate-limit, and timeout responses
+  would make the benchmark non-deterministic.
 - The 30-task benchmark is a portfolio-scale descriptive evaluation, not a
   production service-level guarantee.
 

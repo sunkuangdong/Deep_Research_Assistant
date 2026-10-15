@@ -21,6 +21,15 @@ LANGUAGE_POLICY = """
         - 报告语言应专业、清晰、结构化。
 """
 
+SOURCE_PROVENANCE_POLICY = """
+    ## 来源 URL 可追溯性（强制）
+        - 只能引用本次运行 `web_search` 输出中明确标为 `URL:` 的完整 URL。
+        - URL 必须逐字复制；禁止凭模型记忆补写链接、替换路径、改成规范地址或添加未返回的来源。
+        - 摘要正文、网站图标或模型已有知识中出现的 URL，不属于可引用的搜索结果。
+        - 如果需要的官方页面没有返回，应使用带官方域名的定向查询再次搜索；仍未返回就标注未检索到，禁止引用该 URL。
+        - analyst、editor 和主 Agent 只能复用 findings 中已经按上述规则记录的 URL，禁止新增来源 URL。
+"""
+
 RESEARCHER_SYSTEM_PROMPT = """
     你是一名专业调研员，负责调研**一个**分配给你的子主题，并写入**一份**调研结果文件。
     ## 工作边界
@@ -28,7 +37,7 @@ RESEARCHER_SYSTEM_PROMPT = """
         - 不要调研多个不相关主题。
         - 不要替主 Agent 写最终报告。
         - 不要调用 analyst 或 editor。
-""" + LANGUAGE_POLICY + FILENAME_CONVENTION + """
+""" + LANGUAGE_POLICY + SOURCE_PROVENANCE_POLICY + FILENAME_CONVENTION + """
     ## 工作流程（严格遵守，禁止空转循环）
         1. 可选：使用 write_todos 列出最多 3 条执行步骤（语言跟随用户）。
         2. 最多调用 3 次 web_search。
@@ -61,7 +70,7 @@ EDITOR_SYSTEM_PROMPT = """
     - 不要调用 web_search。
     - 不要写入、改写或覆盖报告文件。
     - 不要替主 Agent 执行 edit_file。
-""" + LANGUAGE_POLICY + """
+""" + LANGUAGE_POLICY + SOURCE_PROVENANCE_POLICY + """
     ## 阅读材料
 
     根据任务要求读取：
@@ -128,7 +137,7 @@ ANALYST_SYSTEM_PROMPT = """
     - 你不负责联网搜索。
     - 你不负责起草最终报告。
     - 你只负责分析 findings、analysis 输入或任务中提供的数据。
-""" + LANGUAGE_POLICY + FILENAME_CONVENTION + """
+""" + LANGUAGE_POLICY + SOURCE_PROVENANCE_POLICY + FILENAME_CONVENTION + """
     ## 计算规则
 
     - 涉及求和、平均值、排名、占比、增长率等数值结论时，必须调用 structured_calculator。
@@ -196,7 +205,7 @@ ANALYST_SYSTEM_PROMPT = """
 
 ORCHESTRATOR_SYSTEM_PROMPT = """
     你是「深度调研助手」的主 Agent，负责协调调研员、分析师和编辑，产出高质量调研报告。
-""" + LANGUAGE_POLICY + """
+""" + LANGUAGE_POLICY + SOURCE_PROVENANCE_POLICY + """
     ## 你的职责
     你负责整体流程编排，不要亲自完成所有调研工作。复杂任务应委派给子 Agent：
         - researcher：负责单一子主题调研。
@@ -257,7 +266,8 @@ ORCHESTRATOR_SYSTEM_PROMPT = """
         - analyst 写完 analysis 后，主 Agent 禁止再次 write_file / edit_file 改写 analysis。
         - 主 Agent 对 analysis 只允许 read_file 一次，然后立即起草 draft。
         - 禁止对同一文件连续多次 edit_file / write_file / read_file。
-        - draft 只允许：write_file 一次创建 → editor 审阅一次 → 最多 edit_file 一次修订 → 立即 write_file 写入 final report。
+        - draft 只允许：write_file 一次创建 → editor 审阅一次 → 整个运行最多调用一次 edit_file → 立即 write_file 写入 final report。
+        - “修订一次”严格指一次 edit_file 工具调用；必须将 editor 的全部修改建议合并到同一次替换中，禁止拆成多个 edit_file 调用。
         - editor 返回后，禁止再次委派 editor。
         - editor 返回后，下一步必须是写入 `/workspace/reports/report_*.md`，然后结束。
         - 每个阶段只做一次：规划 → 调研 → 分析 → 起草 → 审阅 → 定稿。
@@ -372,6 +382,6 @@ RUNTIME_DELEGATION_GUARD = """
     - 禁止委派 general-purpose。
     - researcher 完成后，主 Agent 禁止重写 findings；直接进入分析或起草。
     - analyst 完成后，主 Agent 禁止重写 analysis；直接读取后起草 draft。
-    - editor 返回后，主 Agent 最多修订 draft 一次，然后必须立刻写入 final report 并结束。
+    - editor 返回后，整个运行最多调用一次 edit_file 修订 draft；必须合并所有修改，之后必须立刻写入 final report 并结束。
     - 读取文件前优先 ls；只使用真实存在的 findings_*.md / analysis_*.md，禁止臆造别名。
 """

@@ -44,12 +44,27 @@ Run the two-case cost-gate smoke after reviewing the cases:
 python -m evals.run_deep_research \
   --case-id dr-smoke-001 \
   --case-id dr-smoke-006 \
+  --run-date 2026-10-14 \
   --timeout-seconds 900
 ```
 
 The runner creates an isolated workspace per case, records a credential-free
 `config.json`, and appends every outcome to `raw_runs.jsonl`. A failed or timed
 out case is preserved rather than silently replaced.
+
+The deterministic acceptance checks cover:
+
+- required artifacts, paths, report sections, and citation count;
+- output-language compliance for artifacts, todos, and the final reply;
+- search, researcher, analyst, editor, and draft-edit call limits;
+- citation URL syntax, provenance in findings/analysis, and confirmation that
+  the URL was returned by the configured search provider during the same run.
+- exact report-filename agreement with the explicitly captured run date.
+
+The source check intentionally does not issue a second HTTP request for every
+URL. Transient 403, rate-limit, and timeout responses would make completion
+non-deterministic; in-run search retrieval is recorded as the reproducible
+evidence boundary instead.
 
 ## Optional Langfuse Tracing
 

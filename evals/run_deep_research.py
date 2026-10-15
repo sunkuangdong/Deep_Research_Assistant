@@ -7,7 +7,7 @@ import os
 import re
 import shutil
 import time
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 from typing import Any
 
@@ -28,6 +28,16 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 def _safe_name(value: str) -> str:
     return re.sub(r"[^a-zA-Z0-9_.-]+", "_", value).strip("_") or "unknown"
+
+
+def _iso_date(value: str) -> str:
+    try:
+        parsed = date.fromisoformat(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("run date must be YYYY-MM-DD") from exc
+    if parsed.isoformat() != value:
+        raise argparse.ArgumentTypeError("run date must be YYYY-MM-DD")
+    return value
 
 
 def _redact_error(exc: BaseException) -> str:
@@ -81,6 +91,7 @@ async def _run_case(
     *,
     trace_metadata: dict[str, Any] | None = None,
     trace_session_id: str | None = None,
+    run_date: str | None = None,
 ) -> dict[str, Any]:
     case_root = result_dir / "workspaces" / case["id"]
     _prepare_run_root(case_root)
@@ -108,11 +119,15 @@ async def _run_case(
                     root_dir=case_root,
                     todos_export_path=case_root / "tmp.json",
                     callbacks=case_trace.callbacks,
+                    run_date=run_date,
                 ),
                 timeout=timeout_seconds,
             )
             score = score_workspace(
-                case_root / "workspace", case, workflow_result.metadata
+                case_root / "workspace",
+                case,
+                workflow_result.metadata,
+                final_text=workflow_result.final_text,
             )
             base_result.update(
                 {
@@ -168,12 +183,18 @@ def _write_summary(result_dir: Path, results: list[dict[str, Any]]) -> None:
         usage = (result.get("metadata") or {}).get("usage") or {}
         score = result.get("score") or {}
         rows.append(
-            "| {case_id} | {status} | {latency_ms} | {tokens} | {citations} |".format(
+            "| {case_id} | {status} | {latency_ms} | {tokens} | {citations} | {language} | {sources} |".format(
                 case_id=result["case_id"],
                 status=result["status"],
                 latency_ms=result["latency_ms"],
                 tokens=usage.get("total_tokens", "n/a"),
                 citations=score.get("citation_count", "n/a"),
+                language=score.get("language_compliance", "n/a"),
+                sources=(
+                    all((score.get("source_link_checks") or {}).values())
+                    if score.get("source_link_checks")
+                    else "n/a"
+                ),
             )
         )
     report = "\n".join(
@@ -184,8 +205,8 @@ def _write_summary(result_dir: Path, results: list[dict[str, Any]]) -> None:
             f"- Dataset SHA-256: `{config['dataset_sha256']}`",
             f"- Completed: {completed}/{len(results)}",
             "",
-            "| Case | Status | Latency (ms) | Total tokens | Citations |",
-            "| --- | --- | ---: | ---: | ---: |",
+            "| Case | Status | Latency (ms) | Total tokens | Citations | Language | Sources |",
+            "| --- | --- | ---: | ---: | ---: | --- | --- |",
             *rows,
             "",
             "Cost and aggregate token/latency statistics are intentionally deferred to phase 6.",
@@ -222,6 +243,7 @@ async def async_main(args: argparse.Namespace) -> int:
     result_dir.mkdir(parents=True, exist_ok=False)
 
     config = capture_runtime_config(PROJECT_ROOT, dataset_path, args.timeout_seconds)
+    config["run_date"] = args.run_date
     config["selected_case_ids"] = [case["id"] for case in cases]
     config["run_type"] = "smoke" if "smoke" in dataset_path.stem else "main"
     (result_dir / "config.json").write_text(
@@ -238,6 +260,7 @@ async def async_main(args: argparse.Namespace) -> int:
             "provider",
             "model_name",
             "run_type",
+            "run_date",
         )
     }
     results: list[dict[str, Any]] = []
@@ -251,6 +274,7 @@ async def async_main(args: argparse.Namespace) -> int:
                 args.timeout_seconds,
                 trace_metadata=trace_metadata,
                 trace_session_id=result_dir.name,
+                run_date=args.run_date,
             )
             _append_jsonl(raw_path, result)
             results.append(result)
@@ -275,6 +299,12 @@ def main() -> int:
     )
     parser.add_argument("--case-id", action="append", help="Run only this case; repeatable")
     parser.add_argument("--timeout-seconds", type=int, default=900)
+    parser.add_argument(
+        "--run-date",
+        type=_iso_date,
+        default=datetime.now().astimezone().date().isoformat(),
+        help="Report date in YYYY-MM-DD format; defaults to the local calendar date",
+    )
     parser.add_argument("--result-dir")
     args = parser.parse_args()
     if args.timeout_seconds <= 0:

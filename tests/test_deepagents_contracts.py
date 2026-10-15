@@ -14,8 +14,10 @@ from src.workflow.deepagents_runner import (
     build_deepagents_subagents,
     build_deepagents_system_prompt,
     create_limited_web_search,
+    extract_search_result_urls,
     reset_workspace_run_artifacts,
 )
+
 
 def test_web_research_skill_exists():
     path = Path("skills/web-research/SKILL.md")
@@ -66,18 +68,26 @@ def test_deepagents_prompt_no_analysis_guard():
 
 def test_subagents_with_analysis():
     search_tool = create_limited_web_search(SearchBudget(max_calls=2))
-    subagents = build_deepagents_subagents(search_tool, no_analysis=False)
+    subagents = build_deepagents_subagents(
+        search_tool, no_analysis=False, output_language="en"
+    )
 
     assert [x["name"] for x in subagents] == ["researcher", "analyst", "editor"]
     assert subagents[0]["tools"][0].name == "web_search"
     assert [tool.name for tool in subagents[1]["tools"]] == ["structured_calculator"]
+    for subagent in subagents:
+        assert "every file you write MUST be in English" in subagent["system_prompt"]
 
 
 def test_subagents_without_analysis():
     search_tool = create_limited_web_search(SearchBudget(max_calls=2))
-    subagents = build_deepagents_subagents(search_tool, no_analysis=True)
+    subagents = build_deepagents_subagents(
+        search_tool, no_analysis=True, output_language="zh"
+    )
 
     assert [x["name"] for x in subagents] == ["researcher", "editor"]
+    for subagent in subagents:
+        assert "写入文件必须使用中文" in subagent["system_prompt"]
 
 
 def test_limited_web_search_contract():
@@ -87,6 +97,48 @@ def test_limited_web_search_contract():
     assert search_tool.name == "web_search"
     assert search_budget.max_calls == 2
     assert search_budget.call_count == 0
+
+
+def test_limited_web_search_records_retrieved_source_urls(monkeypatch):
+    async def fake_search(_query: str, _count: int) -> str:
+        return (
+            "标题: Official documentation\n"
+            "URL: https://docs.example/streaming\n"
+            "摘要: See https://summary.example/not-a-result for context\n"
+            "网站图标: https://icons.example/favicon"
+        )
+
+    monkeypatch.setattr(
+        "src.workflow.deepagents_runner.bocha_web_search", fake_search
+    )
+    search_budget = SearchBudget(max_calls=1)
+    search_tool = create_limited_web_search(search_budget)
+
+    result = asyncio.run(
+        search_tool.ainvoke({"query": "streaming documentation", "count": 5})
+    )
+
+    assert "Official documentation" in result
+    assert search_budget.retrieved_source_urls == {
+        "https://docs.example/streaming"
+    }
+    assert search_budget.queries == [
+        {"query": "streaming documentation", "count": 5}
+    ]
+
+
+def test_extract_search_result_urls_ignores_summary_and_icon_urls():
+    result = (
+        "URL: https://one.example/source\n"
+        "摘要: Related: https://summary.example/page\n"
+        "网站图标: https://icons.example/favicon\n\n"
+        "URL: https://two.example/source\n"
+    )
+
+    assert extract_search_result_urls(result) == {
+        "https://one.example/source",
+        "https://two.example/source",
+    }
 
 def test_analyst_prompt_requires_calculator():
     from src.tools.lib.prompts import ANALYST_SYSTEM_PROMPT
@@ -151,6 +203,25 @@ def test_official_source_quality_guardrails():
         assert "禁止" in text and "冒充" in text
 
 
+def test_source_urls_must_be_copied_from_search_results():
+    from src.tools.lib.prompts import (
+        ORCHESTRATOR_SYSTEM_PROMPT,
+        RESEARCHER_SYSTEM_PROMPT,
+    )
+
+    web_research = Path("skills/web-research/SKILL.md").read_text(encoding="utf-8")
+    report_writer = Path("skills/report-writer/SKILL.md").read_text(encoding="utf-8")
+
+    for text in [
+        ORCHESTRATOR_SYSTEM_PROMPT,
+        RESEARCHER_SYSTEM_PROMPT,
+        web_research,
+        report_writer,
+    ]:
+        assert "URL" in text
+        assert "禁止" in text
+
+
 def test_report_date_uses_runtime_date():
     from src.tools.lib.prompts import ORCHESTRATOR_SYSTEM_PROMPT
 
@@ -172,7 +243,10 @@ def test_orchestrator_does_not_ask_for_confirmation():
 
 
 def test_orchestrator_anti_loop_rules():
-    from src.tools.lib.prompts import ORCHESTRATOR_SYSTEM_PROMPT, RUNTIME_DELEGATION_GUARD
+    from src.tools.lib.prompts import (
+        ORCHESTRATOR_SYSTEM_PROMPT,
+        RUNTIME_DELEGATION_GUARD,
+    )
 
     assert "禁止再次 write_file / edit_file 改写 findings" in ORCHESTRATOR_SYSTEM_PROMPT
     assert "禁止调用 general-purpose" in ORCHESTRATOR_SYSTEM_PROMPT
@@ -180,6 +254,7 @@ def test_orchestrator_anti_loop_rules():
     assert "禁止委派 general-purpose" in RUNTIME_DELEGATION_GUARD
     assert "禁止第二次委派 editor" in RUNTIME_DELEGATION_GUARD
     assert "必须立刻写入 final report" in RUNTIME_DELEGATION_GUARD
+    assert "整个运行最多调用一次 edit_file" in ORCHESTRATOR_SYSTEM_PROMPT
 
 
 def test_event_formatter_shows_web_search_query():
@@ -276,7 +351,9 @@ def test_run_deep_agent_once_passes_callbacks(tmp_path: Path):
 
 def test_delegation_limit_middleware_blocks_second_analyst_and_editor():
     from types import SimpleNamespace
+
     from langchain_core.messages import ToolMessage
+
     from src.workflow.deepagents_runner import DelegationBudget
     from src.workflow.delegation_guard import DelegationLimitMiddleware
     budget = DelegationBudget(max_analyst=1, max_editor=1)
@@ -302,9 +379,83 @@ def test_delegation_limit_middleware_blocks_second_analyst_and_editor():
     second_editor = guard.wrap_tool_call(make_task("editor"), handler)
     assert isinstance(second_editor, ToolMessage)
     assert "editor" in second_editor.content
+
+
+def test_delegation_limit_middleware_tracks_rejected_researcher_attempt():
+    from types import SimpleNamespace
+
+    from langchain_core.messages import ToolMessage
+
+    from src.workflow.deepagents_runner import DelegationBudget
+    from src.workflow.delegation_guard import DelegationLimitMiddleware
+
+    budget = DelegationBudget(max_researcher=3)
+    guard = DelegationLimitMiddleware(budget)
+
+    def make_task(index: int):
+        return SimpleNamespace(
+            tool_call={
+                "name": "task",
+                "args": {"subagent_type": "researcher"},
+                "id": f"call-researcher-{index}",
+            }
+        )
+
+    def handler(_request):
+        return "OK"
+
+    assert [guard.wrap_tool_call(make_task(index), handler) for index in range(3)] == [
+        "OK",
+        "OK",
+        "OK",
+    ]
+    rejected = guard.wrap_tool_call(make_task(4), handler)
+
+    assert isinstance(rejected, ToolMessage)
+    assert "researcher" in rejected.content
+    assert budget.researcher_calls == 4
+
+
+def test_delegation_limit_middleware_blocks_second_draft_edit():
+    from types import SimpleNamespace
+
+    from langchain_core.messages import ToolMessage
+
+    from src.workflow.deepagents_runner import DelegationBudget
+    from src.workflow.delegation_guard import DelegationLimitMiddleware
+
+    budget = DelegationBudget(max_draft_edits=1)
+    guard = DelegationLimitMiddleware(budget)
+
+    def make_edit(index: int):
+        return SimpleNamespace(
+            tool_call={
+                "name": "edit_file",
+                "args": {
+                    "file_path": "/workspace/reports/draft_transport.md",
+                    "old_string": f"before-{index}",
+                    "new_string": f"after-{index}",
+                },
+                "id": f"call-edit-{index}",
+            }
+        )
+
+    def handler(_request):
+        return "OK"
+
+    assert guard.wrap_tool_call(make_edit(1), handler) == "OK"
+    rejected = guard.wrap_tool_call(make_edit(2), handler)
+
+    assert isinstance(rejected, ToolMessage)
+    assert "draft edit_file" in rejected.content
+    assert budget.draft_edit_calls == 2
+
+
 def test_delegation_limit_middleware_blocks_protected_source_writes():
     from types import SimpleNamespace
+
     from langchain_core.messages import ToolMessage
+
     from src.workflow.deepagents_runner import DelegationBudget
     from src.workflow.delegation_guard import DelegationLimitMiddleware
     guard = DelegationLimitMiddleware(DelegationBudget())
@@ -341,7 +492,9 @@ def test_delegation_limit_middleware_blocks_protected_source_writes():
 
 def test_path_guard_rejects_root_artifact_paths_but_allows_sources():
     from types import SimpleNamespace
+
     from langchain_core.messages import ToolMessage
+
     from src.workflow.deepagents_runner import DelegationBudget
     from src.workflow.delegation_guard import DelegationLimitMiddleware
 
@@ -413,7 +566,9 @@ def test_path_guard_wired_to_researcher_and_analyst_only():
 
 def test_path_guard_rejects_non_lowercase_artifact_filenames():
     from types import SimpleNamespace
+
     from langchain_core.messages import ToolMessage
+
     from src.workflow.deepagents_runner import DelegationBudget
     from src.workflow.delegation_guard import DelegationLimitMiddleware
 

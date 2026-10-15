@@ -1,6 +1,6 @@
 import os
-import httpx
 
+import httpx
 from langchain_core.tools import tool
 from pydantic import BaseModel, Field
 
@@ -50,32 +50,36 @@ async def bocha_web_search(query: str, count: int) -> str:
                 f"错误信息: {response.text}"
             )
 
-        try: 
-            data = response.json()
-        except Exception as e:
-            return f"Bocha 联网搜索 API 返回的 JSON 数据解析失败: {e}"
-        
         try:
-            if data.get("code") != 200 or not data.get("data"):
-                return f"搜索 API 请求失败，原因是: {data.get('msg') or '未知错误'}"
-            
-            webpages = (data.get("data", {}).get("webPages") or {}).get("value") or []
-
-            if not webpages:
-                return f"未找到与「{query}」相关的结果。"
-
-            return format_web_pages(webpages)
-
-        except Exception as e:
+            data = response.json()
+        except ValueError as e:
             return f"Bocha 联网搜索 API 返回的 JSON 数据解析失败: {e}"
+
+        if not isinstance(data, dict):
+            return "Bocha 联网搜索 API 返回了非对象 JSON。"
+        if data.get("code") != 200 or not isinstance(data.get("data"), dict):
+            return f"搜索 API 请求失败，原因是: {data.get('msg') or '未知错误'}"
+
+        web_pages = data["data"].get("webPages") or {}
+        if not isinstance(web_pages, dict):
+            return "Bocha 联网搜索 API 的 webPages 字段格式无效。"
+        webpages = web_pages.get("value") or []
+        if not isinstance(webpages, list):
+            return "Bocha 联网搜索 API 的结果列表格式无效。"
+
+        if not webpages:
+            return f"未找到与「{query}」相关的结果。"
+
+        return format_web_pages(webpages)
 
 class WebSearchInput(BaseModel):
     query: str = Field(
         ...,
         min_length=1,
         description=(
-            "搜索关键词，优先使用中文，例如："
-            "2026年 AI Agent 框架对比、LangGraph 最新动态"
+            "搜索关键词应跟随当前任务语言；查找原始资料时优先使用官方域名定向查询，"
+            "例如 site:rfc-editor.org RFC 6455。Search in the task language and "
+            "use domain-qualified queries when primary documentation is required."
         ),
     )
     count: int = Field(
@@ -87,7 +91,7 @@ class WebSearchInput(BaseModel):
 
 @tool("web_search", args_schema=WebSearchInput)
 async def web_search(query: str, count: int = 10) -> str:
-    """使用 Bocha 联网搜索 API 检索互联网网页。输入中文或中英结合的搜索关键词，可选 count 指定结果数量。返回标题、URL、摘要、网站名称、图标和发布时间。"""
+    """使用 Bocha 联网搜索 API 检索网页；查询语言跟随任务语言，并返回来源 URL 与摘要。"""
 
     print(f"  🔎 搜索: {query}（{count} 条）")
     return await bocha_web_search(query, count)

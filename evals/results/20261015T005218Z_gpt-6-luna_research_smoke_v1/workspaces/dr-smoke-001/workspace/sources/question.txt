@@ -1,0 +1,1 @@
+Assess the trade-offs between Server-Sent Events and WebSockets for streaming LLM responses in browser-based AI assistants. Use primary technical documentation where available and recommend when each transport is appropriate.
