@@ -1,0 +1,11 @@
+{
+  "run_count": 1,
+  "completed_count": 0,
+  "completion_rate": 0.0,
+  "status_counts": {
+    "completed": 0,
+    "agent_failure": 1,
+    "infrastructure_failure": 0
+  },
+  "note": "Cost and aggregate token/latency statistics are phase 6 and are not finalized here."
+}

@@ -1,0 +1,12 @@
+# Research Plan
+
+## Main question
+Evaluate whether long-context language models remove the need for retrieval-augmented generation (RAG) in enterprise question-answering systems, including conflicting evidence, facts versus assumptions, and conditions favoring each approach.
+
+## Focused subtopics and outputs
+1. **Long-context model capabilities and limitations** — assess context-window claims, long-context retrieval/needle-in-haystack performance, and practical degradation. Output: `/workspace/sources/findings_long_context.md`. Target source pages: Anthropic, “Long context prompting tips” (https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/long-context-tips); Liu et al., “Lost in the Middle” (https://arxiv.org/abs/2307.03172).
+2. **RAG evidence and enterprise knowledge grounding** — assess retrieval-based grounding, freshness, provenance, and enterprise deployment considerations. Output: `/workspace/sources/findings_rag_enterprise.md`. Target source pages: Lewis et al., “Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks” (https://arxiv.org/abs/2005.11401); Microsoft Learn, “Retrieval-augmented generation (RAG) in Azure AI Search” (https://learn.microsoft.com/en-us/azure/search/retrieval-augmented-generation-overview).
+3. **Direct comparative evidence and operational trade-offs** — seek empirical comparisons of long-context and RAG, including cost/latency and task performance. Output: `/workspace/sources/findings_comparative_evidence.md`. Target source pages: Google Research, “RAG vs. long context: Examining frontier LLMs” (https://research.google/blog/rag-vs-long-context-examining-frontier-llms/); Anthropic, “Contextual Retrieval” (https://www.anthropic.com/news/contextual-retrieval).
+
+## Synthesis strategy
+Separate measured findings and official product/documentation statements from assumptions and recommendations. Compare answer quality, corpus scale, freshness, traceability, access control, latency/cost, and operational complexity. Explicitly reconcile evidence that long context can simplify small/static knowledge tasks with evidence that retrieval remains useful for large, changing, permissioned enterprise corpora. Preserve exact URLs returned by this run and count distinct pages before analysis.

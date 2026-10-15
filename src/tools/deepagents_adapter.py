@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -11,6 +12,13 @@ from deepagents.backends.filesystem import FilesystemBackend
 from src.tools.lib.model import get_model
 
 DEFAULT_TODOS_EXPORT_PATH = Path("tmp.json")
+
+
+def deepagents_recursion_limit() -> int:
+    value = int((os.getenv("DEEPAGENTS_RECURSION_LIMIT") or "120").strip())
+    if value <= 0:
+        raise ValueError("DEEPAGENTS_RECURSION_LIMIT must be positive")
+    return value
 
 
 @dataclass(frozen=True)
@@ -236,7 +244,9 @@ async def run_deep_agent_once(
     }
 
     try:
-        run_config: dict[str, Any] = {"recursion_limit": 80}
+        run_config: dict[str, Any] = {
+            "recursion_limit": deepagents_recursion_limit()
+        }
         if callbacks:
             run_config["callbacks"] = callbacks
 

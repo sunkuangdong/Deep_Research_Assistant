@@ -13,7 +13,10 @@ ARTIFACT_PATTERNS = {
     "draft": "reports/draft_*.md",
     "report": "reports/report_*.md",
 }
-URL_RE = re.compile(r"https?://[^\s<>\])}]+", re.IGNORECASE)
+# Markdown evidence commonly wraps bare URLs in backticks or quotes. These
+# delimiters are presentation syntax and must not become part of the URL used
+# for provenance comparison.
+URL_RE = re.compile(r'''https?://[^\s<>\])}`'"]+''', re.IGNORECASE)
 HEADING_RE = re.compile(r"^#{1,6}\s+(.+?)\s*$", re.MULTILINE)
 CJK_RE = re.compile(r"[\u3400-\u4dbf\u4e00-\u9fff]")
 LATIN_RE = re.compile(r"[A-Za-z]")
@@ -186,6 +189,7 @@ def score_workspace(
 
     budget_fields = {
         "search": ("search_calls", "search_call_limit"),
+        "fetch": ("fetch_calls", "fetch_call_limit"),
         "researcher": ("researcher_calls", "researcher_call_limit"),
         "analyst": ("analyst_calls", "analyst_call_limit"),
         "editor": ("editor_calls", "editor_call_limit"),
@@ -199,6 +203,9 @@ def score_workspace(
     budget_checks = {
         "search": _within_budget(
             metadata, "search_calls", "search_call_limit"
+        ),
+        "fetch": _within_budget(
+            metadata, "fetch_calls", "fetch_call_limit"
         ),
         "researcher": _within_budget(
             metadata, "researcher_calls", "researcher_call_limit"

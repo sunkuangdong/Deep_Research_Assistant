@@ -1,0 +1,1 @@
+Evaluate whether long-context language models remove the need for retrieval-augmented generation in enterprise question-answering systems. Identify conflicting evidence, distinguish facts from assumptions, and explain the conditions under which each approach remains useful.

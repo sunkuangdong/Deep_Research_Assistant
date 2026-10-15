@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any
 
 from dotenv import load_dotenv
+from langgraph.errors import GraphRecursionError
 
 from evals.langfuse_observability import (
     flush_langfuse,
@@ -65,17 +66,33 @@ def _prepare_run_root(run_root: Path) -> None:
 
 def _enhanced_topic(case: dict[str, Any]) -> str:
     headings = ", ".join(case["required_sections"])
+    minimum_citations = case["minimum_citations"]
     if case["language"] == "zh":
         return (
             f"{case['topic']}\n\n"
             f"评估输出要求：最终报告必须使用以下完全一致的 Markdown 二级标题：{headings}；"
-            f"最终报告至少包含 {case['minimum_citations']} 个不同的 HTTP(S) 来源链接。"
+            f"最终报告至少包含 {minimum_citations} 个不同的 HTTP(S) 来源链接。"
+            f"请在 research_plan 中记录至少 {minimum_citations} 个不同来源的目标，"
+            "每次 researcher 委派使用不同的子主题、findings 路径和来源页面目标，禁止重复委派或覆盖已有 findings。"
+            "URL 的 #fragment 只是同一页面内的章节，不算不同来源。"
+            "进入 analyst 或起草前，先核对 findings 中不同且由本轮搜索返回或抓取成功的 URL 页面数量；"
+            f"如果少于 {minimum_citations}，只能在剩余搜索和 researcher 预算内，"
+            "通过新的 findings 路径补充可靠来源；禁止用不相关或低质量链接凑数。"
         )
     return (
         f"{case['topic']}\n\n"
         "Evaluation output requirement: the final report must use these exact Markdown "
-        f"level-two headings: {headings}; include at least {case['minimum_citations']} "
-        "distinct HTTP(S) source links in the final report."
+        f"level-two headings: {headings}; include at least {minimum_citations} "
+        "distinct HTTP(S) source links in the final report. "
+        f"Record the target of at least {minimum_citations} distinct sources in the "
+        "research plan. Give every researcher a different focused subtopic and findings "
+        "path and a different target source page; never repeat a delegation or overwrite "
+        "an existing findings file. URL fragments are sections of the same page, not "
+        "distinct sources. Before calling the analyst or drafting, count the distinct "
+        "in-run searched or successfully fetched URL pages preserved "
+        f"in findings. If there are fewer than {minimum_citations}, use only the remaining "
+        "search and researcher budgets to add reliable evidence under a new findings path; "
+        "never pad the report with irrelevant or low-quality links."
     )
 
 
@@ -144,6 +161,14 @@ async def _run_case(
             base_result.update(
                 {
                     "failure_type": "timeout",
+                    "error": _redact_error(exc),
+                }
+            )
+        except GraphRecursionError as exc:
+            base_result.update(
+                {
+                    "status": "agent_failure",
+                    "failure_type": "recursion_limit",
                     "error": _redact_error(exc),
                 }
             )

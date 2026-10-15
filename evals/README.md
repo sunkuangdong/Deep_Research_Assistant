@@ -52,19 +52,36 @@ The runner creates an isolated workspace per case, records a credential-free
 `config.json`, and appends every outcome to `raw_runs.jsonl`. A failed or timed
 out case is preserved rather than silently replaced.
 
+DeepAgents graph execution defaults to a 120-step recursion limit. Override it
+with `DEEPAGENTS_RECURSION_LIMIT` only before freezing the protocol; every live
+result captures the effective value.
+
+Bocha search requests use a 20-second timeout and retry transient transport,
+HTTP 429, and HTTP 5xx failures at most twice. Override these defaults with
+`BOCHA_TIMEOUT_SECONDS` and `BOCHA_MAX_RETRIES` when necessary.
+
+When search misses a known official page, researchers may use the bounded
+`web_fetch` tool to retrieve and verify it directly. The fetcher accepts only
+public HTTP(S) text pages, rejects local/private destinations, follows at most
+three redirects, and limits each response to 200,000 bytes and 12,000 visible
+characters. Its defaults can be adjusted with `WEB_FETCH_TIMEOUT_SECONDS`,
+`WEB_FETCH_MAX_RETRIES`, `WEB_FETCH_MAX_BYTES`, and `WEB_FETCH_MAX_CHARS`.
+Repeated fetches of the same page, including different `#fragment` anchors,
+are rejected without consuming the shared fetch budget and are recorded as
+diagnostic attempts.
+
 The deterministic acceptance checks cover:
 
 - required artifacts, paths, report sections, and citation count;
 - output-language compliance for artifacts, todos, and the final reply;
-- search, researcher, analyst, editor, and draft-edit call limits;
+- search, direct-fetch, researcher, analyst, editor, and draft-edit call limits;
 - citation URL syntax, provenance in findings/analysis, and confirmation that
-  the URL was returned by the configured search provider during the same run.
+  the URL was returned by search or successfully fetched during the same run.
 - exact report-filename agreement with the explicitly captured run date.
 
-The source check intentionally does not issue a second HTTP request for every
-URL. Transient 403, rate-limit, and timeout responses would make completion
-non-deterministic; in-run search retrieval is recorded as the reproducible
-evidence boundary instead.
+The source check intentionally does not issue a second HTTP request for URLs
+already returned by search. Direct-fetch URLs count only when their bounded
+retrieval succeeds and the final URL is recorded in the run metadata.
 
 ## Optional Langfuse Tracing
 

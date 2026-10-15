@@ -2,18 +2,29 @@ import asyncio
 import json
 from pathlib import Path
 
+import httpx
+import pytest
+
 from src.tools.calculator import structured_calculator
 from src.tools.deepagents_adapter import (
     _format_deepagents_event,
     export_todos_to_tmp_json,
     run_deep_agent_once,
 )
+from src.tools.search import (
+    BochaSearchError,
+    bocha_web_search,
+    canonical_source_url,
+    fetch_web_page,
+)
 from src.workflow.deepagents_runner import (
     DeepAgentsRunResult,
     SearchBudget,
     build_deepagents_subagents,
     build_deepagents_system_prompt,
+    create_limited_web_fetch,
     create_limited_web_search,
+    extract_fetched_source_urls,
     extract_search_result_urls,
     reset_workspace_run_artifacts,
 )
@@ -64,16 +75,26 @@ def test_deepagents_prompt_no_analysis_guard():
 
     assert "Analysis Requirement" not in prompt
     assert "禁止委派 analyst 子 Agent" in prompt
+    assert "禁止创建、写入或修改任何 `analysis_*.md`" in prompt
+    assert "直接起草 `/workspace/reports/draft_*.md`" in prompt
 
 
 def test_subagents_with_analysis():
-    search_tool = create_limited_web_search(SearchBudget(max_calls=2))
+    budget = SearchBudget(max_calls=2, max_fetch_calls=2)
+    search_tool = create_limited_web_search(budget)
+    fetch_tool = create_limited_web_fetch(budget)
     subagents = build_deepagents_subagents(
-        search_tool, no_analysis=False, output_language="en"
+        search_tool,
+        fetch_tool,
+        no_analysis=False,
+        output_language="en",
     )
 
     assert [x["name"] for x in subagents] == ["researcher", "analyst", "editor"]
-    assert subagents[0]["tools"][0].name == "web_search"
+    assert [tool.name for tool in subagents[0]["tools"]] == [
+        "web_search",
+        "web_fetch",
+    ]
     assert [tool.name for tool in subagents[1]["tools"]] == ["structured_calculator"]
     for subagent in subagents:
         assert "every file you write MUST be in English" in subagent["system_prompt"]
@@ -97,6 +118,113 @@ def test_limited_web_search_contract():
     assert search_tool.name == "web_search"
     assert search_budget.max_calls == 2
     assert search_budget.call_count == 0
+
+
+def test_web_fetch_rejects_private_destination(monkeypatch):
+    monkeypatch.setenv("WEB_FETCH_MAX_RETRIES", "0")
+
+    result = asyncio.run(fetch_web_page("http://127.0.0.1/private"))
+
+    assert result == "FETCH_ERROR: non-public IP addresses are not allowed"
+
+
+def test_web_fetch_extracts_bounded_visible_text(monkeypatch):
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(
+            200,
+            request=request,
+            headers={"content-type": "text/html; charset=utf-8"},
+            text=(
+                "<html><head><title>Official Docs</title>"
+                "<style>hidden css</style></head>"
+                "<body><h1>Tool calling</h1><script>hidden js</script>"
+                "<p>Verified documentation content.</p></body></html>"
+            ),
+        )
+
+    monkeypatch.setenv("WEB_FETCH_MAX_RETRIES", "0")
+    result = asyncio.run(
+        fetch_web_page(
+            "https://docs.example/tools",
+            transport=httpx.MockTransport(handler),
+        )
+    )
+
+    assert "Fetched URL: https://docs.example/tools" in result
+    assert "Title: Official Docs" in result
+    assert "Tool calling" in result
+    assert "Verified documentation content." in result
+    assert "hidden css" not in result
+    assert "hidden js" not in result
+
+
+def test_canonical_source_url_treats_fragment_as_same_page():
+    assert canonical_source_url(
+        "https://Docs.Example/tools/#schema"
+    ) == canonical_source_url("https://docs.example/tools")
+
+
+def test_bocha_search_retries_transient_timeouts(monkeypatch):
+    attempts = {"count": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        attempts["count"] += 1
+        if attempts["count"] < 3:
+            raise httpx.ReadTimeout("temporary timeout", request=request)
+        return httpx.Response(
+            200,
+            request=request,
+            json={
+                "code": 200,
+                "data": {
+                    "webPages": {
+                        "value": [
+                            {
+                                "name": "Official docs",
+                                "url": "https://docs.example/source",
+                            }
+                        ]
+                    }
+                },
+            },
+        )
+
+    monkeypatch.setenv("BOCHA_API_KEY", "test-key")
+    monkeypatch.setenv("BOCHA_MAX_RETRIES", "2")
+    result = asyncio.run(
+        bocha_web_search(
+            "official docs",
+            1,
+            transport=httpx.MockTransport(handler),
+            retry_delay_seconds=0,
+        )
+    )
+
+    assert attempts["count"] == 3
+    assert "https://docs.example/source" in result
+
+
+def test_bocha_search_raises_named_error_after_retry_exhaustion(monkeypatch):
+    attempts = {"count": 0}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        attempts["count"] += 1
+        raise httpx.ReadTimeout("persistent timeout", request=request)
+
+    monkeypatch.setenv("BOCHA_API_KEY", "test-key")
+    monkeypatch.setenv("BOCHA_MAX_RETRIES", "2")
+
+    with pytest.raises(BochaSearchError, match="after 3 attempts: ReadTimeout"):
+        asyncio.run(
+            bocha_web_search(
+                "official docs",
+                1,
+                transport=httpx.MockTransport(handler),
+                retry_delay_seconds=0,
+            )
+        )
+
+    assert attempts["count"] == 3
 
 
 def test_limited_web_search_records_retrieved_source_urls(monkeypatch):
@@ -125,6 +253,86 @@ def test_limited_web_search_records_retrieved_source_urls(monkeypatch):
     assert search_budget.queries == [
         {"query": "streaming documentation", "count": 5}
     ]
+
+
+def test_limited_web_fetch_records_only_successful_final_url(monkeypatch):
+    responses = iter(
+        [
+            (
+                "Fetched URL: https://docs.example/final\n"
+                "Title: Official docs\nContent: verified"
+            ),
+            "FETCH_ERROR: HTTP 404 for https://docs.example/missing",
+        ]
+    )
+
+    async def fake_fetch(_url: str) -> str:
+        return next(responses)
+
+    monkeypatch.setattr(
+        "src.workflow.deepagents_runner.fetch_web_page", fake_fetch
+    )
+    budget = SearchBudget(max_calls=1, max_fetch_calls=2)
+    fetch_tool = create_limited_web_fetch(budget)
+
+    asyncio.run(fetch_tool.ainvoke({"url": "https://docs.example/requested"}))
+    asyncio.run(fetch_tool.ainvoke({"url": "https://docs.example/missing"}))
+
+    assert budget.fetch_call_count == 2
+    assert budget.fetch_requests == [
+        "https://docs.example/requested",
+        "https://docs.example/missing",
+    ]
+    assert budget.fetched_source_urls == {"https://docs.example/final"}
+    assert budget.fetched_source_pages == {"https://docs.example/final"}
+    assert budget.retrieved_source_urls == {"https://docs.example/final"}
+    assert budget.fetch_attempt_count == 2
+
+
+def test_limited_web_fetch_rejects_concurrent_fragment_duplicate(monkeypatch):
+    network_calls = {"count": 0}
+
+    async def fake_fetch(_url: str) -> str:
+        network_calls["count"] += 1
+        await asyncio.sleep(0.01)
+        return (
+            "Fetched URL: https://docs.example/models\n"
+            "Title: Models\nContent: verified"
+        )
+
+    async def run_both(fetch_tool):
+        return await asyncio.gather(
+            fetch_tool.ainvoke({"url": "https://docs.example/models"}),
+            fetch_tool.ainvoke(
+                {"url": "https://docs.example/models#tool-calling"}
+            ),
+        )
+
+    monkeypatch.setattr(
+        "src.workflow.deepagents_runner.fetch_web_page", fake_fetch
+    )
+    budget = SearchBudget(max_calls=1, max_fetch_calls=2)
+    fetch_tool = create_limited_web_fetch(budget)
+
+    results = asyncio.run(run_both(fetch_tool))
+
+    assert network_calls["count"] == 1
+    assert budget.fetch_call_count == 1
+    assert budget.fetch_attempt_count == 2
+    assert budget.fetch_duplicate_rejections == 1
+    assert any("DUPLICATE_FETCH" in result for result in results)
+
+
+def test_extract_fetched_source_urls_ignores_requested_url_and_content():
+    result = (
+        "Requested URL: https://requested.example/page\n"
+        "Fetched URL: https://final.example/page\n"
+        "Content: Related https://content.example/page\n"
+    )
+
+    assert extract_fetched_source_urls(result) == {
+        "https://final.example/page"
+    }
 
 
 def test_extract_search_result_urls_ignores_summary_and_icon_urls():
@@ -347,7 +555,7 @@ def test_run_deep_agent_once_passes_callbacks(tmp_path: Path):
 
     assert result.final_text == "done"
     assert agent.config["callbacks"] == [callback]
-    assert agent.config["recursion_limit"] == 80
+    assert agent.config["recursion_limit"] == 120
 
 def test_delegation_limit_middleware_blocks_second_analyst_and_editor():
     from types import SimpleNamespace
@@ -362,7 +570,10 @@ def test_delegation_limit_middleware_blocks_second_analyst_and_editor():
         return SimpleNamespace(
             tool_call={
                 "name": "task",
-                "args": {"subagent_type": subagent_type},
+                "args": {
+                    "subagent_type": subagent_type,
+                    "description": f"Run {subagent_type}",
+                },
                 "id": f"call-{subagent_type}",
             }
         )
@@ -381,7 +592,7 @@ def test_delegation_limit_middleware_blocks_second_analyst_and_editor():
     assert "editor" in second_editor.content
 
 
-def test_delegation_limit_middleware_tracks_rejected_researcher_attempt():
+def test_delegation_limit_middleware_separates_calls_and_rejected_attempts():
     from types import SimpleNamespace
 
     from langchain_core.messages import ToolMessage
@@ -396,7 +607,10 @@ def test_delegation_limit_middleware_tracks_rejected_researcher_attempt():
         return SimpleNamespace(
             tool_call={
                 "name": "task",
-                "args": {"subagent_type": "researcher"},
+                "args": {
+                    "subagent_type": "researcher",
+                    "description": f"Research task {index}",
+                },
                 "id": f"call-researcher-{index}",
             }
         )
@@ -413,7 +627,88 @@ def test_delegation_limit_middleware_tracks_rejected_researcher_attempt():
 
     assert isinstance(rejected, ToolMessage)
     assert "researcher" in rejected.content
-    assert budget.researcher_calls == 4
+    assert budget.researcher_calls == 3
+    assert budget.researcher_attempts == 4
+    assert budget.researcher_rejections == 1
+
+
+def test_delegation_guard_normalizes_nested_task_description():
+    from types import SimpleNamespace
+
+    from src.workflow.deepagents_runner import DelegationBudget
+    from src.workflow.delegation_guard import DelegationLimitMiddleware
+
+    budget = DelegationBudget(max_researcher=1)
+    guard = DelegationLimitMiddleware(budget)
+    request = SimpleNamespace(
+        tool_call={
+            "name": "task",
+            "args": {
+                "subagent_type": "researcher",
+                "parameters": {"description": "Write findings_tool_results.md"},
+            },
+            "id": "nested-task",
+        }
+    )
+    captured = {}
+
+    def handler(normalized_request):
+        captured.update(normalized_request.tool_call["args"])
+        return "OK"
+
+    assert guard.wrap_tool_call(request, handler) == "OK"
+    assert captured == {
+        "subagent_type": "researcher",
+        "description": "Write findings_tool_results.md",
+    }
+    assert budget.researcher_attempts == 1
+    assert budget.researcher_calls == 1
+
+
+def test_delegation_guard_rejects_missing_description_without_spending_call():
+    from types import SimpleNamespace
+
+    from langchain_core.messages import ToolMessage
+
+    from src.workflow.deepagents_runner import DelegationBudget
+    from src.workflow.delegation_guard import DelegationLimitMiddleware
+
+    budget = DelegationBudget(max_researcher=1)
+    guard = DelegationLimitMiddleware(budget)
+    request = SimpleNamespace(
+        tool_call={
+            "name": "task",
+            "args": {"subagent_type": "researcher"},
+            "id": "invalid-task",
+        }
+    )
+
+    result = guard.wrap_tool_call(request, lambda _request: "unexpected")
+
+    assert isinstance(result, ToolMessage)
+    assert "缺少非空 description" in result.content
+    assert budget.researcher_attempts == 1
+    assert budget.researcher_calls == 0
+    assert budget.researcher_rejections == 1
+
+
+def test_evaluation_topic_requires_source_target_and_unique_findings_paths():
+    from evals.run_deep_research import _enhanced_topic
+
+    topic = _enhanced_topic(
+        {
+            "language": "en",
+            "topic": "Compare two transports.",
+            "required_sections": ["Background", "Recommendations"],
+            "minimum_citations": 5,
+        }
+    )
+
+    assert "at least 5 distinct sources" in topic
+    assert "different focused subtopic" in topic
+    assert "different target source page" in topic
+    assert "URL fragments are sections of the same page" in topic
+    assert "Before calling the analyst or drafting" in topic
 
 
 def test_delegation_limit_middleware_blocks_second_draft_edit():
@@ -448,7 +743,9 @@ def test_delegation_limit_middleware_blocks_second_draft_edit():
 
     assert isinstance(rejected, ToolMessage)
     assert "draft edit_file" in rejected.content
-    assert budget.draft_edit_calls == 2
+    assert budget.draft_edit_calls == 1
+    assert budget.draft_edit_attempts == 2
+    assert budget.draft_edit_rejections == 1
 
 
 def test_delegation_limit_middleware_blocks_protected_source_writes():

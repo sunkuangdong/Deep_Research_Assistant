@@ -23,11 +23,15 @@ LANGUAGE_POLICY = """
 
 SOURCE_PROVENANCE_POLICY = """
     ## 来源 URL 可追溯性（强制）
-        - 只能引用本次运行 `web_search` 输出中明确标为 `URL:` 的完整 URL。
+        - 只能引用本次运行 `web_search` 输出中明确标为 `URL:`，或 `web_fetch` 成功输出中明确标为 `Fetched URL:` 的完整 URL。
         - URL 必须逐字复制；禁止凭模型记忆补写链接、替换路径、改成规范地址或添加未返回的来源。
-        - 摘要正文、网站图标或模型已有知识中出现的 URL，不属于可引用的搜索结果。
-        - 如果需要的官方页面没有返回，应使用带官方域名的定向查询再次搜索；仍未返回就标注未检索到，禁止引用该 URL。
+        - 摘要正文、网站图标、`web_fetch` 请求参数或模型已有知识中出现的 URL，不属于可引用来源；抓取时必须以成功返回的 `Fetched URL:` 为准。
+        - 如果搜索没有返回所需官方页面，但已知其准确官方 URL，可以调用 `web_fetch` 读取并验证；抓取失败时禁止引用该 URL。
+        - `#fragment` 只表示同一页面内的章节，不构成不同来源；满足最少来源数量时必须使用不同的主机/路径（查询参数相同时也只算同一页）。
+        - 如果 `web_fetch` 返回 `DUPLICATE_FETCH`，该请求不消耗共享抓取预算；必须选择不同的可靠页面，禁止反复抓取同一页。
         - analyst、editor 和主 Agent 只能复用 findings 中已经按上述规则记录的 URL，禁止新增来源 URL。
+        - 每次 researcher 委派必须使用不同的聚焦子主题和不同的 findings 路径；禁止重试同一委派或覆盖已有 findings。
+        - 在进入 analyst 或起草前，必须核对用户要求的最少不同来源数量；不足时只能在剩余预算内写入新的 findings 文件。
 """
 
 RESEARCHER_SYSTEM_PROMPT = """
@@ -40,11 +44,12 @@ RESEARCHER_SYSTEM_PROMPT = """
 """ + LANGUAGE_POLICY + SOURCE_PROVENANCE_POLICY + FILENAME_CONVENTION + """
     ## 工作流程（严格遵守，禁止空转循环）
         1. 可选：使用 write_todos 列出最多 3 条执行步骤（语言跟随用户）。
-        2. 最多调用 3 次 web_search。
-        3. 将搜索结果整理为结构化摘要，包含关键事实与来源 URL。
-        4. 调用 write_file **一次**，保存到任务指定的精确路径。
-        5. 如果任务没有指定路径，默认保存到 `/workspace/sources/findings_[子主题slug].md`（slug 必须全小写）。
-        6. 写入 findings 文件后，用一句话确认已完成路径，然后立即停止。
+        2. 最多调用 2 次 web_search 和 2 次 web_fetch；优先搜索，搜索漏掉已知官方页面时再直接抓取验证。
+        3. 如果委派任务指定了最少不同来源数量，必须优先满足；无法满足时如实说明，禁止用不相关链接凑数。
+        4. 将搜索结果整理为结构化摘要，包含关键事实与来源 URL。
+        5. 调用 write_file **一次**，保存到任务指定的精确路径。
+        6. 如果任务没有指定路径，默认保存到 `/workspace/sources/findings_[子主题slug].md`（slug 必须全小写）。
+        7. 写入 findings 文件后，用一句话确认已完成路径，然后立即停止。
     ## findings 文件格式
     ```markdown
         # Findings: [子主题]
@@ -87,10 +92,11 @@ EDITOR_SYSTEM_PROMPT = """
     1. 报告是否直接回答原始问题？
     2. 报告结构是否清晰，是否包含执行摘要、背景、关键发现、分析、结论、参考资料？
     3. 关键事实是否有来源支撑？
-    4. 是否存在无依据断言、跳跃推断或事实不准确？
-    5. 是否遗漏重要视角？
-    6. 是否明确说明局限性和不确定性？
-    7. 表达是否专业、准确、简洁，且语言与用户提问一致？
+    4. 报告是否满足原始问题要求的最少不同来源数量，且没有新增 findings/analysis 之外的 URL？
+    5. 是否存在无依据断言、跳跃推断或事实不准确？
+    6. 是否遗漏重要视角？
+    7. 是否明确说明局限性和不确定性？
+    8. 表达是否专业、准确、简洁，且语言与用户提问一致？
 
     ## 输出格式
 
@@ -224,6 +230,7 @@ ORCHESTRATOR_SYSTEM_PROMPT = """
         - 将调研计划写入 /workspace/sources/research_plan.md。
         - research_plan 必须为每个子主题写明精确产出路径（全小写），例如
           `findings_langgraph.md`、`findings_autogen.md`。
+        - 如任务要求多个不同来源，还必须为每个 researcher 规划不同的来源页面目标；同一页面的不同锚点不能分配给不同 researcher 充当多个来源。
     2. 调研：
         - 按 web-research 技能执行调研。
         - 完成 research_plan 后，必须立即进入调研阶段。
@@ -356,6 +363,9 @@ RUNTIME_NO_ANALYSIS_GUARD = """
     [运行时约束]
     - 本次任务禁止委派 analyst 子 Agent。
     - 仅允许委派 researcher 与 editor 子 Agent。
+    - 禁止创建、写入或修改任何 `analysis_*.md` 文件；不要由主 Agent 代替 analyst 编写分析材料。
+    - 读取 findings 后直接起草 `/workspace/reports/draft_*.md`，然后进入 editor 审阅和定稿。
+    - todo 中不得包含“创建 analysis 文件”或“完成分析阶段”；如已有此类 todo，立即删除或标记为不适用。
     - 若信息不足以做定量分析，请在最终结论中明确写出：
     “本次按 --no-analysis 运行，未进行分析师阶段（analyst）。”
 """

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import re
 from dataclasses import dataclass
 from datetime import datetime
@@ -25,20 +26,38 @@ from src.tools.lib.prompts import (
     RUNTIME_DELEGATION_GUARD,
     RUNTIME_NO_ANALYSIS_GUARD,
 )
-from src.tools.search import WebSearchInput, bocha_web_search
+from src.tools.search import (
+    WebFetchInput,
+    WebSearchInput,
+    bocha_web_search,
+    canonical_source_url,
+    fetch_web_page,
+)
 from src.workflow.delegation_guard import DelegationLimitMiddleware
 
 
 class SearchBudget:
-    def __init__(self, max_calls: int):
+    def __init__(self, max_calls: int, max_fetch_calls: int = 6):
         self.max_calls = max_calls
         self.call_count = 0
+        self.max_fetch_calls = max_fetch_calls
+        self.fetch_call_count = 0
+        self.fetch_attempt_count = 0
+        self.fetch_duplicate_rejections = 0
+        self.fetch_budget_rejections = 0
+        self.search_result_urls: set[str] = set()
+        self.fetched_source_urls: set[str] = set()
+        self.fetched_source_pages: set[str] = set()
         self.retrieved_source_urls: set[str] = set()
         self.queries: list[dict[str, Any]] = []
+        self.fetch_requests: list[str] = []
 
 
 SEARCH_RESULT_URL_RE = re.compile(
     r"^\s*URL:\s*(https?://\S+)\s*$", re.IGNORECASE | re.MULTILINE
+)
+FETCHED_URL_RE = re.compile(
+    r"^\s*Fetched URL:\s*(https?://\S+)\s*$", re.IGNORECASE | re.MULTILINE
 )
 
 
@@ -46,6 +65,12 @@ def extract_search_result_urls(result: str) -> set[str]:
     """Extract only explicit result URL fields, excluding summary and icon URLs."""
 
     return {match.group(1) for match in SEARCH_RESULT_URL_RE.finditer(result)}
+
+
+def extract_fetched_source_urls(result: str) -> set[str]:
+    """Extract only URLs from successful web_fetch responses."""
+
+    return {match.group(1) for match in FETCHED_URL_RE.finditer(result)}
     
 class DelegationBudget:
     def __init__(
@@ -63,6 +88,14 @@ class DelegationBudget:
         self.analyst_calls = 0
         self.editor_calls = 0
         self.draft_edit_calls = 0
+        self.researcher_attempts = 0
+        self.analyst_attempts = 0
+        self.editor_attempts = 0
+        self.draft_edit_attempts = 0
+        self.researcher_rejections = 0
+        self.analyst_rejections = 0
+        self.editor_rejections = 0
+        self.draft_edit_rejections = 0
 
 def reset_workspace_run_artifacts(
     root_dir: Path | str = ".",
@@ -127,10 +160,67 @@ def create_limited_web_search(search_budget: SearchBudget) -> Any:
         )
         
         result = await bocha_web_search(query, safe_count)
-        search_budget.retrieved_source_urls.update(extract_search_result_urls(result))
+        result_urls = extract_search_result_urls(result)
+        search_budget.search_result_urls.update(result_urls)
+        search_budget.retrieved_source_urls.update(result_urls)
         return result
 
     return limited_web_search
+
+
+def create_limited_web_fetch(search_budget: SearchBudget) -> Any:
+    """Create a bounded fetch tool that records only successfully fetched URLs."""
+
+    reservation_lock = asyncio.Lock()
+    reserved_pages: set[str] = set()
+
+    @tool("web_fetch", args_schema=WebFetchInput)
+    async def limited_web_fetch(url: str) -> str:
+        """读取并验证公开 HTTP(S) 文本页面，并限制单次运行的抓取次数。"""
+
+        requested_page = canonical_source_url(url)
+        async with reservation_lock:
+            search_budget.fetch_attempt_count += 1
+            if requested_page in reserved_pages:
+                search_budget.fetch_duplicate_rejections += 1
+                existing_pages = ", ".join(sorted(reserved_pages))
+                return (
+                    "DUPLICATE_FETCH: This page was already fetched or is being "
+                    "fetched in this run. URL fragments do not create a distinct "
+                    f"source. Existing pages: {existing_pages}. This duplicate did "
+                    "not consume the shared fetch budget. Choose an official page "
+                    "with a different host/path and call web_fetch again."
+                )
+            if search_budget.fetch_call_count >= search_budget.max_fetch_calls:
+                search_budget.fetch_budget_rejections += 1
+                return (
+                    f"web_fetch 抓取预算已用完。本次最多允许 "
+                    f"{search_budget.max_fetch_calls} 次抓取，请基于已有证据继续。"
+                )
+            reserved_pages.add(requested_page)
+            search_budget.fetch_call_count += 1
+            search_budget.fetch_requests.append(url)
+
+        print(
+            f"  🌐 抓取[{search_budget.fetch_call_count}/"
+            f"{search_budget.max_fetch_calls}]: {url}"
+        )
+        result = await fetch_web_page(url)
+        fetched_urls = extract_fetched_source_urls(result)
+        if not fetched_urls:
+            async with reservation_lock:
+                reserved_pages.discard(requested_page)
+            return result
+
+        fetched_pages = {canonical_source_url(value) for value in fetched_urls}
+        async with reservation_lock:
+            reserved_pages.update(fetched_pages)
+        search_budget.fetched_source_urls.update(fetched_urls)
+        search_budget.fetched_source_pages.update(fetched_pages)
+        search_budget.retrieved_source_urls.update(fetched_urls)
+        return result
+
+    return limited_web_fetch
 
 
 
@@ -174,6 +264,7 @@ def _subagent_language_instruction(output_language: str) -> str:
 
 def build_deepagents_subagents(
     search_tool,
+    fetch_tool=None,
     no_analysis: bool = False,
     path_guard=None,
     output_language: str = "en",
@@ -189,6 +280,10 @@ def build_deepagents_subagents(
     """
     subagent_middleware = [path_guard] if path_guard is not None else []
     language_instruction = _subagent_language_instruction(output_language)
+    researcher_tools = [search_tool]
+    if fetch_tool is not None:
+        researcher_tools.append(fetch_tool)
+
     subagents = [
         {
             "name": "researcher",
@@ -201,11 +296,14 @@ def build_deepagents_subagents(
                 + language_instruction
                 + "\n\n[Search Budget]\n"
                 + "- You may call web_search at most 2 times for one delegated subtopic.\n"
+                + "- You may call web_fetch at most 2 times for one delegated subtopic.\n"
+                + "- If search misses a known official page, use web_fetch to retrieve and verify its exact URL.\n"
+                + "- URL fragments identify sections, not distinct source pages. If web_fetch reports DUPLICATE_FETCH, choose a different official page path.\n"
                 + "- Use focused queries, not many small wording variations.\n"
                 + "- Stop searching once you have enough evidence.\n"
                 + "- Return concise findings with source URLs.\n"
             ),
-            "tools": [search_tool],
+            "tools": researcher_tools,
             "middleware": subagent_middleware,
         }
     ]
@@ -281,11 +379,13 @@ async def run_deepagents_workflow(
     reset_workspace_run_artifacts(root_path, resolved_todos_path)
     system_prompt = build_deepagents_system_prompt(no_analysis=no_analysis)
     effective_run_date = run_date or datetime.now().astimezone().date().isoformat()
-    search_budget = SearchBudget(max_calls=6)
+    search_budget = SearchBudget(max_calls=6, max_fetch_calls=6)
     search_tool = create_limited_web_search(search_budget)
+    fetch_tool = create_limited_web_fetch(search_budget)
 
     subagents = build_deepagents_subagents(
         search_tool,
+        fetch_tool,
         no_analysis=no_analysis,
         path_guard=path_guard,
         output_language=output_language,
@@ -306,18 +406,42 @@ async def run_deepagents_workflow(
         system_prompt=system_prompt,
         debug=False,
         name="deep_research_agent",
-        tools=[search_tool],
+        tools=[search_tool, fetch_tool],
         subagents=subagents,
         middleware=[main_guard],
     )
 
     agent = build_deep_agent(config)
 
+    if no_analysis:
+        analysis_rule_zh = (
+            "本次已启用 no-analysis：禁止委派 analyst，禁止创建或写入 analysis 文件；"
+            "读取 findings 后直接起草 draft。必须完成 question、research_plan、findings、"
+            "draft、editor 审阅和 final report。"
+        )
+        analysis_rule_en = (
+            "This run uses no-analysis: do not delegate analyst and do not create or write "
+            "an analysis file. After reading findings, proceed directly to the draft. "
+            "You must complete question, research_plan, findings, draft, editor review, "
+            "and final report."
+        )
+    else:
+        analysis_rule_zh = (
+            "analyst 最多调用 1 次，写完 analysis 后禁止主 Agent 再改 analysis；"
+            "必须完成 question、research_plan、findings、analysis（如涉及对比/数值）、"
+            "draft、editor 审阅和 final report。"
+        )
+        analysis_rule_en = (
+            "Delegate analyst at most once; after analysis is written, the main agent must "
+            "not rewrite it. You must complete question, research_plan, findings, analysis "
+            "(if comparison/numeric), draft, editor review, and final report."
+        )
+
     if use_chinese:
         user_prompt = (
             f"请围绕这个主题完成调研并给出最终报告：{clean_topic}\n\n"
             f"运行日期：{effective_run_date}。报告文件名中的日期必须使用这个运行日期，禁止自行编造日期。\n"
-            "【语言】用户用中文提问，因此 todo、findings、analysis、draft、report、最终回复都必须使用中文；"
+            "【语言】用户用中文提问，因此 todo、findings、启用时的 analysis、draft、report、最终回复都必须使用中文；"
             "专有名词与 URL 可保留原文。\n"
             "【文件名约定】slug 必须全小写 ASCII（[a-z0-9_]+）；"
             "findings 只能是 /workspace/sources/findings_<slug>.md；"
@@ -333,18 +457,17 @@ async def run_deepagents_workflow(
             "完成 research_plan 后，必须通过 web_search 或委派 researcher 子 Agent 完成联网调研，"
             "禁止跳过调研直接进入起草；"
             "researcher 写完 findings 后禁止主 Agent 再改 findings；"
-            "analyst 最多调用 1 次，写完 analysis 后禁止主 Agent 再改 analysis；"
             "editor 最多调用 1 次；editor 返回后最多修订 draft 一次，然后必须立刻写入 final report 并结束；"
             "整个运行最多调用 1 次 edit_file 修改 draft；必须把所有修改合并到这一次调用中，禁止拆成多次 edit_file；"
             "禁止二次委派 editor，禁止在 draft 上反复 edit/read 空转；"
             "禁止委派 general-purpose；报告起草必须由主 Agent 自己完成；"
-            "必须完成 question、research_plan、findings、analysis（如涉及对比/数值）、draft、editor 审阅和 final report。"
+            f"{analysis_rule_zh}"
         )
     else:
         user_prompt = (
             f"Please research this topic and produce a final report: {clean_topic}\n\n"
             f"Run date: {effective_run_date}. The date in the report filename MUST use this run date; do not invent dates.\n"
-            "[Language] The user asked in English, so todos, findings, analysis, draft, report, "
+            "[Language] The user asked in English, so todos, findings, analysis when enabled, draft, report, "
             "and the final reply MUST be in English. Keep proper nouns and URLs in original form when appropriate.\n"
             "[Filename rules] slug must be lowercase ASCII ([a-z0-9_]+); "
             "findings only under /workspace/sources/findings_<slug>.md; "
@@ -361,13 +484,11 @@ async def run_deepagents_workflow(
             "after research_plan, you must web_search or delegate researcher; "
             "do not skip research and jump to drafting; "
             "after researcher writes findings, the main agent must not rewrite findings; "
-            "analyst at most once; after analysis is written, the main agent must not rewrite analysis; "
             "editor at most once; after editor returns, revise draft at most once, then write the final report and stop; "
             "across the entire run, call edit_file on the draft at most once; combine all draft changes into that single call; "
             "do not re-delegate editor; do not loop on edit/read of draft; "
             "do not delegate general-purpose; the main agent must draft the report; "
-            "you must complete question, research_plan, findings, analysis (if comparison/numeric), "
-            "draft, editor review, and final report."
+            f"{analysis_rule_en}"
         )
     
     run_result = await run_deep_agent_once(
@@ -390,6 +511,15 @@ async def run_deepagents_workflow(
             "search_calls": search_budget.call_count,
             "search_call_limit": search_budget.max_calls,
             "search_queries": search_budget.queries,
+            "fetch_calls": search_budget.fetch_call_count,
+            "fetch_call_limit": search_budget.max_fetch_calls,
+            "fetch_attempts": search_budget.fetch_attempt_count,
+            "fetch_duplicate_rejections": search_budget.fetch_duplicate_rejections,
+            "fetch_budget_rejections": search_budget.fetch_budget_rejections,
+            "fetch_requests": search_budget.fetch_requests,
+            "search_result_urls": sorted(search_budget.search_result_urls),
+            "fetched_source_urls": sorted(search_budget.fetched_source_urls),
+            "fetched_source_pages": sorted(search_budget.fetched_source_pages),
             "retrieved_source_urls": sorted(search_budget.retrieved_source_urls),
             "workspace": "/workspace",
             "workspace_sources": "/workspace/sources",
@@ -402,6 +532,14 @@ async def run_deepagents_workflow(
             "analyst_calls": delegation_budget.analyst_calls,
             "editor_calls": delegation_budget.editor_calls,
             "draft_edit_calls": delegation_budget.draft_edit_calls,
+            "researcher_attempts": delegation_budget.researcher_attempts,
+            "analyst_attempts": delegation_budget.analyst_attempts,
+            "editor_attempts": delegation_budget.editor_attempts,
+            "draft_edit_attempts": delegation_budget.draft_edit_attempts,
+            "researcher_rejections": delegation_budget.researcher_rejections,
+            "analyst_rejections": delegation_budget.analyst_rejections,
+            "editor_rejections": delegation_budget.editor_rejections,
+            "draft_edit_rejections": delegation_budget.draft_edit_rejections,
             "researcher_call_limit": delegation_budget.max_researcher,
             "analyst_call_limit": delegation_budget.max_analyst,
             "editor_call_limit": delegation_budget.max_editor,

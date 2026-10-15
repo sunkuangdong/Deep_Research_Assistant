@@ -1,0 +1,1 @@
+{"case_id": "dr-smoke-006", "started_at": "2026-10-15T03:11:02.229224+00:00", "status": "infrastructure_failure", "failure_type": "provider_or_runtime", "error": "ReadTimeout: ", "langfuse_trace_id": "e79fab5ea335cc971436e24a92eee4b2", "latency_ms": 26952, "finished_at": "2026-10-15T03:11:29.181829+00:00"}

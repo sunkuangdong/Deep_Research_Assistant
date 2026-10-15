@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from pathlib import Path
 
 import pytest
+from langgraph.errors import GraphRecursionError
 
 import evals.run_deep_research as eval_runner
 from evals.langfuse_observability import CaseTrace, validate_langfuse_config
@@ -71,6 +72,8 @@ def test_scoring_accepts_complete_workspace(tmp_path: Path):
     metadata = {
         "search_calls": 2,
         "search_call_limit": 6,
+        "fetch_calls": 1,
+        "fetch_call_limit": 6,
         "researcher_calls": 2,
         "researcher_call_limit": 3,
         "analyst_calls": 1,
@@ -106,6 +109,8 @@ def test_scoring_rejects_missing_section_and_budget_violation(tmp_path: Path):
     metadata = {
         "search_calls": 7,
         "search_call_limit": 6,
+        "fetch_calls": 0,
+        "fetch_call_limit": 6,
         "researcher_calls": 0,
         "researcher_call_limit": 3,
         "analyst_calls": 0,
@@ -150,6 +155,8 @@ def test_scoring_rejects_wrong_language_artifacts(tmp_path: Path):
         "retrieved_source_urls": [citation],
         "search_calls": 1,
         "search_call_limit": 6,
+        "fetch_calls": 0,
+        "fetch_call_limit": 6,
         "researcher_calls": 1,
         "researcher_call_limit": 3,
         "analyst_calls": 0,
@@ -195,6 +202,8 @@ def test_scoring_rejects_unretrieved_or_unsupported_citations(tmp_path: Path):
         "retrieved_source_urls": [supported],
         "search_calls": 1,
         "search_call_limit": 6,
+        "fetch_calls": 0,
+        "fetch_call_limit": 6,
         "researcher_calls": 1,
         "researcher_call_limit": 3,
         "analyst_calls": 0,
@@ -213,6 +222,50 @@ def test_scoring_rejects_unretrieved_or_unsupported_citations(tmp_path: Path):
     assert score["source_link_checks"]["retrieved_in_run"] is False
     assert score["citations_without_evidence"] == [invented]
     assert score["citations_not_retrieved"] == [invented]
+
+
+def test_scoring_matches_backtick_wrapped_evidence_url(tmp_path: Path):
+    sources = tmp_path / "sources"
+    reports = tmp_path / "reports"
+    sources.mkdir()
+    reports.mkdir()
+    citation = "https://developer.mozilla.org/en-US/docs/Web/API/Response/body"
+    (sources / "analysis_test.md").write_text(
+        f"English analysis cites `{citation}` as supporting evidence.",
+        encoding="utf-8",
+    )
+    (reports / "report_test.md").write_text(
+        "## Background\n"
+        f"English report backed by [MDN Response.body]({citation}).\n",
+        encoding="utf-8",
+    )
+    case = {
+        "language": "en",
+        "required_artifacts": ["analysis", "report"],
+        "required_sections": ["Background"],
+        "minimum_citations": 1,
+    }
+    metadata = {
+        "retrieved_source_urls": [citation],
+        "search_calls": 1,
+        "search_call_limit": 6,
+        "fetch_calls": 1,
+        "fetch_call_limit": 6,
+        "researcher_calls": 1,
+        "researcher_call_limit": 3,
+        "analyst_calls": 1,
+        "analyst_call_limit": 1,
+        "editor_calls": 0,
+        "editor_call_limit": 1,
+        "draft_edit_calls": 0,
+        "draft_edit_call_limit": 1,
+    }
+
+    score = score_workspace(tmp_path, case, metadata)
+
+    assert score["completed"] is True
+    assert score["citations_without_evidence"] == []
+    assert score["source_link_checks"]["evidence_provenance"] is True
 
 
 def test_scoring_rejects_researcher_and_draft_edit_budget_violations(tmp_path: Path):
@@ -239,6 +292,8 @@ def test_scoring_rejects_researcher_and_draft_edit_budget_violations(tmp_path: P
         "retrieved_source_urls": [citation],
         "search_calls": 1,
         "search_call_limit": 6,
+        "fetch_calls": 0,
+        "fetch_call_limit": 6,
         "researcher_calls": 4,
         "researcher_call_limit": 3,
         "analyst_calls": 0,
@@ -275,6 +330,8 @@ def test_scoring_rejects_report_with_wrong_run_date(tmp_path: Path):
         "retrieved_source_urls": [citation],
         "search_calls": 1,
         "search_call_limit": 6,
+        "fetch_calls": 0,
+        "fetch_call_limit": 6,
         "researcher_calls": 0,
         "researcher_call_limit": 3,
         "analyst_calls": 0,
@@ -325,6 +382,32 @@ def test_runner_records_timeout_without_retrying_agent_failure(
     assert result["status"] == "infrastructure_failure"
     assert result["failure_type"] == "timeout"
     assert result["latency_ms"] >= 0
+
+
+def test_runner_classifies_graph_recursion_as_agent_failure(
+    tmp_path: Path, monkeypatch
+):
+    async def recursive_workflow(*_args, **_kwargs):
+        raise GraphRecursionError("test recursion limit")
+
+    monkeypatch.setattr(
+        eval_runner, "run_deepagents_workflow", recursive_workflow
+    )
+    case = {
+        "id": "recursion-case",
+        "language": "en",
+        "topic": "Recursion fixture",
+        "no_analysis": True,
+        "required_artifacts": ["report"],
+        "required_sections": ["Summary"],
+        "minimum_citations": 1,
+    }
+
+    result = asyncio.run(eval_runner._run_case(case, tmp_path, 1))
+
+    assert result["status"] == "agent_failure"
+    assert result["failure_type"] == "recursion_limit"
+    assert result["error"].startswith("GraphRecursionError:")
 
 
 def test_smoke_dataset_is_valid_jsonl():
@@ -390,6 +473,7 @@ def test_case_trace_mirrors_local_deterministic_scores():
                 },
                 "budget_checks": {
                     "search": True,
+                    "fetch": True,
                     "researcher": True,
                     "analyst": True,
                     "editor": False,
@@ -411,6 +495,7 @@ def test_case_trace_mirrors_local_deterministic_scores():
         "source_evidence_provenance": 1,
         "source_retrieved_in_run": 0,
         "search_budget_compliance": 1,
+        "fetch_budget_compliance": 1,
         "researcher_budget_compliance": 1,
         "analyst_budget_compliance": 1,
         "editor_budget_compliance": 0,
@@ -436,6 +521,8 @@ def test_runner_passes_trace_callback_and_records_trace_id(tmp_path, monkeypatch
                 "usage": {"total_tokens": 10},
                 "search_calls": 1,
                 "search_call_limit": 6,
+                "fetch_calls": 0,
+                "fetch_call_limit": 6,
                 "analyst_calls": 0,
                 "analyst_call_limit": 1,
                 "editor_calls": 1,

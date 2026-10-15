@@ -103,19 +103,84 @@ class DelegationLimitMiddleware(AgentMiddleware):
         tool_name: str,
         guidance: str,
     ) -> ToolMessage | None:
-        calls = int(getattr(self.budget, counter_name, 0)) + 1
-        setattr(self.budget, counter_name, calls)
+        attempts_name = counter_name.replace("_calls", "_attempts")
+        rejections_name = counter_name.replace("_calls", "_rejections")
+        attempts = int(getattr(self.budget, attempts_name, 0)) + 1
+        setattr(self.budget, attempts_name, attempts)
+        calls = int(getattr(self.budget, counter_name, 0))
         limit = int(getattr(self.budget, limit_name, 0))
-        if calls <= limit:
-            return None
-        action = "委派" if tool_name == "task" else "调用"
-        return ToolMessage(
+        if calls >= limit:
+            rejections = int(getattr(self.budget, rejections_name, 0)) + 1
+            setattr(self.budget, rejections_name, rejections)
+            action = "委派" if tool_name == "task" else "调用"
+            return ToolMessage(
+                content=(
+                    f"{action}被拒绝：{label} 最多允许 {limit} 次，"
+                    f"本次是第 {attempts} 次尝试。{guidance}"
+                ),
+                tool_call_id=tool_call_id,
+                name=tool_name,
+                status="error",
+            )
+        setattr(self.budget, counter_name, calls + 1)
+        return None
+
+    def _normalize_task_request(
+        self, request: ToolCallRequest
+    ) -> tuple[ToolCallRequest, ToolMessage | None]:
+        """Repair a common nested task-argument shape before schema validation."""
+
+        tool_call = request.tool_call or {}
+        if tool_call.get("name") != "task":
+            return request, None
+
+        args = dict(tool_call.get("args") or {})
+        nested = args.pop("parameters", None)
+        if isinstance(nested, dict):
+            for key in ("description", "subagent_type"):
+                if not args.get(key) and nested.get(key):
+                    args[key] = nested[key]
+
+        subagent_type = str(
+            args.get("subagent_type") or args.get("subagent") or ""
+        )
+        description = str(args.get("description") or "").strip()
+        normalized_call = {**tool_call, "args": args}
+        if hasattr(request, "override"):
+            normalized_request = request.override(tool_call=normalized_call)
+        else:
+            request.tool_call = normalized_call
+            normalized_request = request
+
+        if description:
+            return normalized_request, None
+
+        counter_prefix = subagent_type if subagent_type in {
+            "researcher",
+            "analyst",
+            "editor",
+        } else None
+        if counter_prefix:
+            attempts_name = f"{counter_prefix}_attempts"
+            rejections_name = f"{counter_prefix}_rejections"
+            setattr(
+                self.budget,
+                attempts_name,
+                int(getattr(self.budget, attempts_name, 0)) + 1,
+            )
+            setattr(
+                self.budget,
+                rejections_name,
+                int(getattr(self.budget, rejections_name, 0)) + 1,
+            )
+        return normalized_request, ToolMessage(
             content=(
-                f"{action}被拒绝：{label} 最多允许 {limit} 次，本次是第 {calls} 次尝试。"
-                f"{guidance}"
+                "委派被拒绝：task 缺少非空 description。"
+                "该无效调用未消耗子 Agent 执行名额；请使用顶层 "
+                "description 与 subagent_type 参数重新委派。"
             ),
-            tool_call_id=tool_call_id,
-            name=tool_name,
+            tool_call_id=tool_call.get("id") or "",
+            name="task",
             status="error",
         )
     
@@ -186,6 +251,9 @@ class DelegationLimitMiddleware(AgentMiddleware):
         handler: Callable[[ToolCallRequest], Any]
     ) -> Any:
 
+        request, malformed = self._normalize_task_request(request)
+        if malformed is not None:
+            return malformed
         rejected = self._check_or_reject(request)
         if rejected is not None:
             print(f"[guard] blocked task subagent={ (request.tool_call or {}).get('args', {}).get('subagent_type') }")
@@ -198,6 +266,9 @@ class DelegationLimitMiddleware(AgentMiddleware):
         request: ToolCallRequest,
         handler: Callable[[ToolCallRequest], Any]
     ) -> Any:
+        request, malformed = self._normalize_task_request(request)
+        if malformed is not None:
+            return malformed
         rejected = self._check_or_reject(request)
         if rejected is not None:
             print(f"[guard] blocked task subagent={ (request.tool_call or {}).get('args', {}).get('subagent_type') }")

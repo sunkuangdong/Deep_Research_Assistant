@@ -7,6 +7,15 @@ from pathlib import Path
 from urllib.parse import urlsplit, urlunsplit
 
 from evals.langfuse_observability import langfuse_tracing_enabled
+from src.tools.deepagents_adapter import deepagents_recursion_limit
+from src.tools.search import (
+    bocha_max_retries,
+    bocha_timeout_seconds,
+    web_fetch_max_bytes,
+    web_fetch_max_chars,
+    web_fetch_max_retries,
+    web_fetch_timeout_seconds,
+)
 
 
 def sanitize_base_url(raw_url: str | None) -> str:
@@ -48,7 +57,7 @@ def capture_runtime_config(
 ) -> dict[str, object]:
     base_url = sanitize_base_url(os.getenv("OPENAI_BASE_URL"))
     return {
-        "protocol_version": "1.2.0-draft",
+        "protocol_version": "1.3.0-draft",
         "dataset_version": "v1",
         "dataset_path": str(dataset_path.relative_to(project_root)),
         "dataset_sha256": dataset_sha256(dataset_path),
@@ -62,7 +71,15 @@ def capture_runtime_config(
         "timeout_seconds": timeout_seconds,
         "max_provider_retries": int(os.getenv("MODEL_MAX_RETRIES") or "2"),
         "concurrency": 1,
+        "deepagents_recursion_limit": deepagents_recursion_limit(),
         "search_call_limit": 6,
+        "search_timeout_seconds": bocha_timeout_seconds(),
+        "search_max_retries": bocha_max_retries(),
+        "fetch_call_limit": 6,
+        "fetch_timeout_seconds": web_fetch_timeout_seconds(),
+        "fetch_max_retries": web_fetch_max_retries(),
+        "fetch_max_bytes": web_fetch_max_bytes(),
+        "fetch_max_chars": web_fetch_max_chars(),
         "researcher_call_limit": 3,
         "analyst_call_limit": 1,
         "editor_call_limit": 1,
