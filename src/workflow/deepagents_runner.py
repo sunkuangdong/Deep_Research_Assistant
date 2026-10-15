@@ -194,6 +194,7 @@ async def run_deepagents_workflow(
     no_analysis: bool = False,
     root_dir: Path | str = ".",
     todos_export_path: Path | str | None = None,
+    callbacks: list[Any] | None = None,
 ) -> DeepAgentsRunResult:
     """
     运行官方 DeepAgents 工作流。
@@ -310,6 +311,7 @@ async def run_deepagents_workflow(
         agent,
         user_prompt,
         todos_export_path=resolved_todos_path,
+        callbacks=callbacks,
     )
 
     return DeepAgentsRunResult(

@@ -6,6 +6,8 @@ import subprocess
 from pathlib import Path
 from urllib.parse import urlsplit, urlunsplit
 
+from evals.langfuse_observability import langfuse_tracing_enabled
+
 
 def sanitize_base_url(raw_url: str | None) -> str:
     value = (raw_url or "https://api.openai.com/v1").strip()
@@ -63,4 +65,11 @@ def capture_runtime_config(
         "search_call_limit": 6,
         "analyst_call_limit": 1,
         "editor_call_limit": 1,
+        "langfuse_tracing_enabled": langfuse_tracing_enabled(),
+        "langfuse_environment": (
+            os.getenv("LANGFUSE_TRACING_ENVIRONMENT") or "default"
+        ).strip(),
+        "langfuse_base_url": sanitize_base_url(
+            os.getenv("LANGFUSE_BASE_URL") or "https://cloud.langfuse.com"
+        ),
     }

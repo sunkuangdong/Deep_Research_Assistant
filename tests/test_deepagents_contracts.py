@@ -1,20 +1,21 @@
-from pathlib import Path
 import asyncio
 import json
+from pathlib import Path
 
+from src.tools.calculator import structured_calculator
 from src.tools.deepagents_adapter import (
     _format_deepagents_event,
     export_todos_to_tmp_json,
+    run_deep_agent_once,
 )
 from src.workflow.deepagents_runner import (
+    DeepAgentsRunResult,
     SearchBudget,
-    build_deepagents_system_prompt,
     build_deepagents_subagents,
+    build_deepagents_system_prompt,
     create_limited_web_search,
     reset_workspace_run_artifacts,
 )
-from src.tools.calculator import structured_calculator
-from src.workflow.deepagents_runner import DeepAgentsRunResult
 
 def test_web_research_skill_exists():
     path = Path("skills/web-research/SKILL.md")
@@ -242,6 +243,36 @@ def test_export_todos_to_tmp_json_matches_teacher_shape(tmp_path: Path):
     assert list(payload.keys()) == ["todos"]
     assert payload["todos"][0]["status"] == "in_progress"
     assert payload["todos"][1]["content"] == "写入 findings 文件"
+
+
+def test_run_deep_agent_once_passes_callbacks(tmp_path: Path):
+    callback = object()
+
+    class FakeAgent:
+        config = None
+
+        async def astream_events(self, _input, *, config, version):
+            self.config = config
+            assert version == "v2"
+            yield {
+                "event": "on_chain_end",
+                "name": "fake-agent",
+                "data": {"output": {"messages": [{"content": "done"}]}},
+            }
+
+    agent = FakeAgent()
+    result = asyncio.run(
+        run_deep_agent_once(
+            agent,
+            "test topic",
+            todos_export_path=tmp_path / "tmp.json",
+            callbacks=[callback],
+        )
+    )
+
+    assert result.final_text == "done"
+    assert agent.config["callbacks"] == [callback]
+    assert agent.config["recursion_limit"] == 80
 
 def test_delegation_limit_middleware_blocks_second_analyst_and_editor():
     from types import SimpleNamespace

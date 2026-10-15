@@ -7,3 +7,4 @@ python-dotenv==1.2.2
 pydantic==2.13.4
 httpx==0.28.1
 pytest==9.1.1
+langfuse>=5,<6

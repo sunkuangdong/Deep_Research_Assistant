@@ -210,6 +210,7 @@ async def run_deep_agent_once(
     agent: Any,
     topic: str,
     todos_export_path: Path | str = DEFAULT_TODOS_EXPORT_PATH,
+    callbacks: list[Any] | None = None,
 ) -> DeepAgentRunOnceResult:
     """
     执行一次 DeepAgent 调用，默认打印 streaming events，
@@ -235,13 +236,17 @@ async def run_deep_agent_once(
     }
 
     try:
+        run_config: dict[str, Any] = {"recursion_limit": 80}
+        if callbacks:
+            run_config["callbacks"] = callbacks
+
         async for event in agent.astream_events(
             {
                 "messages": [
                     {"role": "user", "content": cleaned_topic}
                 ]
             },
-            config={"recursion_limit": 80},
+            config=run_config,
             version="v2",
         ):
             formatted = _format_deepagents_event(event)

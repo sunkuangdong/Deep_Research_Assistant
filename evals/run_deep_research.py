@@ -13,6 +13,11 @@ from typing import Any
 
 from dotenv import load_dotenv
 
+from evals.langfuse_observability import (
+    flush_langfuse,
+    start_case_trace,
+    validate_langfuse_config,
+)
 from evals.runtime_config import capture_runtime_config
 from evals.scoring import score_workspace
 from evals.validation import load_jsonl, validate_dataset
@@ -27,7 +32,12 @@ def _safe_name(value: str) -> str:
 
 def _redact_error(exc: BaseException) -> str:
     text = f"{type(exc).__name__}: {exc}"
-    for name in ("OPENAI_API_KEY", "BOCHA_API_KEY"):
+    for name in (
+        "OPENAI_API_KEY",
+        "BOCHA_API_KEY",
+        "LANGFUSE_PUBLIC_KEY",
+        "LANGFUSE_SECRET_KEY",
+    ):
         secret = os.getenv(name)
         if secret:
             text = text.replace(secret, "[REDACTED]")
@@ -68,6 +78,9 @@ async def _run_case(
     case: dict[str, Any],
     result_dir: Path,
     timeout_seconds: int,
+    *,
+    trace_metadata: dict[str, Any] | None = None,
+    trace_session_id: str | None = None,
 ) -> dict[str, Any]:
     case_root = result_dir / "workspaces" / case["id"]
     _prepare_run_root(case_root)
@@ -80,42 +93,57 @@ async def _run_case(
         "failure_type": None,
         "error": None,
     }
-    try:
-        workflow_result = await asyncio.wait_for(
-            run_deepagents_workflow(
-                _enhanced_topic(case),
-                no_analysis=case["no_analysis"],
-                root_dir=case_root,
-                todos_export_path=case_root / "tmp.json",
-            ),
-            timeout=timeout_seconds,
-        )
-        score = score_workspace(case_root / "workspace", case, workflow_result.metadata)
-        base_result.update(
-            {
-                "status": "completed" if score["completed"] else "agent_failure",
-                "failure_type": None if score["completed"] else "acceptance_criteria",
-                "final_text": workflow_result.final_text,
-                "metadata": workflow_result.metadata,
-                "score": score,
-            }
-        )
-    except TimeoutError as exc:
-        base_result.update(
-            {
-                "failure_type": "timeout",
-                "error": _redact_error(exc),
-            }
-        )
-    except Exception as exc:  # noqa: BLE001 - failures must become benchmark data
-        base_result.update(
-            {
-                "failure_type": "provider_or_runtime",
-                "error": _redact_error(exc),
-            }
-        )
-    base_result["latency_ms"] = int((time.perf_counter() - start) * 1000)
-    base_result["finished_at"] = datetime.now(UTC).isoformat()
+    with start_case_trace(
+        case=case,
+        session_id=trace_session_id or result_dir.name,
+        metadata=trace_metadata or {},
+    ) as case_trace:
+        if case_trace.trace_id:
+            base_result["langfuse_trace_id"] = case_trace.trace_id
+        try:
+            workflow_result = await asyncio.wait_for(
+                run_deepagents_workflow(
+                    _enhanced_topic(case),
+                    no_analysis=case["no_analysis"],
+                    root_dir=case_root,
+                    todos_export_path=case_root / "tmp.json",
+                    callbacks=case_trace.callbacks,
+                ),
+                timeout=timeout_seconds,
+            )
+            score = score_workspace(
+                case_root / "workspace", case, workflow_result.metadata
+            )
+            base_result.update(
+                {
+                    "status": "completed" if score["completed"] else "agent_failure",
+                    "failure_type": (
+                        None if score["completed"] else "acceptance_criteria"
+                    ),
+                    "final_text": workflow_result.final_text,
+                    "metadata": workflow_result.metadata,
+                    "score": score,
+                }
+            )
+        except TimeoutError as exc:
+            base_result.update(
+                {
+                    "failure_type": "timeout",
+                    "error": _redact_error(exc),
+                }
+            )
+        except Exception as exc:  # noqa: BLE001 - failures must become benchmark data
+            base_result.update(
+                {
+                    "failure_type": "provider_or_runtime",
+                    "error": _redact_error(exc),
+                }
+            )
+        base_result["latency_ms"] = int((time.perf_counter() - start) * 1000)
+        base_result["finished_at"] = datetime.now(UTC).isoformat()
+        case_trace.record_result(base_result)
+        if case_trace.error:
+            base_result["langfuse_error"] = case_trace.error
     return base_result
 
 
@@ -169,6 +197,7 @@ def _write_summary(result_dir: Path, results: list[dict[str, Any]]) -> None:
 
 async def async_main(args: argparse.Namespace) -> int:
     load_dotenv(PROJECT_ROOT / ".env")
+    validate_langfuse_config()
     dataset_path = (PROJECT_ROOT / args.dataset).resolve()
     validation = validate_dataset(dataset_path)
     if validation["errors"]:
@@ -194,20 +223,45 @@ async def async_main(args: argparse.Namespace) -> int:
 
     config = capture_runtime_config(PROJECT_ROOT, dataset_path, args.timeout_seconds)
     config["selected_case_ids"] = [case["id"] for case in cases]
+    config["run_type"] = "smoke" if "smoke" in dataset_path.stem else "main"
     (result_dir / "config.json").write_text(
         json.dumps(config, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
 
+    trace_metadata = {
+        key: config[key]
+        for key in (
+            "protocol_version",
+            "dataset_version",
+            "dataset_sha256",
+            "git_commit",
+            "provider",
+            "model_name",
+            "run_type",
+        )
+    }
     results: list[dict[str, Any]] = []
     raw_path = result_dir / "raw_runs.jsonl"
-    for case in cases:
-        print(f"[eval] running {case['id']} (timeout={args.timeout_seconds}s)")
-        result = await _run_case(case, result_dir, args.timeout_seconds)
-        _append_jsonl(raw_path, result)
-        results.append(result)
-        print(f"[eval] {case['id']}: {result['status']} ({result['latency_ms']} ms)")
+    try:
+        for case in cases:
+            print(f"[eval] running {case['id']} (timeout={args.timeout_seconds}s)")
+            result = await _run_case(
+                case,
+                result_dir,
+                args.timeout_seconds,
+                trace_metadata=trace_metadata,
+                trace_session_id=result_dir.name,
+            )
+            _append_jsonl(raw_path, result)
+            results.append(result)
+            print(
+                f"[eval] {case['id']}: {result['status']} "
+                f"({result['latency_ms']} ms)"
+            )
 
-    _write_summary(result_dir, results)
+        _write_summary(result_dir, results)
+    finally:
+        flush_langfuse()
     print(f"[eval] results: {result_dir}")
     return 0 if all(result["status"] == "completed" for result in results) else 2
 

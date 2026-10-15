@@ -51,6 +51,35 @@ The runner creates an isolated workspace per case, records a credential-free
 `config.json`, and appends every outcome to `raw_runs.jsonl`. A failed or timed
 out case is preserved rather than silently replaced.
 
+## Optional Langfuse Tracing
+
+Langfuse tracing is opt-in and does not replace the local JSONL evidence. When
+enabled, every evaluation case becomes one trace containing the nested
+DeepAgents, model, and tool observations. The local deterministic scores are
+also attached to that trace.
+
+Add project-scoped credentials to `.env`:
+
+```dotenv
+LANGFUSE_PUBLIC_KEY=pk-lf-...
+LANGFUSE_SECRET_KEY=sk-lf-...
+LANGFUSE_BASE_URL=https://us.cloud.langfuse.com
+LANGFUSE_TRACING_ENABLED=true
+LANGFUSE_TRACING_ENVIRONMENT=evaluation
+LANGFUSE_SAMPLE_RATE=1
+```
+
+Check authentication before a paid smoke run:
+
+```bash
+python -c "from dotenv import load_dotenv; load_dotenv(); from langfuse import get_client; print(get_client().auth_check())"
+```
+
+If tracing is enabled but the package or credentials are missing, the runner
+fails before making a model call. If tracing is disabled, the existing runner
+behavior is unchanged. Trace IDs are written to `raw_runs.jsonl`, and queued
+events are flushed once after the full run set.
+
 The remaining freeze steps are to review the labels, record the two-case cost
 estimate and spending cap, then commit and tag protocol v1.
 
