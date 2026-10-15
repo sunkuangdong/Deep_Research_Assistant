@@ -1,0 +1,171 @@
+{
+  "schema_version": 1,
+  "collected_at": "2026-10-15T17:11:23.790035+00:00",
+  "source": {
+    "model_costs": "Langfuse Observations v2 GENERATION records",
+    "run_metrics": "published rescored_runs.jsonl",
+    "bocha_pricing": "manual package configuration",
+    "dashboard_snapshots": "capacity audit only; not run-cost evidence"
+  },
+  "validation": {
+    "trace_count": 6,
+    "all_generation_counts_match_local_llm_calls": true,
+    "all_generations_priced": true,
+    "root_observations_excluded": true
+  },
+  "model_cost": {
+    "currency": "USD",
+    "run_count": 6,
+    "total_usd": 0.108101059967,
+    "mean_per_run_usd": 0.018016843328,
+    "cost_components_usd": {
+      "input": 0.0355182,
+      "input_cache_read": 0.03038036,
+      "output": 0.0422025,
+      "output_reasoning": 0.0,
+      "total": 0.108101059967
+    },
+    "target_run_count": 50,
+    "projection_buffer_multiplier": 1.2,
+    "projected_target_cost_usd": 0.900842166392,
+    "projected_target_cost_with_buffer_usd": 1.08101059967,
+    "spend_cap_usd": 1.5,
+    "within_spend_cap": true,
+    "cap_headroom_usd": 0.41898940033
+  },
+  "bocha_search_cost": {
+    "currency": "CNY",
+    "package_price_cny": 3.6,
+    "package_calls": 1000,
+    "unit_cost_cny": 0.0036,
+    "smoke_search_calls": 32,
+    "smoke_allocated_cost_cny": 0.1152,
+    "projected_target_calls_with_buffer": 320,
+    "projected_target_allocated_cost_cny": 1.152,
+    "search_call_cap": 360,
+    "within_search_call_cap": true,
+    "remaining_calls_snapshot": 934,
+    "remaining_calls_cover_projection": true
+  },
+  "per_trace": [
+    {
+      "case_id": "dr-smoke-001",
+      "langfuse_trace_id": "9331cdb04eba0cbcee86c7b739cfd278",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 44,
+      "priced_generation_count": 44,
+      "total_cost_usd": 0.019354189992,
+      "cost_components_usd": {
+        "input": 0.0059333,
+        "input_cache_read": 0.00622589,
+        "output": 0.007195,
+        "output_reasoning": 0.0,
+        "total": 0.019354189992
+      },
+      "local_total_tokens": 696312,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-smoke-002",
+      "langfuse_trace_id": "332275ab52d2dc0019eaa7fe0e3dd771",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 43,
+      "priced_generation_count": 43,
+      "total_cost_usd": 0.019519199996,
+      "cost_components_usd": {
+        "input": 0.0069226,
+        "input_cache_read": 0.0049281,
+        "output": 0.0076685,
+        "output_reasoning": 0.0,
+        "total": 0.019519199996
+      },
+      "local_total_tokens": 577373,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-smoke-003",
+      "langfuse_trace_id": "10dfc443ca5c030f766fa6c752ea6f66",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 44,
+      "priced_generation_count": 44,
+      "total_cost_usd": 0.019776479995,
+      "cost_components_usd": {
+        "input": 0.0074156,
+        "input_cache_read": 0.00501138,
+        "output": 0.0073495,
+        "output_reasoning": 0.0,
+        "total": 0.019776479995
+      },
+      "local_total_tokens": 589993,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-smoke-004",
+      "langfuse_trace_id": "bb5d97a3707085bd6cbea15e6c4287dc",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 50,
+      "priced_generation_count": 50,
+      "total_cost_usd": 0.021105589996,
+      "cost_components_usd": {
+        "input": 0.0057814,
+        "input_cache_read": 0.00654469,
+        "output": 0.0087795,
+        "output_reasoning": 0.0,
+        "total": 0.021105589996
+      },
+      "local_total_tokens": 729842,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-smoke-005",
+      "langfuse_trace_id": "e4df2b44b998c125a10d5baa22d8ff14",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 40,
+      "priced_generation_count": 40,
+      "total_cost_usd": 0.015819909995,
+      "cost_components_usd": {
+        "input": 0.0050369,
+        "input_cache_read": 0.00442851,
+        "output": 0.0063545,
+        "output_reasoning": 0.0,
+        "total": 0.015819909995
+      },
+      "local_total_tokens": 505929,
+      "local_search_calls": 5
+    },
+    {
+      "case_id": "dr-smoke-006",
+      "langfuse_trace_id": "1bd1f81bd31ef0f57a118a4dbd10d066",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 30,
+      "priced_generation_count": 30,
+      "total_cost_usd": 0.012525689993,
+      "cost_components_usd": {
+        "input": 0.0044284,
+        "input_cache_read": 0.00324179,
+        "output": 0.0048555,
+        "output_reasoning": 0.0,
+        "total": 0.012525689993
+      },
+      "local_total_tokens": 378174,
+      "local_search_calls": 3
+    }
+  ],
+  "capacity_snapshot": {
+    "snapshot_date": "2026-10-15",
+    "openai_credit_balance_usd": 5.82,
+    "credit_balance_covers_projection": true
+  }
+}

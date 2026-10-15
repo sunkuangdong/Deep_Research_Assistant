@@ -57,7 +57,7 @@ def capture_runtime_config(
 ) -> dict[str, object]:
     base_url = sanitize_base_url(os.getenv("OPENAI_BASE_URL"))
     return {
-        "protocol_version": "1.3.0-draft",
+        "protocol_version": "1.3.0",
         "dataset_version": "v1",
         "dataset_path": str(dataset_path.relative_to(project_root)),
         "dataset_sha256": dataset_sha256(dataset_path),

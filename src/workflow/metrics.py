@@ -1,12 +1,12 @@
-from operator import truediv
 import time
-from functools import wraps
 from collections import defaultdict
+from functools import wraps
 
 TOOL_METRICS = {
     "counts": defaultdict(int),
     "durations_ms": defaultdict(list),
 }
+
 
 def timed_tool(tool_name: str):
     def decorator(func):
@@ -20,8 +20,11 @@ def timed_tool(tool_name: str):
                 TOOL_METRICS["counts"][tool_name] += 1
                 TOOL_METRICS["durations_ms"][tool_name].append(elapsed_ms)
                 print(f"⏱️ {tool_name} 耗时: {elapsed_ms} ms")
+
         return wrapper
+
     return decorator
+
 
 def get_tool_metrics_summary() -> dict:
     summary = {}
@@ -38,9 +41,11 @@ def get_tool_metrics_summary() -> dict:
         }
     return summary
 
+
 def reset_tool_metrics():
     TOOL_METRICS["counts"].clear()
     TOOL_METRICS["durations_ms"].clear()
+
 
 async def measure_stage(stage_name: str, coro) -> dict:
     start = time.perf_counter()
@@ -54,14 +59,14 @@ async def measure_stage(stage_name: str, coro) -> dict:
             "result": result,
             "error": None,
         }
-    except Exception as e:
+    except Exception as error:  # noqa: BLE001 - Metrics must record any stage failure.
         cost_ms = int((time.perf_counter() - start) * 1000)
         return {
             "stage": stage_name,
             "ok": False,
             "cost_ms": cost_ms,
             "result": None,
-            "error": str(e),
+            "error": str(error),
         }
 
 

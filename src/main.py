@@ -2,12 +2,13 @@ import asyncio
 import json
 import time
 
-from src.workflow.cli import parse_args
-from src.workflow.runtime import healthcheck_env, print_quick_tips_on_error
-from src.workflow.metrics import get_tool_metrics_summary, reset_tool_metrics
-from src.workflow.deepagents_runner import run_deepagents_workflow
-
 from dotenv import load_dotenv
+
+from src.workflow.cli import parse_args
+from src.workflow.deepagents_runner import run_deepagents_workflow
+from src.workflow.metrics import get_tool_metrics_summary, reset_tool_metrics
+from src.workflow.runtime import healthcheck_env, print_quick_tips_on_error
+
 load_dotenv()
 
 
@@ -17,7 +18,7 @@ async def main():
 
     if not topic:
         raise ValueError("topic 不能为空")
-    
+
     reset_tool_metrics()
     start_time = time.perf_counter()
     deepagents_metadata = {}
@@ -32,10 +33,9 @@ async def main():
     else:
         raise ValueError(f"不支持的运行模式: {args.mode}")
 
-    
     total_ms = int((time.perf_counter() - start_time) * 1000)
     tool_metrics = get_tool_metrics_summary()
-    
+
     if args.as_json:
         payload = {
             "topic": topic,
@@ -55,13 +55,11 @@ async def main():
             print(json.dumps(deepagents_metadata, ensure_ascii=False, indent=2))
         print(json.dumps(tool_metrics, ensure_ascii=False, indent=2))
 
-
-
 if __name__ == "__main__":
     try:
         healthcheck_env()
         asyncio.run(main())
-    except Exception as e:
-        print(f"❌ 执行失败: {e}")
-        print_quick_tips_on_error(e)
+    except Exception as error:  # noqa: BLE001 - CLI boundary reports all failures.
+        print(f"❌ 执行失败: {error}")
+        print_quick_tips_on_error(error)
         raise SystemExit(1)

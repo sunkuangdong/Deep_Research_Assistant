@@ -27,9 +27,20 @@
   },
   "status_changes_from_rescore": 1,
   "cost": {
-    "status": "pending_langfuse_export",
-    "total_usd": null,
-    "projected_50_run_cost_with_20_percent_buffer_usd": null
+    "status": "collected",
+    "source": "Langfuse GENERATION observations plus local search-call metrics",
+    "collected_at": "2026-10-15T17:11:23.790035+00:00",
+    "total_usd": 0.108101059967,
+    "mean_per_run_usd": 0.018016843328,
+    "projected_50_run_cost_usd": 0.900842166392,
+    "projected_50_run_cost_with_20_percent_buffer_usd": 1.08101059967,
+    "model_spend_cap_usd": 1.5,
+    "within_model_spend_cap": true,
+    "bocha_smoke_search_calls": 32,
+    "bocha_smoke_allocated_cost_cny": 0.1152,
+    "projected_50_run_search_calls_with_20_percent_buffer": 320,
+    "search_call_cap": 360,
+    "within_search_call_cap": true
   },
   "percentile_method": "nearest-rank for P95; standard median for P50"
 }

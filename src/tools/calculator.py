@@ -1,4 +1,5 @@
 from typing import Literal
+
 from langchain_core.tools import tool
 from pydantic import BaseModel, Field
 
@@ -10,6 +11,7 @@ Operation = Literal[
     "percentage",
     "growth_rate",
 ]
+
 
 class StructuredCalculatorInput(BaseModel):
     operation: Operation = Field(
@@ -32,12 +34,14 @@ class StructuredCalculatorInput(BaseModel):
         description="percentage 或 growth_rate 的基准值",
     )
 
+
 def _validate_labels(values: list[float], labels: list[str] | None) -> list[str]:
     if labels is None:
         return [f"item_{idx + 1}" for idx in range(len(values))]
     if len(labels) != len(values):
         raise ValueError("labels 长度必须和 values 长度一致")
     return labels
+
 
 @tool("structured_calculator", args_schema=StructuredCalculatorInput)
 async def structured_calculator(
@@ -58,7 +62,7 @@ async def structured_calculator(
     if operation == "average":
         avg = sum(values) / len(values)
         return f"平均值: {avg}"
-    
+
     if operation in {"rank_desc", "rank_asc"}:
         resolved_labels = _validate_labels(values, labels)
         pairs = list(zip(resolved_labels, values, strict=True))
@@ -69,24 +73,24 @@ async def structured_calculator(
 
         for idx, (label, value) in enumerate(ranked, start=1):
             lines.append(f"{idx}. {label}: {value}")
-        
+
         return "\n".join(lines)
-    
+
     if operation == "percentage":
         if base_value is None or base_value == 0:
             return "计算失败：percentage 需要非 0 的 base_value。"
-        
+
         resolved_labels = _validate_labels(values, labels)
         lines = ["占比结果："]
         for label, value in zip(resolved_labels, values, strict=True):
             lines.append(f"{label}: {value / base_value * 100:.2f}%")
-        
+
         return "\n".join(lines)
-    
+
     if operation == "growth_rate":
         if base_value is None or base_value == 0:
             return "计算失败：growth_rate 需要非 0 的 base_value。"
-        
+
         resolved_labels = _validate_labels(values, labels)
         lines = ["增长率结果："]
         for label, value in zip(resolved_labels, values, strict=True):
@@ -98,7 +102,4 @@ async def structured_calculator(
         "structured_calculator 已收到计算请求："
         f"operation={operation}, values={values}, labels={labels}, base_value={base_value}"
     )
-
-
-
 

@@ -287,5 +287,11 @@
         }
       ]
     }
-  ]
+  ],
+  "cost_evidence": {
+    "collected_at": "2026-10-15T17:11:23.790035+00:00",
+    "costs_sha256": "ae8c7136760373e92a71c8d6717d5f880d6e467376d2f9450379dcbb95045184",
+    "summary_sha256": "c956b0d1eed6e8d6c9367c43158ad680db7fef2204fb6ec4b5a4dba78e53a38e",
+    "report_sha256": "6cdde62bbe6bff134c8a707626ffdfe2512f0bb649f810e5a3aaf17606447729"
+  }
 }

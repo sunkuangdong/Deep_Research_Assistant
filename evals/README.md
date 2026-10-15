@@ -5,8 +5,9 @@ result artifacts for Deep Research Assistant.
 
 ## Current Status
 
-The protocol is currently **DRAFT**. No benchmark result is official until the
-freeze checklist in [`EVALUATION_SPEC.md`](./EVALUATION_SPEC.md) is complete.
+Protocol v1.3.0 is **FROZEN** at Git tag `deep-research-eval-v1.3.0`.
+Main benchmark results are official only when executed against that frozen
+protocol and published through the evaluation tooling.
 
 ## Files
 
@@ -112,8 +113,34 @@ fails before making a model call. If tracing is disabled, the existing runner
 behavior is unchanged. Trace IDs are written to `raw_runs.jsonl`, and queued
 events are flushed once after the full run set.
 
-The remaining freeze steps are to review the labels, record the two-case cost
-estimate and spending cap, then commit and tag protocol v1.
+The frozen protocol uses a USD 1.50 model-cost cap and a 360-call search cap for
+the 50-run main-plus-stability plan. Smoke cost evidence is published under
+`evals/results/published/smoke_v1/` and excluded from main benchmark metrics.
+
+## Published Cost Collection
+
+After publishing a fixed result bundle, collect exact model costs from the
+Langfuse `GENERATION` observations referenced by `rescored_runs.jsonl`:
+
+```bash
+python -m evals.collect_costs \
+  --published-dir evals/results/published/smoke_v1 \
+  --bocha-package-price-cny 3.6 \
+  --bocha-package-calls 1000 \
+  --bocha-remaining-calls 934 \
+  --target-run-count 50 \
+  --projection-buffer 1.2 \
+  --model-spend-cap-usd 1.50 \
+  --search-call-cap 360 \
+  --openai-credit-balance-usd 5.82 \
+  --balance-snapshot-date 2026-10-15
+```
+
+The collector fails before writing if any trace is missing, the Langfuse
+generation count differs from the local `llm_calls` metric, or a generation is
+unpriced. It sums only `GENERATION` observations, so trace and root-span totals
+are not counted twice. The command writes `costs.json` and updates the published
+`summary.json` and `report.md`; it never exports Langfuse credentials.
 
 No file in this directory contains API credentials.
 

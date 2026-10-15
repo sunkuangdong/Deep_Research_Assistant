@@ -1,10 +1,11 @@
 # Deep Research Assistant Evaluation Protocol
 
-- **Status:** DRAFT
+- **Status:** FROZEN
 - **Version:** 1.3.0
 - **Protocol Owner:** Kuangdong Sun
 - **Dataset Version:** v1
-- **Last Updated:** 2026-10-14
+- **Frozen At:** 2026-10-15
+- **Last Updated:** 2026-10-15
 
 ## Objective
 
@@ -60,6 +61,13 @@ Smoke tasks must never be included in the main benchmark summary. Main-task
 success criteria and expected artifacts must be defined before live runs
 begin. The benchmark dataset must not be exposed to the agent as reference
 material or indexed as knowledge.
+
+Frozen dataset fingerprints:
+
+```yaml
+research_smoke_v1_sha256: 3ccaf7875e499bde0aaaa5f062aa0acafed6e02f00ddde264ed7f4dc5cf10f59
+research_main_v1_sha256: 9595213afcdd0b7baedf00f948d8364560e7484378ad06f88c0ed44d356fbf42
+```
 
 ## Test Case Schema
 
@@ -188,32 +196,54 @@ editor_call_limit: 1
 draft_edit_call_limit: 1
 ```
 
-The following values must be captured in the frozen protocol and every live
-result set:
+The following provider and execution values are frozen for protocol v1.3.0:
 
 ```yaml
-provider: <record before freeze>
-model_name: <record before freeze>
-model_base_url: <record without credentials>
-model_max_input_tokens: <record before freeze>
-timeout_seconds: <record after smoke runs>
-run_date: <explicit YYYY-MM-DD value>
+provider: openai
+model_name: gpt-6-luna
+model_base_url: https://api.openai.com/v1
+model_max_input_tokens: 131072
+timeout_seconds: 900
 max_provider_retries: 2
+run_date_policy: explicit YYYY-MM-DD value supplied for every live result set
 ```
 
 Secrets, API keys, and credentials must never be written to evaluation files.
 
 ## Cost Gate
 
-Before the main benchmark, run two smoke cases and record the average token
-usage, API cost, latency, and search calls. Estimate the full-run cost as:
+Before the main benchmark, run the six development-only smoke cases and record
+average token usage, API cost, latency, and search calls. Estimate the full-run
+cost as:
 
 ```text
 estimated cost = average smoke-run cost * 50 * 1.2
 ```
 
-The main benchmark must not start until the cost estimate is reviewed and an
-explicit spending cap is recorded in the frozen protocol.
+The frozen smoke evidence and budget gate are:
+
+```yaml
+smoke_run_count: 6
+mean_total_tokens: 579603.83
+median_total_tokens: 583683
+mean_latency_ms: 168934.50
+median_latency_ms: 157311
+mean_model_cost_usd: 0.018016843328
+smoke_model_cost_usd: 0.108101059967
+mean_search_calls: 5.333333
+projected_50_run_model_cost_usd: 0.900842166392
+projected_50_run_model_cost_with_20_percent_buffer_usd: 1.081010599670
+model_spend_cap_usd: 1.50
+projected_50_run_search_calls_with_20_percent_buffer: 320
+search_call_cap: 360
+```
+
+The runner must stop launching new cases when either cumulative model cost
+reaches USD 1.50 or executed search calls reach 360. Any already-started case
+must still be recorded. Langfuse priced `GENERATION` observations are the model
+cost source of truth; dashboard screenshots are capacity checks only. The
+trace-level evidence is stored in
+`evals/results/published/smoke_v1/costs.json`.
 
 ## Retry and Failure Policy
 
@@ -287,12 +317,13 @@ from `raw_runs.jsonl`. Every result set records:
 
 The status may change from `DRAFT` to `FROZEN` only when:
 
-- [ ] All main cases and labels have been reviewed.
-- [ ] Smoke and main datasets are separate.
-- [ ] No required field contains a placeholder.
-- [ ] Completion and failure definitions are executable and unambiguous.
-- [ ] Provider, model, timeout, retry, and budget values are recorded.
-- [ ] The two-case smoke cost estimate and spending cap are recorded.
-- [ ] Dataset SHA-256 checksums are generated.
-- [ ] The protocol and datasets are committed and tagged.
+- [x] All main cases and labels have been reviewed.
+- [x] Smoke and main datasets are separate.
+- [x] No required field contains a placeholder.
+- [x] Completion and failure definitions are executable and unambiguous.
+- [x] Provider, model, timeout, retry, and budget values are recorded.
+- [x] The six-case smoke cost estimate and spending caps are recorded.
+- [x] Dataset SHA-256 checksums are generated.
+- [x] The protocol and datasets are committed and tagged as
+  `deep-research-eval-v1.3.0`.
 

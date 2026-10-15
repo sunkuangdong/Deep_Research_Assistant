@@ -8,7 +8,7 @@ from langgraph.errors import GraphRecursionError
 
 import evals.run_deep_research as eval_runner
 from evals.langfuse_observability import CaseTrace, validate_langfuse_config
-from evals.runtime_config import sanitize_base_url
+from evals.runtime_config import capture_runtime_config, sanitize_base_url
 from evals.scoring import score_workspace
 from evals.validation import validate_suite
 from src.workflow.deepagents_runner import DeepAgentsRunResult
@@ -358,6 +358,16 @@ def test_base_url_capture_strips_credentials_and_query():
 
     assert sanitized == "https://example.com:8443/v1"
     assert "secret" not in sanitized
+
+
+def test_runtime_config_records_frozen_protocol_version():
+    config = capture_runtime_config(
+        Path("."),
+        Path("evals/datasets/research_main_v1.jsonl"),
+        timeout_seconds=900,
+    )
+
+    assert config["protocol_version"] == "1.3.0"
 
 
 def test_runner_records_timeout_without_retrying_agent_failure(

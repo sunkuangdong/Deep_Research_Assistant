@@ -5,7 +5,7 @@
 - Dataset SHA-256: `3ccaf7875e499bde0aaaa5f062aa0acafed6e02f00ddde264ed7f4dc5cf10f59`
 - Scorer SHA-256: `719d828f5a94d54f0fdf240bca6e8e2ca4004b6459e4d627a570804e7703336e`
 - Completion: 6/6
-- Cost status: pending Langfuse export
+- Model cost: $0.108101 across 6 smoke runs
 
 | Case | Status | Latency (ms) | Total tokens | Citations | Status changed by rescore |
 | --- | --- | ---: | ---: | ---: | --- |
@@ -27,6 +27,18 @@
 - P95 total tokens: 729842
 - Median latency: 157311.0 ms
 - P95 latency: 257578 ms
+
+<!-- cost-evidence:start -->
+## Cost Evidence
+
+- Langfuse model cost: $0.108101 total; $0.018017 mean per run.
+- Projected model cost for 50 runs: $0.900842; $1.081011 with the 120% multiplier.
+- Model spend cap: $1.50; within cap: true.
+- Bocha smoke usage: 32 calls, allocated cost CNY 0.1152.
+- Projected Bocha usage: 320 calls with buffer; cap 360 calls.
+- Root observations are excluded; model cost is summed only from priced `GENERATION` observations.
+- Full trace-level evidence is stored in `costs.json`.
+<!-- cost-evidence:end -->
 
 ## Audit Notes
 

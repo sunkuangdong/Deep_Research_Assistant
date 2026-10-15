@@ -1,5 +1,6 @@
 import os
 
+
 def healthcheck_env():
     required = ["OPENAI_API_KEY", "BOCHA_API_KEY"]
 
@@ -9,6 +10,7 @@ def healthcheck_env():
         raise ValueError(f"缺少以下环境变量: {', '.join(missing)}")
 
     print("环境变量检查通过")
+
 
 def print_quick_tips_on_error(err: Exception):
     msg = str(err)
