@@ -1,0 +1,35 @@
+{
+  "run_count": 6,
+  "completed_count": 6,
+  "completion_rate": 1.0,
+  "status_counts": {
+    "completed": 6,
+    "agent_failure": 0,
+    "infrastructure_failure": 0
+  },
+  "artifact_completeness_rate": 1.0,
+  "language_compliance_rate": 1.0,
+  "budget_compliance_rate": 1.0,
+  "source_link_compliance_rate": 1.0,
+  "tokens": {
+    "sample_count": 6,
+    "total": 3477623,
+    "mean": 579603.83,
+    "median": 583683.0,
+    "p95_nearest_rank": 729842
+  },
+  "latency_ms": {
+    "sample_count": 6,
+    "total": 1013607,
+    "mean": 168934.5,
+    "median": 157311.0,
+    "p95_nearest_rank": 257578
+  },
+  "status_changes_from_rescore": 1,
+  "cost": {
+    "status": "pending_langfuse_export",
+    "total_usd": null,
+    "projected_50_run_cost_with_20_percent_buffer_usd": null
+  },
+  "percentile_method": "nearest-rank for P95; standard median for P50"
+}

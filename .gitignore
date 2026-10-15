@@ -1,10 +1,33 @@
 volumes/
 node_modules/
 
+# Local secrets and machine-specific environment overrides.
 .env
+.env.*
+!.env.example
+!.env_template
+!.env_template.zh
 
+# Python environments, bytecode, test caches, and coverage output.
 __pycache__/
 *.pyc
-
 .venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Runtime files.
 tmp.json
+*.log
+.DS_Store
+
+# Local evaluation runs are reproducible but too noisy to commit. Keep only
+# reviewed, compact evidence bundles under the published directory.
+/evals/results/*
+!/evals/results/README.md
+!/evals/results/.gitkeep
+!/evals/results/published/
+!/evals/results/published/**

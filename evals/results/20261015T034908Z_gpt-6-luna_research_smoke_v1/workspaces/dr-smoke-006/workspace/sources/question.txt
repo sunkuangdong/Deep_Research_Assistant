@@ -1,9 +1,0 @@
-请围绕这个主题完成调研并给出最终报告：基于 LangChain 官方文档调研结构化 Tool Calling 的基本组成，包括工具定义、参数 Schema、模型绑定和工具结果返回，并给出一个面向初学者的实施清单。
-
-评估输出要求：最终报告必须使用以下完全一致的 Markdown 二级标题：背景, 关键发现, 实施清单, 局限性；最终报告至少包含 3 个不同的 HTTP(S) 来源链接。请在 research_plan 中记录至少 3 个不同来源的目标，每次 researcher 委派使用不同的子主题、findings 路径和来源页面目标，禁止重复委派或覆盖已有 findings。URL 的 #fragment 只是同一页面内的章节，不算不同来源。进入 analyst 或起草前，先核对 findings 中不同且由本轮搜索返回或抓取成功的 URL 页面数量；如果少于 3，只能在剩余搜索和 researcher 预算内，通过新的 findings 路径补充可靠来源；禁止用不相关或低质量链接凑数。
-
-运行日期：2026-10-14。报告文件名中的日期必须使用这个运行日期，禁止自行编造日期。
-【语言】用户用中文提问，因此 todo、findings、启用时的 analysis、draft、report、最终回复都必须使用中文；专有名词与 URL 可保留原文。
-【文件名约定】slug 必须全小写 ASCII（[a-z0-9_]+）；findings 只能是 /workspace/sources/findings_<slug>.md；analysis 只能是 /workspace/sources/analysis_<slug>.md；draft/report 只能写在 /workspace/reports/ 下；禁止 CamelCase、*_research.md、根路径 /findings_*.md。
-委派 researcher 时必须在 task 中写明精确写入路径；委派 analyst 时必须列出真实 findings 路径与 analysis 输出路径；读取前先 ls，禁止臆造文件名。
-用户已授权你完成完整调研流程，不要询问是否继续，也不要要求用户确认数据或来源；如果官方来源不足，必须标注不确定性并继续完成 final report；workspace 已清空，禁止复用任何与本次主题无关的旧 findings / analysis / draft / report；完成 research_plan 后，必须通过 web_search 或委派 researcher 子 Agent 完成联网调研，禁止跳过调研直接进入起草；researcher 写完 findings 后禁止主 Agent 再改 findings；editor 最多调用 1 次；editor 返回后最多修订 draft 一次，然后必须立刻写入 final report 并结束；整个运行最多调用 1 次 edit_file 修改 draft；必须把所有修改合并到这一次调用中，禁止拆成多次 edit_file；禁止二次委派 editor，禁止在 draft 上反复 edit/read 空转；禁止委派 general-purpose；报告起草必须由主 Agent 自己完成；本次已启用 no-analysis：禁止委派 analyst，禁止创建或写入 analysis 文件；读取 findings 后直接起草 draft。必须完成 question、research_plan、findings、draft、editor 审阅和 final report。
