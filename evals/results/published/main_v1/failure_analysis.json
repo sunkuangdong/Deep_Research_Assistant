@@ -1,0 +1,558 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-16T04:36:59.978898+00:00",
+  "source_bundle": "main_v1",
+  "run_count": 30,
+  "completed_count": 11,
+  "failed_count": 19,
+  "completion_rate": 0.3667,
+  "failure_dimensions_overlap": true,
+  "dimension_counts": [
+    {
+      "dimension": "citation_shortfall",
+      "label": "Final report did not meet the minimum citation count",
+      "case_count": 13,
+      "case_ids": [
+        "dr-main-001",
+        "dr-main-006",
+        "dr-main-009",
+        "dr-main-011",
+        "dr-main-012",
+        "dr-main-013",
+        "dr-main-014",
+        "dr-main-017",
+        "dr-main-019",
+        "dr-main-020",
+        "dr-main-028",
+        "dr-main-029",
+        "dr-main-030"
+      ]
+    },
+    {
+      "dimension": "source_not_retrieved",
+      "label": "Final report cited a URL not retrieved in the run",
+      "case_count": 4,
+      "case_ids": [
+        "dr-main-014",
+        "dr-main-018",
+        "dr-main-021",
+        "dr-main-027"
+      ]
+    },
+    {
+      "dimension": "evidence_provenance",
+      "label": "Final report cited a URL absent from findings or analysis",
+      "case_count": 3,
+      "case_ids": [
+        "dr-main-015",
+        "dr-main-025",
+        "dr-main-027"
+      ]
+    },
+    {
+      "dimension": "workflow_incomplete",
+      "label": "Workflow stopped before required artifacts were complete",
+      "case_count": 1,
+      "case_ids": [
+        "dr-main-004"
+      ]
+    }
+  ],
+  "by_category": [
+    {
+      "category": "architecture",
+      "run_count": 5,
+      "completed_count": 3,
+      "completion_rate": 0.6
+    },
+    {
+      "category": "comparison",
+      "run_count": 5,
+      "completed_count": 3,
+      "completion_rate": 0.6
+    },
+    {
+      "category": "cost",
+      "run_count": 5,
+      "completed_count": 1,
+      "completion_rate": 0.2
+    },
+    {
+      "category": "deployment",
+      "run_count": 5,
+      "completed_count": 3,
+      "completion_rate": 0.6
+    },
+    {
+      "category": "governance",
+      "run_count": 5,
+      "completed_count": 1,
+      "completion_rate": 0.2
+    },
+    {
+      "category": "security",
+      "run_count": 5,
+      "completed_count": 0,
+      "completion_rate": 0.0
+    }
+  ],
+  "by_language": [
+    {
+      "language": "en",
+      "run_count": 15,
+      "completed_count": 4,
+      "completion_rate": 0.2667
+    },
+    {
+      "language": "zh",
+      "run_count": 15,
+      "completed_count": 7,
+      "completion_rate": 0.4667
+    }
+  ],
+  "failed_cases": [
+    {
+      "case_id": "dr-main-001",
+      "category": "comparison",
+      "language": "en",
+      "failure_type": "acceptance_criteria",
+      "failure_dimensions": [
+        "citation_shortfall"
+      ],
+      "citation_count": 4,
+      "minimum_citations": 5,
+      "citation_deficit": 1,
+      "missing_artifacts": [],
+      "citations_not_retrieved": [],
+      "citations_without_evidence": []
+    },
+    {
+      "case_id": "dr-main-004",
+      "category": "comparison",
+      "language": "zh",
+      "failure_type": "acceptance_criteria",
+      "failure_dimensions": [
+        "workflow_incomplete"
+      ],
+      "citation_count": 0,
+      "minimum_citations": 5,
+      "citation_deficit": 5,
+      "missing_artifacts": [
+        "draft",
+        "report"
+      ],
+      "citations_not_retrieved": [],
+      "citations_without_evidence": []
+    },
+    {
+      "case_id": "dr-main-006",
+      "category": "architecture",
+      "language": "zh",
+      "failure_type": "acceptance_criteria",
+      "failure_dimensions": [
+        "citation_shortfall"
+      ],
+      "citation_count": 4,
+      "minimum_citations": 5,
+      "citation_deficit": 1,
+      "missing_artifacts": [],
+      "citations_not_retrieved": [],
+      "citations_without_evidence": []
+    },
+    {
+      "case_id": "dr-main-009",
+      "category": "architecture",
+      "language": "en",
+      "failure_type": "acceptance_criteria",
+      "failure_dimensions": [
+        "citation_shortfall"
+      ],
+      "citation_count": 4,
+      "minimum_citations": 5,
+      "citation_deficit": 1,
+      "missing_artifacts": [],
+      "citations_not_retrieved": [],
+      "citations_without_evidence": []
+    },
+    {
+      "case_id": "dr-main-011",
+      "category": "security",
+      "language": "en",
+      "failure_type": "acceptance_criteria",
+      "failure_dimensions": [
+        "citation_shortfall"
+      ],
+      "citation_count": 4,
+      "minimum_citations": 5,
+      "citation_deficit": 1,
+      "missing_artifacts": [],
+      "citations_not_retrieved": [],
+      "citations_without_evidence": []
+    },
+    {
+      "case_id": "dr-main-012",
+      "category": "security",
+      "language": "zh",
+      "failure_type": "acceptance_criteria",
+      "failure_dimensions": [
+        "citation_shortfall"
+      ],
+      "citation_count": 4,
+      "minimum_citations": 5,
+      "citation_deficit": 1,
+      "missing_artifacts": [],
+      "citations_not_retrieved": [],
+      "citations_without_evidence": []
+    },
+    {
+      "case_id": "dr-main-013",
+      "category": "security",
+      "language": "en",
+      "failure_type": "acceptance_criteria",
+      "failure_dimensions": [
+        "citation_shortfall"
+      ],
+      "citation_count": 3,
+      "minimum_citations": 5,
+      "citation_deficit": 2,
+      "missing_artifacts": [],
+      "citations_not_retrieved": [],
+      "citations_without_evidence": []
+    },
+    {
+      "case_id": "dr-main-014",
+      "category": "security",
+      "language": "zh",
+      "failure_type": "acceptance_criteria",
+      "failure_dimensions": [
+        "citation_shortfall",
+        "source_not_retrieved"
+      ],
+      "citation_count": 4,
+      "minimum_citations": 5,
+      "citation_deficit": 1,
+      "missing_artifacts": [],
+      "citations_not_retrieved": [
+        "https://qdrant.tech/documentation/security"
+      ],
+      "citations_without_evidence": []
+    },
+    {
+      "case_id": "dr-main-015",
+      "category": "security",
+      "language": "en",
+      "failure_type": "acceptance_criteria",
+      "failure_dimensions": [
+        "evidence_provenance"
+      ],
+      "citation_count": 4,
+      "minimum_citations": 4,
+      "citation_deficit": 0,
+      "missing_artifacts": [],
+      "citations_not_retrieved": [],
+      "citations_without_evidence": [
+        "https://developers.openai.com/api/docs/guides/your-data"
+      ]
+    },
+    {
+      "case_id": "dr-main-017",
+      "category": "cost",
+      "language": "en",
+      "failure_type": "acceptance_criteria",
+      "failure_dimensions": [
+        "citation_shortfall"
+      ],
+      "citation_count": 3,
+      "minimum_citations": 5,
+      "citation_deficit": 2,
+      "missing_artifacts": [],
+      "citations_not_retrieved": [],
+      "citations_without_evidence": []
+    },
+    {
+      "case_id": "dr-main-018",
+      "category": "cost",
+      "language": "zh",
+      "failure_type": "acceptance_criteria",
+      "failure_dimensions": [
+        "source_not_retrieved"
+      ],
+      "citation_count": 6,
+      "minimum_citations": 5,
+      "citation_deficit": 0,
+      "missing_artifacts": [],
+      "citations_not_retrieved": [
+        "https://arxiv.org/abs/2005.11401",
+        "https://python.langchain.com/docs/how_to/contextual_compression"
+      ],
+      "citations_without_evidence": []
+    },
+    {
+      "case_id": "dr-main-019",
+      "category": "cost",
+      "language": "en",
+      "failure_type": "acceptance_criteria",
+      "failure_dimensions": [
+        "citation_shortfall"
+      ],
+      "citation_count": 4,
+      "minimum_citations": 5,
+      "citation_deficit": 1,
+      "missing_artifacts": [],
+      "citations_not_retrieved": [],
+      "citations_without_evidence": []
+    },
+    {
+      "case_id": "dr-main-020",
+      "category": "cost",
+      "language": "zh",
+      "failure_type": "acceptance_criteria",
+      "failure_dimensions": [
+        "citation_shortfall"
+      ],
+      "citation_count": 4,
+      "minimum_citations": 5,
+      "citation_deficit": 1,
+      "missing_artifacts": [],
+      "citations_not_retrieved": [],
+      "citations_without_evidence": []
+    },
+    {
+      "case_id": "dr-main-021",
+      "category": "deployment",
+      "language": "en",
+      "failure_type": "acceptance_criteria",
+      "failure_dimensions": [
+        "source_not_retrieved"
+      ],
+      "citation_count": 8,
+      "minimum_citations": 4,
+      "citation_deficit": 0,
+      "missing_artifacts": [],
+      "citations_not_retrieved": [
+        "https://kubernetes.io/docs/concepts/workloads/controllers/deployment"
+      ],
+      "citations_without_evidence": []
+    },
+    {
+      "case_id": "dr-main-025",
+      "category": "deployment",
+      "language": "en",
+      "failure_type": "acceptance_criteria",
+      "failure_dimensions": [
+        "evidence_provenance"
+      ],
+      "citation_count": 4,
+      "minimum_citations": 4,
+      "citation_deficit": 0,
+      "missing_artifacts": [],
+      "citations_not_retrieved": [],
+      "citations_without_evidence": [
+        "https://docs.github.com/zh/actions/writing-workflows/choosing-what-your-workflow-does/using-environments-for-deployment"
+      ]
+    },
+    {
+      "case_id": "dr-main-027",
+      "category": "governance",
+      "language": "en",
+      "failure_type": "acceptance_criteria",
+      "failure_dimensions": [
+        "source_not_retrieved",
+        "evidence_provenance"
+      ],
+      "citation_count": 6,
+      "minimum_citations": 5,
+      "citation_deficit": 0,
+      "missing_artifacts": [],
+      "citations_not_retrieved": [
+        "https://scikit-learn.org/stable/modules/generated/sklearn.metrics/confusion_matrix.html?highlight=confusion_matrix"
+      ],
+      "citations_without_evidence": [
+        "https://scikit-learn.org/stable/modules/generated/sklearn.metrics.confusion_matrix.html?highlight=confusion_matrix",
+        "https://scikit-learn.org/stable/modules/generated/sklearn.metrics/confusion_matrix.html?highlight=confusion_matrix"
+      ]
+    },
+    {
+      "case_id": "dr-main-028",
+      "category": "governance",
+      "language": "zh",
+      "failure_type": "acceptance_criteria",
+      "failure_dimensions": [
+        "citation_shortfall"
+      ],
+      "citation_count": 3,
+      "minimum_citations": 5,
+      "citation_deficit": 2,
+      "missing_artifacts": [],
+      "citations_not_retrieved": [],
+      "citations_without_evidence": []
+    },
+    {
+      "case_id": "dr-main-029",
+      "category": "governance",
+      "language": "en",
+      "failure_type": "acceptance_criteria",
+      "failure_dimensions": [
+        "citation_shortfall"
+      ],
+      "citation_count": 2,
+      "minimum_citations": 5,
+      "citation_deficit": 3,
+      "missing_artifacts": [],
+      "citations_not_retrieved": [],
+      "citations_without_evidence": []
+    },
+    {
+      "case_id": "dr-main-030",
+      "category": "governance",
+      "language": "zh",
+      "failure_type": "acceptance_criteria",
+      "failure_dimensions": [
+        "citation_shortfall"
+      ],
+      "citation_count": 3,
+      "minimum_citations": 4,
+      "citation_deficit": 1,
+      "missing_artifacts": [],
+      "citations_not_retrieved": [],
+      "citations_without_evidence": []
+    }
+  ],
+  "change_priorities": [
+    {
+      "priority": 1,
+      "change_id": "evidence_inventory_gate",
+      "title": "Add a structured evidence inventory and block drafting until it is valid",
+      "potentially_addressed_cases": [
+        "dr-main-001",
+        "dr-main-006",
+        "dr-main-009",
+        "dr-main-011",
+        "dr-main-012",
+        "dr-main-013",
+        "dr-main-014",
+        "dr-main-015",
+        "dr-main-017",
+        "dr-main-018",
+        "dr-main-019",
+        "dr-main-020",
+        "dr-main-021",
+        "dr-main-025",
+        "dr-main-027",
+        "dr-main-028",
+        "dr-main-029",
+        "dr-main-030"
+      ],
+      "potential_coverage_count": 18,
+      "potential_coverage_rate": 0.9474,
+      "coverage_is_not_a_predicted_pass_rate": true,
+      "target_files": [
+        "src/workflow/deepagents_runner.py",
+        "src/workflow/delegation_guard.py",
+        "src/tools/lib/prompts.py",
+        "src/workflow/evidence_inventory.py (new)"
+      ],
+      "implementation": [
+        "Record canonical URLs returned by web_search and successful web_fetch calls in a structured per-run evidence inventory.",
+        "Before analyst delegation or draft creation, verify that the inventory contains at least the case-specific minimum number of distinct source pages.",
+        "Allow the final report to cite only inventory entries that are also present in findings or analysis.",
+        "Return an actionable deficit to the agent while recovery budget remains instead of discovering the violation after the run."
+      ],
+      "validation": [
+        "Unit-test URL canonicalization, duplicate pages, provenance checks, and citation deficits.",
+        "Run the frozen failure cases as a v2 regression set; do not replace v1 results."
+      ]
+    },
+    {
+      "priority": 2,
+      "change_id": "citation_aware_budget_allocation",
+      "title": "Reserve research capacity for citation recovery and assign distinct source targets",
+      "potentially_addressed_cases": [
+        "dr-main-001",
+        "dr-main-006",
+        "dr-main-009",
+        "dr-main-011",
+        "dr-main-012",
+        "dr-main-013",
+        "dr-main-014",
+        "dr-main-017",
+        "dr-main-019",
+        "dr-main-020",
+        "dr-main-028",
+        "dr-main-029",
+        "dr-main-030"
+      ],
+      "potential_coverage_count": 13,
+      "potential_coverage_rate": 0.6842,
+      "coverage_is_not_a_predicted_pass_rate": true,
+      "target_files": [
+        "src/workflow/deepagents_runner.py",
+        "src/tools/lib/prompts.py"
+      ],
+      "implementation": [
+        "Require the research plan to allocate enough distinct source-page targets to satisfy the citation threshold before delegation starts.",
+        "Reserve one bounded recovery opportunity until the evidence inventory passes, instead of exhausting all search and researcher calls during initial exploration.",
+        "Make each researcher report the exact distinct URLs it preserved so the orchestrator can choose a non-duplicate recovery target."
+      ],
+      "validation": [
+        "Assert that a five-citation case cannot enter drafting with fewer than five eligible evidence URLs.",
+        "Measure completion, search calls, latency, and token usage on the citation-shortfall regression subset."
+      ]
+    },
+    {
+      "priority": 3,
+      "change_id": "citation_allowlist_and_url_normalization",
+      "title": "Generate final citations from an allowlist of canonical evidence URLs",
+      "potentially_addressed_cases": [
+        "dr-main-014",
+        "dr-main-015",
+        "dr-main-018",
+        "dr-main-021",
+        "dr-main-025",
+        "dr-main-027"
+      ],
+      "potential_coverage_count": 6,
+      "potential_coverage_rate": 0.3158,
+      "coverage_is_not_a_predicted_pass_rate": true,
+      "target_files": [
+        "src/workflow/evidence_inventory.py (new)",
+        "src/tools/lib/prompts.py",
+        "evals/scoring.py"
+      ],
+      "implementation": [
+        "Normalize harmless URL variants consistently while preserving the exact fetched or searched URL for audit evidence.",
+        "Expose the eligible citation allowlist to the editor and finalization stage.",
+        "Reject invented paths, altered documentation URLs, and citations introduced only during drafting or editing."
+      ],
+      "validation": [
+        "Add regression fixtures for path-versus-dot URL variants, fragments, redirects, and query strings.",
+        "Verify zero citations_not_retrieved and zero citations_without_evidence on the affected cases."
+      ]
+    },
+    {
+      "priority": 4,
+      "change_id": "phase_state_machine_finalizer",
+      "title": "Enforce draft, editor, and final-report completion with explicit phase state",
+      "potentially_addressed_cases": [
+        "dr-main-004"
+      ],
+      "potential_coverage_count": 1,
+      "potential_coverage_rate": 0.0526,
+      "coverage_is_not_a_predicted_pass_rate": true,
+      "target_files": [
+        "src/workflow/deepagents_runner.py",
+        "src/workflow/delegation_guard.py"
+      ],
+      "implementation": [
+        "Track workflow phases explicitly rather than relying only on prompt instructions.",
+        "If research and analysis are complete but the agent attempts to stop, resume only the missing draft, review, or finalization phase within the existing limits.",
+        "Persist the terminal phase and reason in run metadata for auditability."
+      ],
+      "validation": [
+        "Simulate an agent stopping after analysis and assert that finalization resumes once without looping.",
+        "Keep the existing timeout, editor, and draft-edit limits enforced."
+      ]
+    }
+  ],
+  "interpretation_guardrail": "Potential coverage counts identify observed failure conditions targeted by a change. They are not predicted pass counts and require a new versioned evaluation."
+}

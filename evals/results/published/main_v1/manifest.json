@@ -1415,5 +1415,10 @@
     "costs_sha256": "0a58e14168bb560ac828de82c9425e02d0c6d1e0b2f4e9bed2070fcd6f9ec460",
     "summary_sha256": "daa6a9855d553df124a9d9232f0d308e860899832b8ed9cfe6a2b6c3fe15eefb",
     "report_sha256": "7fc5d6a67a71f46721347e65027dfc687231efb134f1da4435c178ae9bc6828f"
+  },
+  "failure_analysis": {
+    "generated_at": "2026-10-16T04:36:59.978898+00:00",
+    "json_sha256": "ace18c730c52754255981001d6ab7dad565ba5421b316de98b74da77901cfc59",
+    "markdown_sha256": "dffb2640fda433a64838877de2b792f1478b398481340f7b0cabfe4354c91e18"
   }
 }
