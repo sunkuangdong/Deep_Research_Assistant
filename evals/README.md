@@ -145,5 +145,29 @@ unpriced. It sums only `GENERATION` observations, so trace and root-span totals
 are not counted twice. The command writes `costs.json` and updates the published
 `summary.json` and `report.md`; it never exports Langfuse credentials.
 
+Terminal recursion, timeout, and provider/runtime failures may not return local
+workflow metrics. For those failure types only, the collector uses priced
+Langfuse `GENERATION` observations for model calls and matching `web_search`
+`TOOL` observations for search-call accounting. Missing local metrics and their
+trace-derived replacements are listed explicitly in `costs.json`; normal runs
+still require an exact local-to-Langfuse generation-count match.
+
+## Published Regression Comparison
+
+After publishing and pricing both main bundles, generate the auditable v1/v2
+comparison:
+
+```bash
+python -m evals.compare_results \
+  --baseline-dir evals/results/published/main_v1 \
+  --candidate-dir evals/results/published/main_v2 \
+  --output-dir evals/results/published/main_v1_vs_v2
+```
+
+The comparison validates dataset, model, case IDs, trace coverage, and pricing
+before writing `comparison.json`, `report.md`, and a SHA-256 manifest. It labels
+v2 as a regression comparison on a previously observed dataset, not a holdout
+benchmark.
+
 No file in this directory contains API credentials.
 

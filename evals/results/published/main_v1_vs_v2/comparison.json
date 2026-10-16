@@ -1,0 +1,544 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-16T21:44:56.731727+00:00",
+  "comparison_type": "regression_on_previously_observed_dataset",
+  "baseline": {
+    "path": "evals/results/published/main_v1",
+    "protocol_version": "1.3.0",
+    "dataset_sha256": "9595213afcdd0b7baedf00f948d8364560e7484378ad06f88c0ed44d356fbf42",
+    "model_name": "gpt-6-luna",
+    "source_git_commits": [
+      "105f41f7d54e975cc4bdee88c96c11168fea97ac"
+    ],
+    "published_at": "2026-10-16T04:25:38.914914+00:00"
+  },
+  "candidate": {
+    "path": "evals/results/published/main_v2",
+    "protocol_version": "2.1.0",
+    "dataset_sha256": "9595213afcdd0b7baedf00f948d8364560e7484378ad06f88c0ed44d356fbf42",
+    "model_name": "gpt-6-luna",
+    "source_git_commits": [
+      "87f44b9b9dee94f331d38c3845fc4fb87d541dee"
+    ],
+    "published_at": "2026-10-16T21:34:26.508028+00:00"
+  },
+  "completion": {
+    "run_count": 30,
+    "baseline_completed": 11,
+    "candidate_completed": 24,
+    "baseline_rate": 0.36666666666666664,
+    "candidate_rate": 0.8,
+    "absolute_completed_change": 13,
+    "change_percentage_points": 43.333333,
+    "relative_change": 1.181818
+  },
+  "transitions": {
+    "counts": {
+      "improved": 16,
+      "regressed": 3,
+      "stable_completed": 8,
+      "stable_not_completed": 3
+    },
+    "case_ids": {
+      "improved": [
+        "dr-main-001",
+        "dr-main-004",
+        "dr-main-006",
+        "dr-main-009",
+        "dr-main-011",
+        "dr-main-013",
+        "dr-main-014",
+        "dr-main-015",
+        "dr-main-018",
+        "dr-main-020",
+        "dr-main-021",
+        "dr-main-025",
+        "dr-main-027",
+        "dr-main-028",
+        "dr-main-029",
+        "dr-main-030"
+      ],
+      "regressed": [
+        "dr-main-003",
+        "dr-main-010",
+        "dr-main-022"
+      ],
+      "stable_completed": [
+        "dr-main-002",
+        "dr-main-005",
+        "dr-main-007",
+        "dr-main-008",
+        "dr-main-016",
+        "dr-main-023",
+        "dr-main-024",
+        "dr-main-026"
+      ],
+      "stable_not_completed": [
+        "dr-main-012",
+        "dr-main-017",
+        "dr-main-019"
+      ]
+    },
+    "exact_status_counts": {
+      "agent_failure -> agent_failure": 2,
+      "agent_failure -> completed": 16,
+      "agent_failure -> infrastructure_failure": 1,
+      "completed -> agent_failure": 3,
+      "completed -> completed": 8
+    },
+    "cases": [
+      {
+        "case_id": "dr-main-001",
+        "baseline_status": "agent_failure",
+        "baseline_failure_type": "acceptance_criteria",
+        "candidate_status": "completed",
+        "candidate_failure_type": null,
+        "candidate_failure_reasons": [],
+        "transition_group": "improved"
+      },
+      {
+        "case_id": "dr-main-002",
+        "baseline_status": "completed",
+        "baseline_failure_type": null,
+        "candidate_status": "completed",
+        "candidate_failure_type": null,
+        "candidate_failure_reasons": [],
+        "transition_group": "stable_completed"
+      },
+      {
+        "case_id": "dr-main-003",
+        "baseline_status": "completed",
+        "baseline_failure_type": null,
+        "candidate_status": "agent_failure",
+        "candidate_failure_type": "acceptance_criteria",
+        "candidate_failure_reasons": [
+          "language mismatch"
+        ],
+        "transition_group": "regressed"
+      },
+      {
+        "case_id": "dr-main-004",
+        "baseline_status": "agent_failure",
+        "baseline_failure_type": "acceptance_criteria",
+        "candidate_status": "completed",
+        "candidate_failure_type": null,
+        "candidate_failure_reasons": [],
+        "transition_group": "improved"
+      },
+      {
+        "case_id": "dr-main-005",
+        "baseline_status": "completed",
+        "baseline_failure_type": null,
+        "candidate_status": "completed",
+        "candidate_failure_type": null,
+        "candidate_failure_reasons": [],
+        "transition_group": "stable_completed"
+      },
+      {
+        "case_id": "dr-main-006",
+        "baseline_status": "agent_failure",
+        "baseline_failure_type": "acceptance_criteria",
+        "candidate_status": "completed",
+        "candidate_failure_type": null,
+        "candidate_failure_reasons": [],
+        "transition_group": "improved"
+      },
+      {
+        "case_id": "dr-main-007",
+        "baseline_status": "completed",
+        "baseline_failure_type": null,
+        "candidate_status": "completed",
+        "candidate_failure_type": null,
+        "candidate_failure_reasons": [],
+        "transition_group": "stable_completed"
+      },
+      {
+        "case_id": "dr-main-008",
+        "baseline_status": "completed",
+        "baseline_failure_type": null,
+        "candidate_status": "completed",
+        "candidate_failure_type": null,
+        "candidate_failure_reasons": [],
+        "transition_group": "stable_completed"
+      },
+      {
+        "case_id": "dr-main-009",
+        "baseline_status": "agent_failure",
+        "baseline_failure_type": "acceptance_criteria",
+        "candidate_status": "completed",
+        "candidate_failure_type": null,
+        "candidate_failure_reasons": [],
+        "transition_group": "improved"
+      },
+      {
+        "case_id": "dr-main-010",
+        "baseline_status": "completed",
+        "baseline_failure_type": null,
+        "candidate_status": "agent_failure",
+        "candidate_failure_type": "recursion_limit",
+        "candidate_failure_reasons": [
+          "recursion limit"
+        ],
+        "transition_group": "regressed"
+      },
+      {
+        "case_id": "dr-main-011",
+        "baseline_status": "agent_failure",
+        "baseline_failure_type": "acceptance_criteria",
+        "candidate_status": "completed",
+        "candidate_failure_type": null,
+        "candidate_failure_reasons": [],
+        "transition_group": "improved"
+      },
+      {
+        "case_id": "dr-main-012",
+        "baseline_status": "agent_failure",
+        "baseline_failure_type": "acceptance_criteria",
+        "candidate_status": "agent_failure",
+        "candidate_failure_type": "recursion_limit",
+        "candidate_failure_reasons": [
+          "recursion limit"
+        ],
+        "transition_group": "stable_not_completed"
+      },
+      {
+        "case_id": "dr-main-013",
+        "baseline_status": "agent_failure",
+        "baseline_failure_type": "acceptance_criteria",
+        "candidate_status": "completed",
+        "candidate_failure_type": null,
+        "candidate_failure_reasons": [],
+        "transition_group": "improved"
+      },
+      {
+        "case_id": "dr-main-014",
+        "baseline_status": "agent_failure",
+        "baseline_failure_type": "acceptance_criteria",
+        "candidate_status": "completed",
+        "candidate_failure_type": null,
+        "candidate_failure_reasons": [],
+        "transition_group": "improved"
+      },
+      {
+        "case_id": "dr-main-015",
+        "baseline_status": "agent_failure",
+        "baseline_failure_type": "acceptance_criteria",
+        "candidate_status": "completed",
+        "candidate_failure_type": null,
+        "candidate_failure_reasons": [],
+        "transition_group": "improved"
+      },
+      {
+        "case_id": "dr-main-016",
+        "baseline_status": "completed",
+        "baseline_failure_type": null,
+        "candidate_status": "completed",
+        "candidate_failure_type": null,
+        "candidate_failure_reasons": [],
+        "transition_group": "stable_completed"
+      },
+      {
+        "case_id": "dr-main-017",
+        "baseline_status": "agent_failure",
+        "baseline_failure_type": "acceptance_criteria",
+        "candidate_status": "agent_failure",
+        "candidate_failure_type": "acceptance_criteria",
+        "candidate_failure_reasons": [
+          "incomplete artifacts",
+          "insufficient citations (0/5)"
+        ],
+        "transition_group": "stable_not_completed"
+      },
+      {
+        "case_id": "dr-main-018",
+        "baseline_status": "agent_failure",
+        "baseline_failure_type": "acceptance_criteria",
+        "candidate_status": "completed",
+        "candidate_failure_type": null,
+        "candidate_failure_reasons": [],
+        "transition_group": "improved"
+      },
+      {
+        "case_id": "dr-main-019",
+        "baseline_status": "agent_failure",
+        "baseline_failure_type": "acceptance_criteria",
+        "candidate_status": "infrastructure_failure",
+        "candidate_failure_type": "timeout",
+        "candidate_failure_reasons": [
+          "900-second timeout"
+        ],
+        "transition_group": "stable_not_completed"
+      },
+      {
+        "case_id": "dr-main-020",
+        "baseline_status": "agent_failure",
+        "baseline_failure_type": "acceptance_criteria",
+        "candidate_status": "completed",
+        "candidate_failure_type": null,
+        "candidate_failure_reasons": [],
+        "transition_group": "improved"
+      },
+      {
+        "case_id": "dr-main-021",
+        "baseline_status": "agent_failure",
+        "baseline_failure_type": "acceptance_criteria",
+        "candidate_status": "completed",
+        "candidate_failure_type": null,
+        "candidate_failure_reasons": [],
+        "transition_group": "improved"
+      },
+      {
+        "case_id": "dr-main-022",
+        "baseline_status": "completed",
+        "baseline_failure_type": null,
+        "candidate_status": "agent_failure",
+        "candidate_failure_type": "acceptance_criteria",
+        "candidate_failure_reasons": [
+          "incomplete artifacts",
+          "insufficient citations (0/5)"
+        ],
+        "transition_group": "regressed"
+      },
+      {
+        "case_id": "dr-main-023",
+        "baseline_status": "completed",
+        "baseline_failure_type": null,
+        "candidate_status": "completed",
+        "candidate_failure_type": null,
+        "candidate_failure_reasons": [],
+        "transition_group": "stable_completed"
+      },
+      {
+        "case_id": "dr-main-024",
+        "baseline_status": "completed",
+        "baseline_failure_type": null,
+        "candidate_status": "completed",
+        "candidate_failure_type": null,
+        "candidate_failure_reasons": [],
+        "transition_group": "stable_completed"
+      },
+      {
+        "case_id": "dr-main-025",
+        "baseline_status": "agent_failure",
+        "baseline_failure_type": "acceptance_criteria",
+        "candidate_status": "completed",
+        "candidate_failure_type": null,
+        "candidate_failure_reasons": [],
+        "transition_group": "improved"
+      },
+      {
+        "case_id": "dr-main-026",
+        "baseline_status": "completed",
+        "baseline_failure_type": null,
+        "candidate_status": "completed",
+        "candidate_failure_type": null,
+        "candidate_failure_reasons": [],
+        "transition_group": "stable_completed"
+      },
+      {
+        "case_id": "dr-main-027",
+        "baseline_status": "agent_failure",
+        "baseline_failure_type": "acceptance_criteria",
+        "candidate_status": "completed",
+        "candidate_failure_type": null,
+        "candidate_failure_reasons": [],
+        "transition_group": "improved"
+      },
+      {
+        "case_id": "dr-main-028",
+        "baseline_status": "agent_failure",
+        "baseline_failure_type": "acceptance_criteria",
+        "candidate_status": "completed",
+        "candidate_failure_type": null,
+        "candidate_failure_reasons": [],
+        "transition_group": "improved"
+      },
+      {
+        "case_id": "dr-main-029",
+        "baseline_status": "agent_failure",
+        "baseline_failure_type": "acceptance_criteria",
+        "candidate_status": "completed",
+        "candidate_failure_type": null,
+        "candidate_failure_reasons": [],
+        "transition_group": "improved"
+      },
+      {
+        "case_id": "dr-main-030",
+        "baseline_status": "agent_failure",
+        "baseline_failure_type": "acceptance_criteria",
+        "candidate_status": "completed",
+        "candidate_failure_type": null,
+        "candidate_failure_reasons": [],
+        "transition_group": "improved"
+      }
+    ]
+  },
+  "candidate_status_counts": {
+    "completed": 24,
+    "agent_failure": 5,
+    "infrastructure_failure": 1
+  },
+  "candidate_failure_type_counts": {
+    "acceptance_criteria": 3,
+    "recursion_limit": 2,
+    "timeout": 1
+  },
+  "quality": {
+    "artifact_completeness_rate": {
+      "baseline": 0.9888888888888889,
+      "candidate": 0.8666666666666667,
+      "change_percentage_points": -12.222222
+    },
+    "language_compliance_rate": {
+      "baseline": 1.0,
+      "candidate": 0.8666666666666667,
+      "change_percentage_points": -13.333333
+    },
+    "budget_compliance_rate": {
+      "baseline": 1.0,
+      "candidate": 0.9,
+      "change_percentage_points": -10.0
+    },
+    "source_link_compliance_rate": {
+      "baseline": 0.8,
+      "candidate": 0.9,
+      "change_percentage_points": 10.0
+    }
+  },
+  "efficiency": {
+    "latency_ms": {
+      "mean": {
+        "baseline": 154852.37,
+        "candidate": 205381.83,
+        "absolute_change": 50529.46,
+        "relative_change": 0.326307
+      },
+      "median": {
+        "baseline": 144343.5,
+        "candidate": 181404.5,
+        "absolute_change": 37061.0,
+        "relative_change": 0.256756
+      },
+      "p95_nearest_rank": {
+        "baseline": 250178.0,
+        "candidate": 369157.0,
+        "absolute_change": 118979.0,
+        "relative_change": 0.475577
+      }
+    },
+    "local_tokens": {
+      "baseline_sample_count": 30,
+      "candidate_sample_count": 27,
+      "median": {
+        "baseline": 678350.0,
+        "candidate": 679892.0,
+        "absolute_change": 1542.0,
+        "relative_change": 0.002273
+      },
+      "p95_nearest_rank": {
+        "baseline": 1283379.0,
+        "candidate": 971221.0,
+        "absolute_change": -312158.0,
+        "relative_change": -0.243231
+      },
+      "comparable": false
+    },
+    "model_cost_usd": {
+      "total": {
+        "baseline": 0.588057329823,
+        "candidate": 0.746385699802,
+        "absolute_change": 0.158328,
+        "relative_change": 0.26924
+      },
+      "mean_per_run": {
+        "baseline": 0.019601910994,
+        "candidate": 0.024879523327,
+        "absolute_change": 0.005278,
+        "relative_change": 0.26924
+      },
+      "cost_per_completed_case": {
+        "baseline": 0.05345975725663636,
+        "candidate": 0.031099404158416666,
+        "absolute_change": -0.02236,
+        "relative_change": -0.418265
+      },
+      "all_candidate_generations_priced": true
+    },
+    "bocha_search": {
+      "calls": {
+        "baseline": 178.0,
+        "candidate": 158.0,
+        "absolute_change": -20.0,
+        "relative_change": -0.11236
+      },
+      "allocated_cost_cny": {
+        "baseline": 0.6408,
+        "candidate": 0.5688,
+        "absolute_change": -0.072,
+        "relative_change": -0.11236
+      }
+    }
+  },
+  "recovery_researcher": {
+    "baseline": {
+      "supported": false,
+      "observed_run_count": 0,
+      "missing_case_ids": [
+        "dr-main-001",
+        "dr-main-002",
+        "dr-main-003",
+        "dr-main-004",
+        "dr-main-005",
+        "dr-main-006",
+        "dr-main-007",
+        "dr-main-008",
+        "dr-main-009",
+        "dr-main-010",
+        "dr-main-011",
+        "dr-main-012",
+        "dr-main-013",
+        "dr-main-014",
+        "dr-main-015",
+        "dr-main-016",
+        "dr-main-017",
+        "dr-main-018",
+        "dr-main-019",
+        "dr-main-020",
+        "dr-main-021",
+        "dr-main-022",
+        "dr-main-023",
+        "dr-main-024",
+        "dr-main-025",
+        "dr-main-026",
+        "dr-main-027",
+        "dr-main-028",
+        "dr-main-029",
+        "dr-main-030"
+      ],
+      "runs_with_executed_recovery": 0,
+      "executed_recovery_calls": 0,
+      "recovery_attempts": 0,
+      "recovery_rejections": 0
+    },
+    "candidate": {
+      "supported": true,
+      "observed_run_count": 27,
+      "missing_case_ids": [
+        "dr-main-010",
+        "dr-main-012",
+        "dr-main-019"
+      ],
+      "runs_with_executed_recovery": 8,
+      "executed_recovery_calls": 8,
+      "recovery_attempts": 9,
+      "recovery_rejections": 1
+    }
+  },
+  "limitations": [
+    "The candidate reuses a dataset whose baseline failures were already reviewed; this is a regression comparison, not a holdout benchmark.",
+    "Each task was run once, so the report provides descriptive results without variance estimates or confidence intervals.",
+    "Three candidate terminal failures lack local token metrics; Langfuse costs cover all traces, but local token percentiles use 27 of 30 cases.",
+    "Structural completion and source provenance do not establish factual correctness or full citation entailment.",
+    "This comparison does not include a non-isolated context baseline and cannot establish context-usage reduction."
+  ]
+}
