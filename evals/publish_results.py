@@ -244,6 +244,24 @@ def _all_checks_pass(run: dict[str, Any], field: str) -> bool:
     return bool(checks) and all(checks.values())
 
 
+def _report_profile(dataset_name: str) -> tuple[str, str]:
+    dataset_tokens = set(dataset_name.lower().split("_"))
+    if "smoke" in dataset_tokens:
+        return (
+            "Smoke Evaluation",
+            "Smoke metrics validate the harness and are excluded from the main benchmark.",
+        )
+    if "main" in dataset_tokens:
+        return (
+            "Main Benchmark",
+            "Main benchmark metrics include every fixed case selected under the frozen protocol.",
+        )
+    return (
+        "Evaluation",
+        "Published metrics include every fixed case selected from the named dataset.",
+    )
+
+
 def _build_summary(runs: list[dict[str, Any]]) -> dict[str, Any]:
     statuses = Counter(str(run["status"]) for run in runs)
     tokens = [
@@ -319,6 +337,7 @@ def _write_report(
     runs: list[dict[str, Any]],
     summary: dict[str, Any],
 ) -> None:
+    report_label, scope_note = _report_profile(str(config["dataset_name"]))
     rows = [
         "| {case} | {status} | {latency} | {tokens} | {citations} | {changed} |".format(
             case=run["case_id"],
@@ -332,7 +351,7 @@ def _write_report(
     ]
     report = "\n".join(
         [
-            "# Published Deep Research Smoke Evaluation",
+            f"# Published Deep Research {report_label}",
             "",
             f"- Protocol: `{config['protocol_version']}`",
             f"- Model: `{config['model_name']}`",
@@ -363,7 +382,7 @@ def _write_report(
             "- Every selected workspace was rescored with the scorer hash above.",
             "- The latest run per fixed case ID was selected before rescoring.",
             "- Final reports are copied under `reports/`; supporting artifact hashes are in `manifest.json`.",
-            "- Smoke metrics validate the harness and are excluded from the main benchmark.",
+            f"- {scope_note}",
             "",
         ]
     )
@@ -396,6 +415,7 @@ def publish_results(
         {
             "publication_schema_version": 1,
             "published_at": published_at,
+            "dataset_name": dataset_path.stem,
             "selection_policy": "latest run per fixed dataset case ID",
             "selected_case_ids": sorted(case_by_id),
             "source_result_dirs": sorted(

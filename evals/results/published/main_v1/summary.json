@@ -1,0 +1,46 @@
+{
+  "run_count": 30,
+  "completed_count": 11,
+  "completion_rate": 0.36666666666666664,
+  "status_counts": {
+    "completed": 11,
+    "agent_failure": 19,
+    "infrastructure_failure": 0
+  },
+  "artifact_completeness_rate": 0.9888888888888889,
+  "language_compliance_rate": 1.0,
+  "budget_compliance_rate": 1.0,
+  "source_link_compliance_rate": 0.8,
+  "tokens": {
+    "sample_count": 30,
+    "total": 21861757,
+    "mean": 728725.23,
+    "median": 678350.0,
+    "p95_nearest_rank": 1283379
+  },
+  "latency_ms": {
+    "sample_count": 30,
+    "total": 4645571,
+    "mean": 154852.37,
+    "median": 144343.5,
+    "p95_nearest_rank": 250178
+  },
+  "status_changes_from_rescore": 0,
+  "cost": {
+    "status": "collected",
+    "source": "Langfuse GENERATION observations plus local search-call metrics",
+    "collected_at": "2026-10-16T04:28:58.131189+00:00",
+    "total_usd": 0.588057329823,
+    "mean_per_run_usd": 0.019601910994,
+    "projected_50_run_cost_usd": 0.980095549705,
+    "projected_50_run_cost_with_20_percent_buffer_usd": 1.176114659646,
+    "model_spend_cap_usd": 1.5,
+    "within_model_spend_cap": true,
+    "bocha_evaluation_search_calls": 178,
+    "bocha_evaluation_allocated_cost_cny": 0.6408,
+    "projected_50_run_search_calls_with_20_percent_buffer": 356,
+    "search_call_cap": 360,
+    "within_search_call_cap": true
+  },
+  "percentile_method": "nearest-rank for P95; standard median for P50"
+}

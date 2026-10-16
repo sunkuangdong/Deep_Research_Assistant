@@ -1,0 +1,41 @@
+## Background
+
+Production AI agents combine model inference with multi-step orchestration, external tools, and changing prompts or evaluation configurations. Observability must make an execution diagnosable without turning telemetry into an uncontrolled store of user content. This report synthesizes the in-run evidence available from OpenTelemetry semantic-convention pages and OWASP logging guidance. The OpenTelemetry pages retrieved in this run are migration notices or indexes rather than detailed specifications, so recommendations distinguish verified source guidance from prudent engineering practice.
+
+## Key Findings
+
+1. **Trace the agent execution as a correlated sequence, but exact convention details were not verified here.** The OpenTelemetry GenAI semantic-conventions index separates agent spans, GenAI spans, events, exceptions, and examples, indicating that agent and model activity are structured telemetry concepts. However, the retrieved page is marked moved/no longer maintained and does not establish required parent-child relationships, correlation identifiers, tool-call attributes, or error semantics. Treat a trace spanning the user request, agent steps, model calls, and tool calls as a practical design requirement, not as a verified normative requirement from the retrieved page. [OpenTelemetry GenAI semantic conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/) and [OpenTelemetry GenAI semantic-conventions index](https://opentelemetry.io/docs/specs/semconv/gen-ai/index.md)
+
+2. **Capture token usage and latency as first-class operational signals, while validating metric definitions against current specifications.** The requested OpenTelemetry GenAI metrics page was also a moved notice; this run did not verify exact metric names, units, dimensions, or aggregation guidance. As an operational baseline, record input and output token counts when available, model/provider identity, request duration, and outcome; distinguish model-call latency from end-to-end agent latency and tool latency. Use distributions/percentiles and error rates rather than averages alone, and segment only on bounded, non-sensitive dimensions. These are recommendations, not claims about the retrieved page's normative schema. [OpenTelemetry GenAI metrics (moved notice)](https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-metrics/)
+
+3. **Make tool calls visible as individual events/spans with outcomes and timing.** Tool invocation, completion, timeout, retry, and failure should be observable and correlated to the parent agent execution; record tool name/version and status, while avoiding raw arguments/results by default. This is a practical production recommendation; the retrieved OpenTelemetry index does not expose enough detail to claim a specific standard representation.
+
+4. **Version prompts and evaluation artifacts so behavior changes can be attributed and reproduced.** Associate each run and evaluation result with immutable identifiers for prompt/template and agent configuration, model/provider version where available, tool configuration, evaluation dataset and evaluator version, and timestamp. Store evaluation outcomes and relevant aggregate metrics alongside those identifiers. This is prudent operational guidance; this run did not verify an authoritative source prescribing a particular versioning scheme.
+
+5. **Apply purpose limitation and security controls to logs; do not log sensitive content indiscriminately.** OWASP recommends defining logging requirements and event content according to purpose and risk, recognizes distinct purposes for process/audit/transaction and security logs, and advises protecting log access and transport. It also cautions that data crossing trust boundaries may be forged, modified, replayed, or malicious. For agent telemetry, prefer metadata and redacted/structured summaries over full prompts, retrieved documents, tool payloads, or model outputs; classify and minimize sensitive fields, restrict access, protect transport/storage, and define retention/deletion controls. These agent-specific applications extend general OWASP guidance. [OWASP Logging Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html)
+
+6. **Minimum useful event record.** A practical baseline is: trace/run ID; timestamp; event/span type; parent/correlation ID; agent and configuration version; prompt version identifier (not prompt text); model/provider identifier; tool name and version; status/error category; duration; token counts when available; evaluation dataset/evaluator/version and result when applicable; and privacy classification/redaction status. Keep high-cardinality or sensitive values out of metric labels. This schema is a synthesis recommendation, not a standard verified by the retrieved sources.
+
+## Recommendations
+
+- Instrument each agent run with a trace that links orchestration steps, model calls, and tool calls; preserve parent-child correlation and record start/end time, status, retries, and error category.
+- Track end-to-end latency and component latency separately (model, tool, orchestration), plus token usage split by input/output where the provider exposes it. Monitor distributions, tail latency, failures, and usage trends; alert on service objectives and cost/usage anomalies.
+- Record tool-call metadata (tool identifier/version, invocation outcome, duration, retry/timeout) and avoid storing raw arguments or results unless a documented debugging need justifies it and safeguards are in place.
+- Attach immutable prompt/configuration, model, tool, dataset, and evaluator identifiers to production runs and evaluation results. Keep evaluation outcomes linked to the exact artifacts used so regressions can be compared and reproduced.
+- Use privacy-by-design logging: collect only fields needed for operations, security, or evaluation; redact or tokenize personal/secrets data; separate security/audit records where purposes differ; enforce least-privilege access, secure transport/storage, retention limits, and deletion procedures. Treat user input, retrieved content, and tool output as untrusted data.
+- Validate the implementation against the current OpenTelemetry GenAI semantic conventions and applicable privacy/security obligations before claiming standards conformance; the pages retrieved in this run are migration notices and do not provide enough detail for conformance mapping.
+
+## Limitations
+
+- The OpenTelemetry GenAI semantic-conventions and metrics pages retrieved in this run are moved notices/indexes, not detailed current specifications. Exact span attributes, metric names, units, dimensions, and normative requirements remain unverified.
+- The findings preserve four distinct URL pages: the OpenTelemetry GenAI conventions page, its Markdown index, the OpenTelemetry GenAI metrics page, and the OWASP Logging Cheat Sheet page. The two OpenTelemetry conventions URLs are related pages on the same host, but are distinct paths. The minimum of four distinct source links is met, although the evidence remains narrow and does not include a dedicated authoritative prompt/evaluation-versioning source.
+- No authoritative source was verified in this run for a specific prompt-versioning or evaluation-result schema. Those recommendations are operational design guidance, not sourced requirements.
+- OWASP guidance is general logging/security guidance rather than AI-agent-specific privacy regulation. Applicable legal requirements, retention periods, and data classifications depend on deployment context and were not assessed.
+- This run used `--no-analysis`; no analyst stage was performed.
+
+## References
+
+- [OpenTelemetry GenAI semantic conventions (moved page)](https://opentelemetry.io/docs/specs/semconv/gen-ai/)
+- [OpenTelemetry GenAI semantic-conventions index](https://opentelemetry.io/docs/specs/semconv/gen-ai/index.md)
+- [OpenTelemetry GenAI metrics (moved notice)](https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-metrics/)
+- [OWASP Logging Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html)

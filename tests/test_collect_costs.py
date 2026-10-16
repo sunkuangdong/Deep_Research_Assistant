@@ -30,7 +30,10 @@ def _client(observations_by_trace: dict[str, list[dict]]):
     )
 
 
-def _published_bundle(tmp_path: Path) -> Path:
+def _published_bundle(
+    tmp_path: Path,
+    dataset_name: str = "research_main_v1",
+) -> Path:
     published = tmp_path / "published"
     published.mkdir()
     runs = [
@@ -59,6 +62,9 @@ def _published_bundle(tmp_path: Path) -> Path:
         encoding="utf-8",
     )
     (published / "manifest.json").write_text("{}\n", encoding="utf-8")
+    (published / "config.json").write_text(
+        json.dumps({"dataset_name": dataset_name}), encoding="utf-8"
+    )
     return published
 
 
@@ -110,8 +116,12 @@ def test_collect_costs_updates_published_evidence(tmp_path: Path):
     assert evidence["model_cost"]["mean_per_run_usd"] == 0.03
     assert evidence["model_cost"]["projected_target_cost_with_buffer_usd"] == 1.8
     assert evidence["model_cost"]["within_spend_cap"] is True
-    assert evidence["bocha_search_cost"]["smoke_search_calls"] == 4
-    assert evidence["bocha_search_cost"]["smoke_allocated_cost_cny"] == 0.0144
+    assert evidence["evaluation_scope"] == "main benchmark"
+    assert evidence["bocha_search_cost"]["evaluation_search_calls"] == 4
+    assert (
+        evidence["bocha_search_cost"]["evaluation_allocated_cost_cny"]
+        == 0.0144
+    )
     assert evidence["bocha_search_cost"]["projected_target_calls_with_buffer"] == 120
     assert evidence["capacity_snapshot"]["credit_balance_covers_projection"] is True
 
@@ -123,6 +133,9 @@ def test_collect_costs_updates_published_evidence(tmp_path: Path):
     assert summary["cost"]["status"] == "collected"
     assert summary["cost"]["total_usd"] == 0.06
     assert "## Cost Evidence" in report
+    assert "across 2 main benchmark runs" in report
+    assert "Bocha main benchmark usage" in report
+    assert "smoke runs" not in report
     assert "Root observations are excluded" in report
     assert len(manifest["cost_evidence"]["costs_sha256"]) == 64
     assert len(manifest["cost_evidence"]["summary_sha256"]) == 64

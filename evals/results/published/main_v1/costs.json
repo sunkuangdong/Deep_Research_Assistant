@@ -1,0 +1,621 @@
+{
+  "schema_version": 2,
+  "collected_at": "2026-10-16T04:28:58.131189+00:00",
+  "evaluation_scope": "main benchmark",
+  "source": {
+    "model_costs": "Langfuse Observations v2 GENERATION records",
+    "run_metrics": "published rescored_runs.jsonl",
+    "bocha_pricing": "manual package configuration",
+    "dashboard_snapshots": "capacity audit only; not run-cost evidence"
+  },
+  "validation": {
+    "trace_count": 30,
+    "all_generation_counts_match_local_llm_calls": true,
+    "all_generations_priced": true,
+    "root_observations_excluded": true
+  },
+  "model_cost": {
+    "currency": "USD",
+    "run_count": 30,
+    "total_usd": 0.588057329823,
+    "mean_per_run_usd": 0.019601910994,
+    "cost_components_usd": {
+      "input": 0.1692883,
+      "input_cache_read": 0.19725853,
+      "output": 0.2215105,
+      "output_reasoning": 0.0,
+      "total": 0.588057329823
+    },
+    "target_run_count": 50,
+    "projection_buffer_multiplier": 1.2,
+    "projected_target_cost_usd": 0.980095549705,
+    "projected_target_cost_with_buffer_usd": 1.176114659646,
+    "spend_cap_usd": 1.5,
+    "within_spend_cap": true,
+    "cap_headroom_usd": 0.323885340354
+  },
+  "bocha_search_cost": {
+    "currency": "CNY",
+    "package_price_cny": 3.6,
+    "package_calls": 1000,
+    "unit_cost_cny": 0.0036,
+    "evaluation_search_calls": 178,
+    "evaluation_allocated_cost_cny": 0.6408,
+    "projected_target_calls_with_buffer": 356,
+    "projected_target_allocated_cost_cny": 1.2816,
+    "search_call_cap": 360,
+    "within_search_call_cap": true
+  },
+  "per_trace": [
+    {
+      "case_id": "dr-main-001",
+      "langfuse_trace_id": "28fc9c6652e882062302e56b8700153d",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 48,
+      "priced_generation_count": 48,
+      "total_cost_usd": 0.020380399997,
+      "cost_components_usd": {
+        "input": 0.0078973,
+        "input_cache_read": 0.0054046,
+        "output": 0.0070785,
+        "output_reasoning": 0.0,
+        "total": 0.020380399997
+      },
+      "local_total_tokens": 633590,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-main-002",
+      "langfuse_trace_id": "bcfc13fd84b8d3286c48a12aec26b015",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 49,
+      "priced_generation_count": 49,
+      "total_cost_usd": 0.021863449994,
+      "cost_components_usd": {
+        "input": 0.0083677,
+        "input_cache_read": 0.00547475,
+        "output": 0.008021,
+        "output_reasoning": 0.0,
+        "total": 0.021863449994
+      },
+      "local_total_tokens": 647194,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-main-003",
+      "langfuse_trace_id": "850488ca24cfb7f3293da44c6fd9adbe",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 54,
+      "priced_generation_count": 54,
+      "total_cost_usd": 0.020726179995,
+      "cost_components_usd": {
+        "input": 0.0064202,
+        "input_cache_read": 0.00743898,
+        "output": 0.006867,
+        "output_reasoning": 0.0,
+        "total": 0.020726179995
+      },
+      "local_total_tokens": 821834,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-main-004",
+      "langfuse_trace_id": "58fd2c9a72c05964e5998f56d8d4f30e",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 38,
+      "priced_generation_count": 38,
+      "total_cost_usd": 0.012821559994,
+      "cost_components_usd": {
+        "input": 0.0042325,
+        "input_cache_read": 0.00417306,
+        "output": 0.004416,
+        "output_reasoning": 0.0,
+        "total": 0.012821559994
+      },
+      "local_total_tokens": 468463,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-main-005",
+      "langfuse_trace_id": "62caac0c46fb926443b57a98bc6cabb6",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 43,
+      "priced_generation_count": 43,
+      "total_cost_usd": 0.016586779995,
+      "cost_components_usd": {
+        "input": 0.0044083,
+        "input_cache_read": 0.00546198,
+        "output": 0.0067165,
+        "output_reasoning": 0.0,
+        "total": 0.016586779995
+      },
+      "local_total_tokens": 603714,
+      "local_search_calls": 5
+    },
+    {
+      "case_id": "dr-main-006",
+      "langfuse_trace_id": "2bce9a795958687b690c82079e412ff5",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 46,
+      "priced_generation_count": 46,
+      "total_cost_usd": 0.020314519994,
+      "cost_components_usd": {
+        "input": 0.0057497,
+        "input_cache_read": 0.00630932,
+        "output": 0.0082555,
+        "output_reasoning": 0.0,
+        "total": 0.020314519994
+      },
+      "local_total_tokens": 704940,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-main-007",
+      "langfuse_trace_id": "bfaa9da2ff22920fb9bac7a506a85d03",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 48,
+      "priced_generation_count": 48,
+      "total_cost_usd": 0.019147119997,
+      "cost_components_usd": {
+        "input": 0.0055695,
+        "input_cache_read": 0.00626012,
+        "output": 0.0073175,
+        "output_reasoning": 0.0,
+        "total": 0.019147119997
+      },
+      "local_total_tokens": 696342,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-main-008",
+      "langfuse_trace_id": "5718ae289fda3d1d1ac6958e1a484716",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 48,
+      "priced_generation_count": 48,
+      "total_cost_usd": 0.021233119997,
+      "cost_components_usd": {
+        "input": 0.0065617,
+        "input_cache_read": 0.00661242,
+        "output": 0.008059,
+        "output_reasoning": 0.0,
+        "total": 0.021233119997
+      },
+      "local_total_tokens": 742977,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-main-009",
+      "langfuse_trace_id": "e9d9e0c59e9236b4b787c967f746aae2",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 47,
+      "priced_generation_count": 47,
+      "total_cost_usd": 0.018191499994,
+      "cost_components_usd": {
+        "input": 0.0051321,
+        "input_cache_read": 0.0062489,
+        "output": 0.0068105,
+        "output_reasoning": 0.0,
+        "total": 0.018191499994
+      },
+      "local_total_tokens": 689832,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-main-010",
+      "langfuse_trace_id": "4a94092e7ab54f6d7c637a25414f3fc9",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 45,
+      "priced_generation_count": 45,
+      "total_cost_usd": 0.020393909995,
+      "cost_components_usd": {
+        "input": 0.0062918,
+        "input_cache_read": 0.00569011,
+        "output": 0.008412,
+        "output_reasoning": 0.0,
+        "total": 0.020393909995
+      },
+      "local_total_tokens": 648753,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-main-011",
+      "langfuse_trace_id": "2a7082b299cd9e3925d6d653686fa21a",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 48,
+      "priced_generation_count": 48,
+      "total_cost_usd": 0.019932099996,
+      "cost_components_usd": {
+        "input": 0.0072446,
+        "input_cache_read": 0.0059955,
+        "output": 0.006692,
+        "output_reasoning": 0.0,
+        "total": 0.019932099996
+      },
+      "local_total_tokens": 685380,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-main-012",
+      "langfuse_trace_id": "19bf99f0535aa86cacfc1d1d3cd26771",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 50,
+      "priced_generation_count": 50,
+      "total_cost_usd": 0.020631859994,
+      "cost_components_usd": {
+        "input": 0.0065704,
+        "input_cache_read": 0.00606446,
+        "output": 0.007997,
+        "output_reasoning": 0.0,
+        "total": 0.020631859994
+      },
+      "local_total_tokens": 688144,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-main-013",
+      "langfuse_trace_id": "fd744abd933ce7c52f012df167a93fd3",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 46,
+      "priced_generation_count": 46,
+      "total_cost_usd": 0.020379589991,
+      "cost_components_usd": {
+        "input": 0.0049634,
+        "input_cache_read": 0.00838219,
+        "output": 0.007034,
+        "output_reasoning": 0.0,
+        "total": 0.020379589991
+      },
+      "local_total_tokens": 901921,
+      "local_search_calls": 5
+    },
+    {
+      "case_id": "dr-main-014",
+      "langfuse_trace_id": "13927157da560b3659150a2aaa678b5f",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 50,
+      "priced_generation_count": 50,
+      "total_cost_usd": 0.019303639995,
+      "cost_components_usd": {
+        "input": 0.0052314,
+        "input_cache_read": 0.00606324,
+        "output": 0.008009,
+        "output_reasoning": 0.0,
+        "total": 0.019303639995
+      },
+      "local_total_tokens": 674656,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-main-015",
+      "langfuse_trace_id": "d0becc10f81c70e844204a2516a52185",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 39,
+      "priced_generation_count": 39,
+      "total_cost_usd": 0.015003159993,
+      "cost_components_usd": {
+        "input": 0.0047027,
+        "input_cache_read": 0.00514946,
+        "output": 0.005151,
+        "output_reasoning": 0.0,
+        "total": 0.015003159993
+      },
+      "local_total_tokens": 572275,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-main-016",
+      "langfuse_trace_id": "5824f27f5158b887d3aeafe81d7e3efe",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 126,
+      "priced_generation_count": 126,
+      "total_cost_usd": 0.044351159988,
+      "cost_components_usd": {
+        "input": 0.0083485,
+        "input_cache_read": 0.01871916,
+        "output": 0.0172835,
+        "output_reasoning": 0.0,
+        "total": 0.044351159988
+      },
+      "local_total_tokens": 1989968,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-main-017",
+      "langfuse_trace_id": "6c274d926fa171b52e45ee89550976c5",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 118,
+      "priced_generation_count": 118,
+      "total_cost_usd": 0.025061459982,
+      "cost_components_usd": {
+        "input": 0.0055307,
+        "input_cache_read": 0.01213276,
+        "output": 0.007398,
+        "output_reasoning": 0.0,
+        "total": 0.025061459982
+      },
+      "local_total_tokens": 1283379,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-main-018",
+      "langfuse_trace_id": "d589516c099ddede4972543a4150ee88",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 45,
+      "priced_generation_count": 45,
+      "total_cost_usd": 0.021167049997,
+      "cost_components_usd": {
+        "input": 0.0060697,
+        "input_cache_read": 0.00641985,
+        "output": 0.0086775,
+        "output_reasoning": 0.0,
+        "total": 0.021167049997
+      },
+      "local_total_tokens": 720037,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-main-019",
+      "langfuse_trace_id": "4c060a7b54afa2d830e005f3032bdff4",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 42,
+      "priced_generation_count": 42,
+      "total_cost_usd": 0.017039329996,
+      "cost_components_usd": {
+        "input": 0.0048052,
+        "input_cache_read": 0.00535763,
+        "output": 0.0068765,
+        "output_reasoning": 0.0,
+        "total": 0.017039329996
+      },
+      "local_total_tokens": 597568,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-main-020",
+      "langfuse_trace_id": "d43f399481ff21a5156beb580ef60116",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 41,
+      "priced_generation_count": 41,
+      "total_cost_usd": 0.020353369991,
+      "cost_components_usd": {
+        "input": 0.0059993,
+        "input_cache_read": 0.00543607,
+        "output": 0.008918,
+        "output_reasoning": 0.0,
+        "total": 0.020353369991
+      },
+      "local_total_tokens": 621436,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-main-021",
+      "langfuse_trace_id": "862670edf604d6a935a8b7a6f15b9566",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 35,
+      "priced_generation_count": 35,
+      "total_cost_usd": 0.013432239998,
+      "cost_components_usd": {
+        "input": 0.0045629,
+        "input_cache_read": 0.00402734,
+        "output": 0.004842,
+        "output_reasoning": 0.0,
+        "total": 0.013432239998
+      },
+      "local_total_tokens": 458047,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-main-022",
+      "langfuse_trace_id": "405e1b1101a48406e0f5779aeb121fd4",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 55,
+      "priced_generation_count": 55,
+      "total_cost_usd": 0.022517809997,
+      "cost_components_usd": {
+        "input": 0.0063245,
+        "input_cache_read": 0.00845131,
+        "output": 0.007742,
+        "output_reasoning": 0.0,
+        "total": 0.022517809997
+      },
+      "local_total_tokens": 923860,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-main-023",
+      "langfuse_trace_id": "6887d09b35f6fe99e69b347b5cec9adb",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 43,
+      "priced_generation_count": 43,
+      "total_cost_usd": 0.012648139998,
+      "cost_components_usd": {
+        "input": 0.0031882,
+        "input_cache_read": 0.00475994,
+        "output": 0.0047,
+        "output_reasoning": 0.0,
+        "total": 0.012648139998
+      },
+      "local_total_tokens": 517276,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-main-024",
+      "langfuse_trace_id": "9eaed79999a410ada252ea04b2500eb0",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 46,
+      "priced_generation_count": 46,
+      "total_cost_usd": 0.019700209993,
+      "cost_components_usd": {
+        "input": 0.0056946,
+        "input_cache_read": 0.00581461,
+        "output": 0.008191,
+        "output_reasoning": 0.0,
+        "total": 0.019700209993
+      },
+      "local_total_tokens": 654789,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-main-025",
+      "langfuse_trace_id": "9eea4ff4c1ee0b1b5e32563299e24e34",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 40,
+      "priced_generation_count": 40,
+      "total_cost_usd": 0.013452479992,
+      "cost_components_usd": {
+        "input": 0.0035095,
+        "input_cache_read": 0.00555848,
+        "output": 0.0043845,
+        "output_reasoning": 0.0,
+        "total": 0.013452479992
+      },
+      "local_total_tokens": 599712,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-main-026",
+      "langfuse_trace_id": "dc74f6a2a08b4c15e1ec7aa27e1e195c",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 41,
+      "priced_generation_count": 41,
+      "total_cost_usd": 0.021930889991,
+      "cost_components_usd": {
+        "input": 0.0066437,
+        "input_cache_read": 0.00653369,
+        "output": 0.0087535,
+        "output_reasoning": 0.0,
+        "total": 0.021930889991
+      },
+      "local_total_tokens": 737313,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-main-027",
+      "langfuse_trace_id": "5707534fde9d090d6fc85e0410a915da",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 43,
+      "priced_generation_count": 43,
+      "total_cost_usd": 0.018335079996,
+      "cost_components_usd": {
+        "input": 0.0051446,
+        "input_cache_read": 0.00616548,
+        "output": 0.007025,
+        "output_reasoning": 0.0,
+        "total": 0.018335079996
+      },
+      "local_total_tokens": 682044,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-main-028",
+      "langfuse_trace_id": "33a560be2945ca57e7dd24124a8e97c0",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 52,
+      "priced_generation_count": 52,
+      "total_cost_usd": 0.020695259996,
+      "cost_components_usd": {
+        "input": 0.0052537,
+        "input_cache_read": 0.00761406,
+        "output": 0.0078275,
+        "output_reasoning": 0.0,
+        "total": 0.020695259996
+      },
+      "local_total_tokens": 829598,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-main-029",
+      "langfuse_trace_id": "af26692e9c29e589efbe83fe76f1e43c",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 40,
+      "priced_generation_count": 40,
+      "total_cost_usd": 0.016350109993,
+      "cost_components_usd": {
+        "input": 0.0047605,
+        "input_cache_read": 0.00529361,
+        "output": 0.006296,
+        "output_reasoning": 0.0,
+        "total": 0.016350109993
+      },
+      "local_total_tokens": 589558,
+      "local_search_calls": 6
+    },
+    {
+      "case_id": "dr-main-030",
+      "langfuse_trace_id": "937d69e0cfafd2ed0345aacdd15c0971",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 33,
+      "priced_generation_count": 33,
+      "total_cost_usd": 0.014113849994,
+      "cost_components_usd": {
+        "input": 0.0041094,
+        "input_cache_read": 0.00424545,
+        "output": 0.005759,
+        "output_reasoning": 0.0,
+        "total": 0.014113849994
+      },
+      "local_total_tokens": 477157,
+      "local_search_calls": 6
+    }
+  ]
+}

@@ -4,7 +4,7 @@ import hashlib
 import json
 from pathlib import Path
 
-from evals.publish_results import publish_results
+from evals.publish_results import _report_profile, publish_results
 
 
 def _sha256(path: Path) -> str:
@@ -121,4 +121,14 @@ def test_publish_results_rescores_without_mutating_raw_run(tmp_path: Path):
     assert summary["tokens"]["median"] == 120
     assert (output_dir / "reports/dr-smoke-001.md").is_file()
     assert (output_dir / "manifest.json").is_file()
+    report = (output_dir / "report.md").read_text(encoding="utf-8")
+    assert report.startswith("# Published Deep Research Smoke Evaluation\n")
+    assert "Smoke metrics validate the harness" in report
     assert raw_path.read_text(encoding="utf-8") == original_raw
+
+
+def test_report_profile_distinguishes_main_benchmark_from_smoke():
+    assert _report_profile("research_main_v1") == (
+        "Main Benchmark",
+        "Main benchmark metrics include every fixed case selected under the frozen protocol.",
+    )

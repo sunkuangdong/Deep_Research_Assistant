@@ -153,6 +153,7 @@ def _build_cost_evidence(
     runs: list[dict[str, Any]],
     per_trace: list[dict[str, Any]],
     *,
+    evaluation_scope: str,
     bocha_package_price_cny: Decimal,
     bocha_package_calls: int,
     bocha_remaining_calls: int | None,
@@ -197,8 +198,9 @@ def _build_cost_evidence(
             component_totals[key] += _decimal(value)
 
     evidence: dict[str, Any] = {
-        "schema_version": 1,
+        "schema_version": 2,
         "collected_at": collected_at,
+        "evaluation_scope": evaluation_scope,
         "source": {
             "model_costs": "Langfuse Observations v2 GENERATION records",
             "run_metrics": "published rescored_runs.jsonl",
@@ -233,8 +235,8 @@ def _build_cost_evidence(
             "package_price_cny": _number(bocha_package_price_cny, 4),
             "package_calls": bocha_package_calls,
             "unit_cost_cny": _number(bocha_unit_cost, 8),
-            "smoke_search_calls": total_search_calls,
-            "smoke_allocated_cost_cny": _number(allocated_bocha_cost, 4),
+            "evaluation_search_calls": total_search_calls,
+            "evaluation_allocated_cost_cny": _number(allocated_bocha_cost, 4),
             "projected_target_calls_with_buffer": projected_search_calls,
             "projected_target_allocated_cost_cny": _number(
                 projected_bocha_cost, 4
@@ -277,8 +279,10 @@ def _cost_summary(evidence: dict[str, Any]) -> dict[str, Any]:
         ],
         "model_spend_cap_usd": model["spend_cap_usd"],
         "within_model_spend_cap": model["within_spend_cap"],
-        "bocha_smoke_search_calls": bocha["smoke_search_calls"],
-        "bocha_smoke_allocated_cost_cny": bocha["smoke_allocated_cost_cny"],
+        "bocha_evaluation_search_calls": bocha["evaluation_search_calls"],
+        "bocha_evaluation_allocated_cost_cny": bocha[
+            "evaluation_allocated_cost_cny"
+        ],
         "projected_50_run_search_calls_with_20_percent_buffer": bocha[
             "projected_target_calls_with_buffer"
         ],
@@ -291,10 +295,11 @@ def _update_report(report_path: Path, evidence: dict[str, Any]) -> None:
     report = report_path.read_text(encoding="utf-8")
     model = evidence["model_cost"]
     bocha = evidence["bocha_search_cost"]
+    evaluation_scope = evidence["evaluation_scope"]
     report = re.sub(
         r"^- (?:Cost status|Model cost):.*$",
         f"- Model cost: ${model['total_usd']:.6f} across "
-        f"{model['run_count']} smoke runs",
+        f"{model['run_count']} {evaluation_scope} runs",
         report,
         count=1,
         flags=re.MULTILINE,
@@ -319,8 +324,9 @@ def _update_report(report_path: Path, evidence: dict[str, Any]) -> None:
                 f"within cap: {str(model['within_spend_cap']).lower()}."
             ),
             (
-                f"- Bocha smoke usage: {bocha['smoke_search_calls']} calls, "
-                f"allocated cost CNY {bocha['smoke_allocated_cost_cny']:.4f}."
+                f"- Bocha {evaluation_scope} usage: "
+                f"{bocha['evaluation_search_calls']} calls, allocated cost CNY "
+                f"{bocha['evaluation_allocated_cost_cny']:.4f}."
             ),
             (
                 "- Projected Bocha usage: "
@@ -365,15 +371,31 @@ def collect_costs(
     summary_path = published_dir / "summary.json"
     report_path = published_dir / "report.md"
     manifest_path = published_dir / "manifest.json"
-    for required in (runs_path, summary_path, report_path, manifest_path):
+    config_path = published_dir / "config.json"
+    for required in (
+        runs_path,
+        summary_path,
+        report_path,
+        manifest_path,
+        config_path,
+    ):
         if not required.is_file():
             raise FileNotFoundError(f"missing published artifact: {required}")
 
     runs = _read_jsonl(runs_path)
+    config = _read_json(config_path)
+    dataset_tokens = set(str(config.get("dataset_name") or "").lower().split("_"))
+    if "smoke" in dataset_tokens:
+        evaluation_scope = "smoke"
+    elif "main" in dataset_tokens:
+        evaluation_scope = "main benchmark"
+    else:
+        evaluation_scope = "evaluation"
     per_trace = [_collect_trace_cost(client, run) for run in runs]
     evidence = _build_cost_evidence(
         runs,
         per_trace,
+        evaluation_scope=evaluation_scope,
         bocha_package_price_cny=bocha_package_price_cny,
         bocha_package_calls=bocha_package_calls,
         bocha_remaining_calls=bocha_remaining_calls,
