@@ -1,0 +1,26 @@
+{
+  "protocol_version": "2.1.0-rc",
+  "evaluation_scope": "v2 pre-freeze regression validation",
+  "run_count": 4,
+  "completed_count": 4,
+  "completion_rate": 1.0,
+  "status_counts": {
+    "completed": 4,
+    "agent_failure": 0,
+    "infrastructure_failure": 0
+  },
+  "tokens": {
+    "sample_count": 4,
+    "total": 2678037,
+    "mean": 669509.25
+  },
+  "latency_ms": {
+    "sample_count": 4,
+    "total": 628974,
+    "mean": 157243.5
+  },
+  "search_calls": 22,
+  "fetch_calls": 17,
+  "recovery_researcher_runs": 3,
+  "interpretation": "Regression validation on four previously observed v1 failures; not a holdout estimate."
+}

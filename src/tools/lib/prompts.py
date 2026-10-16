@@ -31,7 +31,10 @@ SOURCE_PROVENANCE_POLICY = """
         - 如果 `web_fetch` 返回 `DUPLICATE_FETCH`，该请求不消耗共享抓取预算；必须选择不同的可靠页面，禁止反复抓取同一页。
         - analyst、editor 和主 Agent 只能复用 findings 中已经按上述规则记录的 URL，禁止新增来源 URL。
         - 每次 researcher 委派必须使用不同的聚焦子主题和不同的 findings 路径；禁止重试同一委派或覆盖已有 findings。
-        - 在进入 analyst 或起草前，必须核对用户要求的最少不同来源数量；不足时只能在剩余预算内写入新的 findings 文件。
+        - findings 完成后必须调用 `check_evidence_inventory`；只有同时由本轮搜索/抓取返回且已写入 findings/analysis 的规范化页面才是合格来源。
+        - 在进入 analyst 或起草前，程序会按用户要求的最少不同来源数量执行证据门控；不足时只能在剩余预算内写入新的 findings 文件。
+        - 每份 findings 必须包含 `## Preserved Source URLs`，逐行列出该 researcher 实际保留的完整 URL；最终回复也必须报告这些 URL 与不同页面数量。
+        - 最终报告只能引用 `eligible_citation_urls` 中的 URL；不得在起草、审阅或定稿阶段新增来源。
 """
 
 RESEARCHER_SYSTEM_PROMPT = """
@@ -64,6 +67,8 @@ RESEARCHER_SYSTEM_PROMPT = """
         说明证据是否充分、是否存在冲突、是否有信息缺口。
         ## 参考来源
         - [来源标题](URL)
+        ## Preserved Source URLs
+        - https://example.com/exact-page
 """
 
 EDITOR_SYSTEM_PROMPT = """
@@ -230,7 +235,9 @@ ORCHESTRATOR_SYSTEM_PROMPT = """
         - 将调研计划写入 /workspace/sources/research_plan.md。
         - research_plan 必须为每个子主题写明精确产出路径（全小写），例如
           `findings_langgraph.md`、`findings_autogen.md`。
-        - 如任务要求多个不同来源，还必须为每个 researcher 规划不同的来源页面目标；同一页面的不同锚点不能分配给不同 researcher 充当多个来源。
+        - research_plan 必须在 `## Evidence Targets` 下为用户要求的每个来源页面目标写一行机器可校验记录：
+          `- target_id: source_1 | source_target: <唯一的官方页面或精确页面目标> | findings_path: /workspace/sources/findings_<slug>.md`
+        - `target_id` 与 `source_target` 均不得重复；同一页面的不同锚点不能充当多个来源。多个目标可由同一个 findings 路径承载。
     2. 调研：
         - 按 web-research 技能执行调研。
         - 完成 research_plan 后，必须立即进入调研阶段。
@@ -241,6 +248,10 @@ ORCHESTRATOR_SYSTEM_PROMPT = """
         - 每个 researcher 只负责一个子主题。
         - findings 文件应写入 /workspace/sources/findings_<slug>.md（全小写）。
         - 在进入起草阶段前，必须至少生成 1 份与当前主题匹配的 findings 文件。
+        - 前 2 次 researcher 委派用于初始调研。完成后必须调用 `check_evidence_inventory`，不得直接消耗第 3 次委派。
+        - 第 3 次 researcher 委派是证据恢复专用：仅当 `citation_deficit > 0` 时使用，description 必须包含
+          `[EVIDENCE_RECOVERY]`、缺口数、已有 eligible URL、未覆盖的新来源目标和新的 findings 精确路径。
+        - 最后 1 次 web_search 与 web_fetch 同样为证据恢复保留；证据已达标时不要使用。
     3. 分析：
         - 如果任务涉及排名、数值、总量、均值、占比、增长率、同比、环比、GDP、表格、结构化数据，或框架对比/取舍，必须委派 analyst 子 Agent。
         - analyst 每份报告最多调用 1 次。
@@ -282,7 +293,7 @@ ORCHESTRATOR_SYSTEM_PROMPT = """
         - 禁止为了“完善格式”反复读写同一 findings / analysis / draft 文件。
         - 如果已经存在 draft 和 editor 反馈，却还没有 report，必须立刻写 report，不要再做任何额外搜索或审阅。
     ## 子 Agent 委派规则
-        - 每份报告最多委派 3 个 researcher。
+        - 每份报告最多委派 3 个 researcher，其中前 2 个为初始调研，第 3个只用于证据恢复。
         - 每个 researcher 只处理一个聚焦子主题。
         - 不要为了凑数量而委派子 Agent。
         - editor 每份报告最多调用一次；禁止第二次调用 editor。
@@ -337,6 +348,9 @@ DEEPAGENTS_ORCHESTRATION_GUARD = """
     Delegation policy:
     - For complex research, first create a short plan.
     - Use at most 3 researcher delegations.
+    - Use the first 2 researcher delegations for initial research, then call check_evidence_inventory.
+    - Reserve the third researcher for citation recovery; use it only when citation_deficit is positive and mark its description with [EVIDENCE_RECOVERY].
+    - Reserve the final web_search and web_fetch calls for that recovery researcher.
     - Each researcher delegation must cover exactly one focused subtopic.
     - Do not ask one researcher to investigate multiple unrelated subtopics.
     - Use analyst at most once after research evidence is available.
@@ -383,7 +397,10 @@ RUNTIME_ANALYSIS_REQUIREMENT = """
 
 RUNTIME_DELEGATION_GUARD = """
     [委派约束]
-    - researcher 最多委派 3 次（硬性上限）。
+    - researcher 最多委派 3 次（硬性上限）：前 2 次为初始调研，第 3 次仅用于证据恢复。
+    - 两次初始调研后必须调用 check_evidence_inventory；若 citation_deficit 为 0，禁止第 3 次 researcher。
+    - 恢复委派的 description 必须含 `[EVIDENCE_RECOVERY]`、缺口、已有 eligible URL、不同的新来源目标和新的 findings 路径。
+    - 最后 1 次 web_search 和 web_fetch 为恢复委派保留。
     - 每次 researcher 只能处理 1 个聚焦子主题，禁止一次塞入多个子主题。
     - 委派 researcher / analyst 时必须写明精确文件路径（全小写 ASCII slug）。
     - 如果主题简单，可少于 3 次；禁止为了凑次数而调用。

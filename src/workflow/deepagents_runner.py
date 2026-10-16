@@ -34,14 +34,35 @@ from src.tools.search import (
     fetch_web_page,
 )
 from src.workflow.delegation_guard import DelegationLimitMiddleware
+from src.workflow.evidence_inventory import (
+    EvidenceInventory,
+    create_evidence_inventory_tool,
+)
 
 
 class SearchBudget:
-    def __init__(self, max_calls: int, max_fetch_calls: int = 6):
+    def __init__(
+        self,
+        max_calls: int,
+        max_fetch_calls: int = 6,
+        reserved_search_calls: int = 0,
+        reserved_fetch_calls: int = 0,
+    ):
+        if not 0 <= reserved_search_calls <= max_calls:
+            raise ValueError("reserved_search_calls must be between 0 and max_calls")
+        if not 0 <= reserved_fetch_calls <= max_fetch_calls:
+            raise ValueError(
+                "reserved_fetch_calls must be between 0 and max_fetch_calls"
+            )
         self.max_calls = max_calls
         self.call_count = 0
         self.max_fetch_calls = max_fetch_calls
         self.fetch_call_count = 0
+        self.reserved_search_calls = reserved_search_calls
+        self.reserved_fetch_calls = reserved_fetch_calls
+        self.recovery_active = False
+        self.search_reserve_rejections = 0
+        self.fetch_reserve_rejections = 0
         self.fetch_attempt_count = 0
         self.fetch_duplicate_rejections = 0
         self.fetch_budget_rejections = 0
@@ -79,11 +100,17 @@ class DelegationBudget:
         max_analyst: int = 1,
         max_editor: int = 1,
         max_draft_edits: int = 1,
+        reserved_researcher_calls: int = 0,
     ):
+        if not 0 <= reserved_researcher_calls <= max_researcher:
+            raise ValueError(
+                "reserved_researcher_calls must be between 0 and max_researcher"
+            )
         self.max_researcher = max_researcher
         self.max_analyst = max_analyst
         self.max_editor = max_editor
         self.max_draft_edits = max_draft_edits
+        self.reserved_researcher_calls = reserved_researcher_calls
         self.researcher_calls = 0
         self.analyst_calls = 0
         self.editor_calls = 0
@@ -96,6 +123,9 @@ class DelegationBudget:
         self.analyst_rejections = 0
         self.editor_rejections = 0
         self.draft_edit_rejections = 0
+        self.researcher_recovery_calls = 0
+        self.researcher_recovery_attempts = 0
+        self.researcher_recovery_rejections = 0
 
 def reset_workspace_run_artifacts(
     root_dir: Path | str = ".",
@@ -145,7 +175,18 @@ def create_limited_web_search(search_budget: SearchBudget) -> Any:
     async def limited_web_search(query: str, count: int = 10) -> str:
         """使用 Bocha 联网搜索 API 检索互联网网页，并限制单次 DeepAgents 运行中的搜索次数。"""
 
-        if search_budget.call_count >= search_budget.max_calls:
+        active_limit = search_budget.max_calls
+        if not search_budget.recovery_active:
+            active_limit -= search_budget.reserved_search_calls
+        if search_budget.call_count >= active_limit:
+            if search_budget.call_count < search_budget.max_calls:
+                search_budget.search_reserve_rejections += 1
+                return (
+                    "RESERVED_SEARCH_BUDGET: The final web_search call is reserved "
+                    "for evidence recovery. Finish the initial findings, call "
+                    "check_evidence_inventory, and use an [EVIDENCE_RECOVERY] "
+                    "researcher only if citation_deficit remains positive."
+                )
             return (
                 f"web_search 搜索预算已用完。本次最多允许 {search_budget.max_calls} 次搜索，"
                 "请基于已有搜索结果停止继续搜索，并直接整理最终结论。"
@@ -191,8 +232,19 @@ def create_limited_web_fetch(search_budget: SearchBudget) -> Any:
                     "not consume the shared fetch budget. Choose an official page "
                     "with a different host/path and call web_fetch again."
                 )
-            if search_budget.fetch_call_count >= search_budget.max_fetch_calls:
+            active_limit = search_budget.max_fetch_calls
+            if not search_budget.recovery_active:
+                active_limit -= search_budget.reserved_fetch_calls
+            if search_budget.fetch_call_count >= active_limit:
                 search_budget.fetch_budget_rejections += 1
+                if search_budget.fetch_call_count < search_budget.max_fetch_calls:
+                    search_budget.fetch_reserve_rejections += 1
+                    return (
+                        "RESERVED_FETCH_BUDGET: The final web_fetch call is reserved "
+                        "for evidence recovery. Finish the initial findings, call "
+                        "check_evidence_inventory, and use an [EVIDENCE_RECOVERY] "
+                        "researcher only if citation_deficit remains positive."
+                    )
                 return (
                     f"web_fetch 抓取预算已用完。本次最多允许 "
                     f"{search_budget.max_fetch_calls} 次抓取，请基于已有证据继续。"
@@ -301,7 +353,8 @@ def build_deepagents_subagents(
                 + "- URL fragments identify sections, not distinct source pages. If web_fetch reports DUPLICATE_FETCH, choose a different official page path.\n"
                 + "- Use focused queries, not many small wording variations.\n"
                 + "- Stop searching once you have enough evidence.\n"
-                + "- Return concise findings with source URLs.\n"
+                + "- In the findings file, add a `## Preserved Source URLs` section listing every exact distinct URL retained, one raw URL per bullet.\n"
+                + "- In your final reply, report the exact preserved URLs and their distinct-page count.\n"
             ),
             "tools": researcher_tools,
             "middleware": subagent_middleware,
@@ -343,6 +396,7 @@ async def run_deepagents_workflow(
     todos_export_path: Path | str | None = None,
     callbacks: list[Any] | None = None,
     run_date: str | None = None,
+    minimum_citations: int = 1,
 ) -> DeepAgentsRunResult:
     """
     运行官方 DeepAgents 工作流。
@@ -357,6 +411,8 @@ async def run_deepagents_workflow(
     """
 
     clean_topic = (topic or "").strip()
+    if minimum_citations <= 0:
+        raise ValueError("minimum_citations must be positive")
     use_chinese = any("\u4e00" <= ch <= "\u9fff" for ch in clean_topic)
     output_language = "zh" if use_chinese else "en"
 
@@ -379,9 +435,21 @@ async def run_deepagents_workflow(
     reset_workspace_run_artifacts(root_path, resolved_todos_path)
     system_prompt = build_deepagents_system_prompt(no_analysis=no_analysis)
     effective_run_date = run_date or datetime.now().astimezone().date().isoformat()
-    search_budget = SearchBudget(max_calls=6, max_fetch_calls=6)
+    search_budget = SearchBudget(
+        max_calls=6,
+        max_fetch_calls=6,
+        reserved_search_calls=1,
+        reserved_fetch_calls=1,
+    )
     search_tool = create_limited_web_search(search_budget)
     fetch_tool = create_limited_web_fetch(search_budget)
+    evidence_inventory = EvidenceInventory(
+        workspace=root_path / "workspace",
+        retrieved_source_urls=search_budget.retrieved_source_urls,
+        minimum_citations=minimum_citations,
+        output_language=output_language,
+    )
+    evidence_inventory_tool = create_evidence_inventory_tool(evidence_inventory)
 
     subagents = build_deepagents_subagents(
         search_tool,
@@ -396,8 +464,14 @@ async def run_deepagents_workflow(
         max_analyst=1,
         max_editor=1,
         max_draft_edits=1,
+        reserved_researcher_calls=1,
     )
-    main_guard = DelegationLimitMiddleware(delegation_budget, block_artifact_rewrites=True)
+    main_guard = DelegationLimitMiddleware(
+        delegation_budget,
+        block_artifact_rewrites=True,
+        evidence_inventory=evidence_inventory,
+        search_budget=search_budget,
+    )
 
     config = DeepAgentBuildConfig(
         root_dir=str(root_path),
@@ -406,7 +480,7 @@ async def run_deepagents_workflow(
         system_prompt=system_prompt,
         debug=False,
         name="deep_research_agent",
-        tools=[search_tool, fetch_tool],
+        tools=[search_tool, fetch_tool, evidence_inventory_tool],
         subagents=subagents,
         middleware=[main_guard],
     )
@@ -461,6 +535,17 @@ async def run_deepagents_workflow(
             "整个运行最多调用 1 次 edit_file 修改 draft；必须把所有修改合并到这一次调用中，禁止拆成多次 edit_file；"
             "禁止二次委派 editor，禁止在 draft 上反复 edit/read 空转；"
             "禁止委派 general-purpose；报告起草必须由主 Agent 自己完成；"
+            f"【来源目标计划】research_plan.md 必须在委派 researcher 前规划至少 {minimum_citations} 个不同来源页面，"
+            "每个目标严格使用一行：`- target_id: source_1 | source_target: <唯一的官方页面或精确页面目标> "
+            "| findings_path: /workspace/sources/findings_<slug>.md`。target_id 与 source_target 均不得重复；"
+            "前 2 次 researcher 属于初始调研；第 3 次为证据恢复专用，初始调研完成后先调用 check_evidence_inventory。"
+            "只有 citation_deficit 仍大于 0 才能进行第 3 次委派，description 必须包含 `[EVIDENCE_RECOVERY]`、"
+            "当前缺口、已有 eligible_citation_urls、不同的新来源目标及新的 findings 路径；"
+            "最后 1 次 web_search 和 web_fetch 同样为该恢复任务保留；"
+            f"【证据门控】本次至少需要 {minimum_citations} 个合格来源页面。"
+            "完成 findings 后必须调用 check_evidence_inventory；只有同时由本轮搜索/抓取返回且写入 "
+            "findings/analysis 的 URL 才合格。程序会在 analyst、draft 和 final report 阶段强制检查；"
+            "最终报告只能使用工具返回的 eligible_citation_urls，且必须达到最少引用数；"
             f"{analysis_rule_zh}"
         )
     else:
@@ -488,6 +573,21 @@ async def run_deepagents_workflow(
             "across the entire run, call edit_file on the draft at most once; combine all draft changes into that single call; "
             "do not re-delegate editor; do not loop on edit/read of draft; "
             "do not delegate general-purpose; the main agent must draft the report; "
+            f"[Source-target plan] Before delegating a researcher, research_plan.md MUST allocate at least {minimum_citations} "
+            "distinct source pages using exactly one line per target: `- target_id: source_1 | "
+            "source_target: <unique official page or precise page objective> | findings_path: "
+            "/workspace/sources/findings_<slug>.md`. target_id and source_target values must be unique. "
+            "The first 2 researcher calls are initial research; the third is reserved for evidence recovery. "
+            "After initial research, call check_evidence_inventory. Use the third researcher only when citation_deficit "
+            "is still positive; its description MUST include `[EVIDENCE_RECOVERY]`, the current deficit, existing "
+            "eligible_citation_urls, a distinct new source target, and a new findings path. The final web_search and "
+            "web_fetch calls are reserved for that recovery task; "
+            f"[Evidence gate] This run requires at least {minimum_citations} eligible "
+            "source pages. After findings are written, call check_evidence_inventory. "
+            "A URL is eligible only when it was returned by this run's search/fetch "
+            "and preserved in findings/analysis. The analyst, draft, and final-report "
+            "stages are programmatically gated. The final report must cite only "
+            "eligible_citation_urls and must meet the minimum citation count; "
             f"{analysis_rule_en}"
         )
     
@@ -510,9 +610,13 @@ async def run_deepagents_workflow(
             "run_date": effective_run_date,
             "search_calls": search_budget.call_count,
             "search_call_limit": search_budget.max_calls,
+            "search_recovery_reserve": search_budget.reserved_search_calls,
+            "search_reserve_rejections": search_budget.search_reserve_rejections,
             "search_queries": search_budget.queries,
             "fetch_calls": search_budget.fetch_call_count,
             "fetch_call_limit": search_budget.max_fetch_calls,
+            "fetch_recovery_reserve": search_budget.reserved_fetch_calls,
+            "fetch_reserve_rejections": search_budget.fetch_reserve_rejections,
             "fetch_attempts": search_budget.fetch_attempt_count,
             "fetch_duplicate_rejections": search_budget.fetch_duplicate_rejections,
             "fetch_budget_rejections": search_budget.fetch_budget_rejections,
@@ -521,6 +625,8 @@ async def run_deepagents_workflow(
             "fetched_source_urls": sorted(search_budget.fetched_source_urls),
             "fetched_source_pages": sorted(search_budget.fetched_source_pages),
             "retrieved_source_urls": sorted(search_budget.retrieved_source_urls),
+            "minimum_citations": minimum_citations,
+            "evidence_inventory": evidence_inventory.metadata(),
             "workspace": "/workspace",
             "workspace_sources": "/workspace/sources",
             "workspace_reports": "/workspace/reports",
@@ -537,10 +643,20 @@ async def run_deepagents_workflow(
             "editor_attempts": delegation_budget.editor_attempts,
             "draft_edit_attempts": delegation_budget.draft_edit_attempts,
             "researcher_rejections": delegation_budget.researcher_rejections,
+            "researcher_recovery_calls": delegation_budget.researcher_recovery_calls,
+            "researcher_recovery_attempts": delegation_budget.researcher_recovery_attempts,
+            "researcher_recovery_rejections": delegation_budget.researcher_recovery_rejections,
             "analyst_rejections": delegation_budget.analyst_rejections,
             "editor_rejections": delegation_budget.editor_rejections,
             "draft_edit_rejections": delegation_budget.draft_edit_rejections,
             "researcher_call_limit": delegation_budget.max_researcher,
+            "researcher_initial_call_limit": (
+                delegation_budget.max_researcher
+                - delegation_budget.reserved_researcher_calls
+            ),
+            "researcher_recovery_call_limit": (
+                delegation_budget.reserved_researcher_calls
+            ),
             "analyst_call_limit": delegation_budget.max_analyst,
             "editor_call_limit": delegation_budget.max_editor,
             "draft_edit_call_limit": delegation_budget.max_draft_edits,

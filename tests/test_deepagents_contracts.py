@@ -255,6 +255,69 @@ def test_limited_web_search_records_retrieved_source_urls(monkeypatch):
     ]
 
 
+def test_search_and_fetch_reserves_unlock_only_for_recovery(monkeypatch):
+    search_calls = {"count": 0}
+    fetch_calls = {"count": 0}
+
+    async def fake_search(query: str, _count: int) -> str:
+        search_calls["count"] += 1
+        return f"URL: https://docs.example/{query}"
+
+    async def fake_fetch(url: str) -> str:
+        fetch_calls["count"] += 1
+        return f"Fetched URL: {url}\nTitle: Docs\nContent: verified"
+
+    monkeypatch.setattr(
+        "src.workflow.deepagents_runner.bocha_web_search", fake_search
+    )
+    monkeypatch.setattr(
+        "src.workflow.deepagents_runner.fetch_web_page", fake_fetch
+    )
+    budget = SearchBudget(
+        max_calls=2,
+        max_fetch_calls=2,
+        reserved_search_calls=1,
+        reserved_fetch_calls=1,
+    )
+    search_tool = create_limited_web_search(budget)
+    fetch_tool = create_limited_web_fetch(budget)
+
+    first_search = asyncio.run(
+        search_tool.ainvoke({"query": "first", "count": 1})
+    )
+    reserved_search = asyncio.run(
+        search_tool.ainvoke({"query": "second", "count": 1})
+    )
+    first_fetch = asyncio.run(
+        fetch_tool.ainvoke({"url": "https://docs.example/first"})
+    )
+    reserved_fetch = asyncio.run(
+        fetch_tool.ainvoke({"url": "https://docs.example/second"})
+    )
+
+    assert "https://docs.example/first" in first_search
+    assert "RESERVED_SEARCH_BUDGET" in reserved_search
+    assert "Fetched URL" in first_fetch
+    assert "RESERVED_FETCH_BUDGET" in reserved_fetch
+    assert search_calls["count"] == 1
+    assert fetch_calls["count"] == 1
+
+    budget.recovery_active = True
+    recovered_search = asyncio.run(
+        search_tool.ainvoke({"query": "second", "count": 1})
+    )
+    recovered_fetch = asyncio.run(
+        fetch_tool.ainvoke({"url": "https://docs.example/second"})
+    )
+
+    assert "https://docs.example/second" in recovered_search
+    assert "Fetched URL" in recovered_fetch
+    assert budget.call_count == 2
+    assert budget.fetch_call_count == 2
+    assert budget.search_reserve_rejections == 1
+    assert budget.fetch_reserve_rejections == 1
+
+
 def test_limited_web_fetch_records_only_successful_final_url(monkeypatch):
     responses = iter(
         [

@@ -11,6 +11,13 @@ from langgraph.prebuilt.tool_node import ToolCallRequest
 # findings_langgraph.md / analysis_langgraph_vs_autogen.md
 ARTIFACT_FILENAME_RE = re.compile(r"^(findings|analysis)_[a-z0-9][a-z0-9_-]*\.md$")
 DRAFT_FILENAME_RE = re.compile(r"^draft_[a-z0-9][a-z0-9_-]*\.md$")
+REPORT_FILENAME_RE = re.compile(
+    r"^report_[a-z0-9][a-z0-9_-]*_\d{4}-\d{2}-\d{2}\.md$"
+)
+RECOVERY_MARKER = "[EVIDENCE_RECOVERY]"
+TASK_FINDINGS_PATH_RE = re.compile(
+    r"(?:/)?workspace/sources/(findings_[a-z0-9][a-z0-9_-]*\.md)"
+)
 
 
 class DelegationLimitMiddleware(AgentMiddleware):
@@ -22,10 +29,18 @@ class DelegationLimitMiddleware(AgentMiddleware):
     同时校验 findings_/analysis_ 的路径与小写 slug 文件名。
     """
 
-    def __init__(self, budget: Any, block_artifact_rewrites: bool = True):
+    def __init__(
+        self,
+        budget: Any,
+        block_artifact_rewrites: bool = True,
+        evidence_inventory: Any | None = None,
+        search_budget: Any | None = None,
+    ):
         super().__init__()
         self.budget = budget
         self.block_artifact_rewrites = block_artifact_rewrites
+        self.evidence_inventory = evidence_inventory
+        self.search_budget = search_budget
     
     def _extract_file_path(self, args: dict) -> str:
         return str(
@@ -93,6 +108,47 @@ class DelegationLimitMiddleware(AgentMiddleware):
         )
         return in_reports and bool(DRAFT_FILENAME_RE.match(filename))
 
+    def _is_report_file(self, file_path: str) -> bool:
+        normalized = file_path.replace("\\", "/")
+        filename = normalized.rsplit("/", 1)[-1]
+        in_reports = "/workspace/reports/" in normalized or normalized.startswith(
+            "workspace/reports/"
+        )
+        return in_reports and bool(REPORT_FILENAME_RE.match(filename))
+
+    def _extract_file_content(self, args: dict) -> str:
+        return str(args.get("content") or args.get("text") or "")
+
+    def _evidence_gate_or_reject(
+        self,
+        *,
+        stage: str,
+        tool_call_id: str,
+        tool_name: str,
+        output_text: str | None = None,
+        enforce_output_citations: bool = False,
+    ) -> ToolMessage | None:
+        if self.evidence_inventory is None:
+            return None
+        result = self.evidence_inventory.evaluate_gate(
+            stage,
+            output_text=output_text,
+            enforce_output_citations=enforce_output_citations,
+        )
+        if result.passed:
+            return None
+        print(
+            f"[evidence-gate] blocked {stage} "
+            f"eligible={result.snapshot.eligible_count}/"
+            f"{result.snapshot.minimum_citations}"
+        )
+        return ToolMessage(
+            content=result.message,
+            tool_call_id=tool_call_id,
+            name=tool_name,
+            status="error",
+        )
+
     def _count_or_reject(
         self,
         *,
@@ -123,6 +179,132 @@ class DelegationLimitMiddleware(AgentMiddleware):
                 status="error",
             )
         setattr(self.budget, counter_name, calls + 1)
+        return None
+
+    def _researcher_rejection(
+        self,
+        *,
+        message: str,
+        tool_call_id: str,
+        recovery_attempt: bool = False,
+    ) -> ToolMessage:
+        self.budget.researcher_rejections += 1
+        if recovery_attempt:
+            self.budget.researcher_recovery_rejections += 1
+        return ToolMessage(
+            content=message,
+            tool_call_id=tool_call_id,
+            name="task",
+            status="error",
+        )
+
+    def _researcher_or_reject(
+        self,
+        *,
+        args: dict,
+        tool_call_id: str,
+    ) -> ToolMessage | None:
+        """Enforce structured planning and preserve the final recovery slot."""
+
+        self.budget.researcher_attempts += 1
+        calls = int(self.budget.researcher_calls)
+        limit = int(self.budget.max_researcher)
+        reserved = int(getattr(self.budget, "reserved_researcher_calls", 0))
+        initial_limit = max(0, limit - reserved)
+
+        if calls >= limit:
+            return self._researcher_rejection(
+                message=(
+                    f"委派被拒绝：researcher 最多允许 {limit} 次，本次是第 "
+                    f"{self.budget.researcher_attempts} 次尝试。请使用已有 findings "
+                    "继续后续流程。"
+                ),
+                tool_call_id=tool_call_id,
+            )
+
+        if self.evidence_inventory is not None:
+            plan_result = self.evidence_inventory.evaluate_research_plan()
+            if not plan_result.passed:
+                return self._researcher_rejection(
+                    message=plan_result.message,
+                    tool_call_id=tool_call_id,
+                )
+
+        # With no configured reserve, retain the original generic behavior.
+        if reserved == 0 or calls < initial_limit:
+            self.budget.researcher_calls += 1
+            return None
+
+        self.budget.researcher_recovery_attempts += 1
+        description = str(args.get("description") or "")
+        if self.evidence_inventory is None:
+            return self._researcher_rejection(
+                message=(
+                    "委派被拒绝：恢复 researcher 需要启用 evidence inventory。"
+                ),
+                tool_call_id=tool_call_id,
+                recovery_attempt=True,
+            )
+
+        if self.evidence_inventory.inspection_calls == 0:
+            return self._researcher_rejection(
+                message=(
+                    "委派被拒绝：最后一个 researcher 名额专门保留给证据恢复。"
+                    "请先调用 check_evidence_inventory，确认仍有 citation_deficit 后再使用。"
+                ),
+                tool_call_id=tool_call_id,
+                recovery_attempt=True,
+            )
+
+        evidence = self.evidence_inventory.snapshot()
+        if evidence.passed:
+            return self._researcher_rejection(
+                message=(
+                    "委派被拒绝：证据清单已经达到最少来源数量，"
+                    "无需消耗保留的恢复 researcher；请继续分析或起草。"
+                ),
+                tool_call_id=tool_call_id,
+                recovery_attempt=True,
+            )
+
+        if RECOVERY_MARKER not in description:
+            return self._researcher_rejection(
+                message=(
+                    "委派被拒绝：最后一个 researcher 名额只能用于证据恢复。"
+                    f"description 必须以 {RECOVERY_MARKER} 标记，并说明当前缺口、"
+                    "已有 eligible URLs、不同的新来源目标和新的 findings 精确路径。"
+                ),
+                tool_call_id=tool_call_id,
+                recovery_attempt=True,
+            )
+
+        filenames = TASK_FINDINGS_PATH_RE.findall(description)
+        if not filenames:
+            return self._researcher_rejection(
+                message=(
+                    "委派被拒绝：证据恢复任务必须包含新的精确路径 "
+                    "/workspace/sources/findings_<slug>.md。"
+                ),
+                tool_call_id=tool_call_id,
+                recovery_attempt=True,
+            )
+        existing = {
+            path.name for path in self.evidence_inventory._evidence_paths()
+        }
+        if all(filename in existing for filename in filenames):
+            return self._researcher_rejection(
+                message=(
+                    "委派被拒绝：证据恢复必须写入新的 findings 文件，"
+                    "禁止覆盖已有 findings。"
+                ),
+                tool_call_id=tool_call_id,
+                recovery_attempt=True,
+            )
+
+        self.budget.researcher_calls += 1
+        self.budget.researcher_recovery_calls += 1
+        if self.search_budget is not None:
+            self.search_budget.recovery_active = True
         return None
 
     def _normalize_task_request(
@@ -202,6 +384,24 @@ class DelegationLimitMiddleware(AgentMiddleware):
                     name=name,
                     status="error",
                 )
+            if self._is_draft_file(file_path):
+                evidence_rejection = self._evidence_gate_or_reject(
+                    stage="draft_creation" if name == "write_file" else "draft_revision",
+                    tool_call_id=tool_call_id,
+                    tool_name=name,
+                )
+                if evidence_rejection is not None:
+                    return evidence_rejection
+            if name == "write_file" and self._is_report_file(file_path):
+                evidence_rejection = self._evidence_gate_or_reject(
+                    stage="final_report",
+                    tool_call_id=tool_call_id,
+                    tool_name=name,
+                    output_text=self._extract_file_content(args),
+                    enforce_output_citations=True,
+                )
+                if evidence_rejection is not None:
+                    return evidence_rejection
             if name == "edit_file" and self._is_draft_file(file_path):
                 return self._count_or_reject(
                     counter_name="draft_edit_calls",
@@ -214,6 +414,24 @@ class DelegationLimitMiddleware(AgentMiddleware):
             return None
         if name == "task":
             subagent_type = args.get("subagent_type") or args.get("subagent") or ""
+
+            if subagent_type == "analyst":
+                evidence_rejection = self._evidence_gate_or_reject(
+                    stage="analyst_delegation",
+                    tool_call_id=tool_call_id,
+                    tool_name="task",
+                )
+                if evidence_rejection is not None:
+                    return evidence_rejection
+
+            if subagent_type == "researcher" and (
+                self.evidence_inventory is not None
+                or int(getattr(self.budget, "reserved_researcher_calls", 0)) > 0
+            ):
+                return self._researcher_or_reject(
+                    args=args,
+                    tool_call_id=tool_call_id,
+                )
 
             task_limits = {
                 "researcher": (

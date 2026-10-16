@@ -360,14 +360,18 @@ def test_base_url_capture_strips_credentials_and_query():
     assert "secret" not in sanitized
 
 
-def test_runtime_config_records_frozen_protocol_version():
+def test_runtime_config_records_frozen_v2_protocol_version():
     config = capture_runtime_config(
         Path("."),
         Path("evals/datasets/research_main_v1.jsonl"),
         timeout_seconds=900,
     )
 
-    assert config["protocol_version"] == "1.3.0"
+    assert config["protocol_version"] == "2.1.0"
+    assert config["evidence_inventory_gate"] is True
+    assert config["structured_research_plan_gate"] is True
+    assert config["researcher_initial_call_limit"] == 2
+    assert config["researcher_recovery_call_limit"] == 1
 
 
 def test_runner_records_timeout_without_retrying_agent_failure(
@@ -525,6 +529,7 @@ def test_runner_passes_trace_callback_and_records_trace_id(tmp_path, monkeypatch
     async def fake_workflow(*_args, **kwargs):
         captured["callbacks"] = kwargs["callbacks"]
         captured["run_date"] = kwargs["run_date"]
+        captured["minimum_citations"] = kwargs["minimum_citations"]
         return DeepAgentsRunResult(
             final_text="done",
             metadata={
@@ -575,6 +580,7 @@ def test_runner_passes_trace_callback_and_records_trace_id(tmp_path, monkeypatch
 
     assert captured["callbacks"] == [callback]
     assert captured["run_date"] == "2026-10-14"
+    assert captured["minimum_citations"] == 1
     assert captured["trace_kwargs"]["session_id"] == "test-session"
     assert result["langfuse_trace_id"] == "trace-123"
     assert result["status"] == "completed"

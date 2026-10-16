@@ -57,7 +57,9 @@ def capture_runtime_config(
 ) -> dict[str, object]:
     base_url = sanitize_base_url(os.getenv("OPENAI_BASE_URL"))
     return {
-        "protocol_version": "1.3.0",
+        # Protocol v1.3.0 remains immutable. Protocol v2.1.0 is a separate
+        # regression benchmark and must never be merged with v1 results.
+        "protocol_version": "2.1.0",
         "dataset_version": "v1",
         "dataset_path": str(dataset_path.relative_to(project_root)),
         "dataset_sha256": dataset_sha256(dataset_path),
@@ -73,17 +75,23 @@ def capture_runtime_config(
         "concurrency": 1,
         "deepagents_recursion_limit": deepagents_recursion_limit(),
         "search_call_limit": 6,
+        "search_recovery_reserve": 1,
         "search_timeout_seconds": bocha_timeout_seconds(),
         "search_max_retries": bocha_max_retries(),
         "fetch_call_limit": 6,
+        "fetch_recovery_reserve": 1,
         "fetch_timeout_seconds": web_fetch_timeout_seconds(),
         "fetch_max_retries": web_fetch_max_retries(),
         "fetch_max_bytes": web_fetch_max_bytes(),
         "fetch_max_chars": web_fetch_max_chars(),
         "researcher_call_limit": 3,
+        "researcher_initial_call_limit": 2,
+        "researcher_recovery_call_limit": 1,
         "analyst_call_limit": 1,
         "editor_call_limit": 1,
         "draft_edit_call_limit": 1,
+        "evidence_inventory_gate": True,
+        "structured_research_plan_gate": True,
         "langfuse_tracing_enabled": langfuse_tracing_enabled(),
         "langfuse_environment": (
             os.getenv("LANGFUSE_TRACING_ENVIRONMENT") or "default"

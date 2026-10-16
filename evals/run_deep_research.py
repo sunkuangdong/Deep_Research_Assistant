@@ -137,6 +137,7 @@ async def _run_case(
                     todos_export_path=case_root / "tmp.json",
                     callbacks=case_trace.callbacks,
                     run_date=run_date,
+                    minimum_citations=case["minimum_citations"],
                 ),
                 timeout=timeout_seconds,
             )

@@ -5,15 +5,18 @@ result artifacts for Deep Research Assistant.
 
 ## Current Status
 
-Protocol v1.3.0 is **FROZEN** at Git tag `deep-research-eval-v1.3.0`.
-Main benchmark results are official only when executed against that frozen
-protocol and published through the evaluation tooling.
+Protocol v1.3.0 is **FROZEN** at Git tag `deep-research-eval-v1.3.0` and remains
+the immutable baseline. Protocol v2.1.0 freezes the evidence-inventory and
+bounded-recovery regression workflow described in `EVALUATION_SPEC_V2.md`.
+Its results are official only when executed from tag
+`deep-research-eval-v2.1.0` and published separately from v1.
 
 ## Files
 
 ```text
 evals/
 ├── EVALUATION_SPEC.md
+├── EVALUATION_SPEC_V2.md
 ├── README.md
 ├── datasets/
 │   ├── research_smoke_v1.jsonl
