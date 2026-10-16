@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "status": "FROZEN",
+  "version": "v1",
+  "frozen_at": "2026-10-16",
+  "source_protocol_version": "2.1.0",
+  "source_dataset_path": "evals/datasets/research_main_v1.jsonl",
+  "source_dataset_sha256": "9595213afcdd0b7baedf00f948d8364560e7484378ad06f88c0ed44d356fbf42",
+  "selection_policy": {
+    "method": "systematic sample with a proportional no-analysis adjustment",
+    "base_rule": "Select case IDs whose numeric suffix is divisible by three.",
+    "adjustment": "Replace dr-main-030 with dr-main-028 within the same language and category so two of ten tasks use no_analysis, matching the rounded 5/30 population share.",
+    "uses_outcome_fields": false,
+    "chronology": "Frozen after the v2 main regression run; therefore this subset is descriptive stability evidence, not a preregistered or holdout sample."
+  },
+  "case_ids": [
+    "dr-main-003",
+    "dr-main-006",
+    "dr-main-009",
+    "dr-main-012",
+    "dr-main-015",
+    "dr-main-018",
+    "dr-main-021",
+    "dr-main-024",
+    "dr-main-027",
+    "dr-main-028"
+  ],
+  "strata": {
+    "languages": {
+      "en": 5,
+      "zh": 5
+    },
+    "categories": {
+      "architecture": 2,
+      "comparison": 1,
+      "cost": 1,
+      "deployment": 2,
+      "governance": 2,
+      "security": 2
+    },
+    "analysis_requirement": {
+      "analysis": 8,
+      "no_analysis": 2
+    }
+  },
+  "repeat_plan": {
+    "total_runs_per_case": 3,
+    "reused_main_v2_runs_per_case": 1,
+    "additional_runs_per_case": 2,
+    "task_count": 10,
+    "total_observations": 30,
+    "additional_paid_runs": 20
+  }
+}

@@ -169,5 +169,63 @@ before writing `comparison.json`, `report.md`, and a SHA-256 manifest. It labels
 v2 as a regression comparison on a previously observed dataset, not a holdout
 benchmark.
 
+## Repeated-Run Stability Evaluation
+
+The frozen ten-task stability subset is stored in
+`evals/stability_subset_v1.json` and documented in
+`evals/STABILITY_SPEC_V2.md`. Validate the subset without making any external
+calls:
+
+```bash
+python -m evals.publish_stability --validate-subset-only
+```
+
+Confirm that the frozen subset can reuse ten compatible, uniquely traced
+observations from the published v2 main bundle:
+
+```bash
+python -m evals.publish_stability --validate-preflight
+```
+
+Run the two additional rounds in separate append-only result directories. A
+nonzero command exit can represent a recorded Agent or infrastructure failure;
+do not delete or replace the result directory merely to improve the outcome.
+
+```bash
+python -m evals.run_deep_research \
+  --dataset evals/datasets/research_main_v1.jsonl \
+  --case-id dr-main-003 \
+  --case-id dr-main-006 \
+  --case-id dr-main-009 \
+  --case-id dr-main-012 \
+  --case-id dr-main-015 \
+  --case-id dr-main-018 \
+  --case-id dr-main-021 \
+  --case-id dr-main-024 \
+  --case-id dr-main-027 \
+  --case-id dr-main-028 \
+  --run-date 2026-10-16 \
+  --timeout-seconds 900 \
+  --result-dir evals/results/stability_v2_round_2
+```
+
+After the round-two cost gate passes, run the same command with only the result
+directory changed to `evals/results/stability_v2_round_3`. Publish all three
+observations per task after both additional rounds finish:
+
+```bash
+python -m evals.publish_stability \
+  --main-bundle evals/results/published/main_v2 \
+  --repeat-dir evals/results/stability_v2_round_2 \
+  --repeat-dir evals/results/stability_v2_round_3 \
+  --output-dir evals/results/published/stability_v2
+```
+
+The publisher reuses repeat 1 from `main_v2`, rescoring repeats 2 and 3 from
+their workspaces. It requires 30 unique run IDs and trace IDs, checks frozen
+runtime compatibility, preserves every failure, and reports per-task
+completion agreement plus token, latency, search, and delegation variation.
+The observations remain ten task clusters rather than 30 independent tasks.
+
 No file in this directory contains API credentials.
 
