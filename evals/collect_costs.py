@@ -18,6 +18,12 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_PUBLISHED_DIR = Path("evals/results/published/smoke_v1")
 COST_SECTION_START = "<!-- cost-evidence:start -->"
 COST_SECTION_END = "<!-- cost-evidence:end -->"
+TRACE_RECOVERABLE_FAILURE_TYPES = {
+    "provider_or_runtime",
+    "recursion_limit",
+    "timeout",
+}
+SEARCH_TOOL_NAMES = {"bocha_web_search", "web_search"}
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -66,14 +72,20 @@ def _get_field(value: Any, name: str, default: Any = None) -> Any:
     return getattr(value, name, default)
 
 
-def _fetch_generations(client: Any, trace_id: str) -> list[Any]:
+def _fetch_observations(
+    client: Any,
+    trace_id: str,
+    *,
+    observation_type: str,
+    fields: str,
+) -> list[Any]:
     observations: list[Any] = []
     cursor: str | None = None
     while True:
         response = client.api.observations.get_many(
             trace_id=trace_id,
-            type="GENERATION",
-            fields="basic,usage,model",
+            type=observation_type,
+            fields=fields,
             limit=1000,
             cursor=cursor,
         )
@@ -83,9 +95,42 @@ def _fetch_generations(client: Any, trace_id: str) -> list[Any]:
         if not next_cursor:
             break
         if next_cursor == cursor:
-            raise ValueError(f"Langfuse returned a repeated cursor for trace {trace_id}")
+            raise ValueError(
+                f"Langfuse returned a repeated cursor for trace {trace_id}"
+            )
         cursor = str(next_cursor)
     return observations
+
+
+def _fetch_generations(client: Any, trace_id: str) -> list[Any]:
+    return _fetch_observations(
+        client,
+        trace_id,
+        observation_type="GENERATION",
+        fields="basic,usage,model",
+    )
+
+
+def _fetch_search_tools(client: Any, trace_id: str) -> list[Any]:
+    observations = _fetch_observations(
+        client,
+        trace_id,
+        observation_type="TOOL",
+        fields="basic",
+    )
+    return [
+        observation
+        for observation in observations
+        if str(_get_field(observation, "name") or "").strip().lower()
+        in SEARCH_TOOL_NAMES
+    ]
+
+
+def _allows_trace_metric_recovery(run: dict[str, Any]) -> bool:
+    failure_type = str(
+        run.get("original_failure_type") or run.get("failure_type") or ""
+    )
+    return failure_type in TRACE_RECOVERABLE_FAILURE_TYPES
 
 
 def _collect_trace_cost(
@@ -100,12 +145,16 @@ def _collect_trace_cost(
     generations = _fetch_generations(client, trace_id)
     expected_calls = run.get("usage", {}).get("llm_calls")
     if expected_calls is None:
-        raise ValueError(f"published run {case_id} has no llm_calls metric")
-    if len(generations) != int(expected_calls):
+        if not _allows_trace_metric_recovery(run):
+            raise ValueError(f"published run {case_id} has no llm_calls metric")
+        generation_count_matches_local: bool | None = None
+    elif len(generations) != int(expected_calls):
         raise ValueError(
             f"trace {trace_id} has {len(generations)} generations, "
             f"but {case_id} records {expected_calls} llm_calls"
         )
+    else:
+        generation_count_matches_local = True
 
     total_cost = Decimal(0)
     component_costs: dict[str, Decimal] = defaultdict(lambda: Decimal(0))
@@ -132,20 +181,38 @@ def _collect_trace_cost(
 
     search_calls = run.get("calls", {}).get("search_calls")
     if search_calls is None:
-        raise ValueError(f"published run {case_id} has no search_calls metric")
+        if not _allows_trace_metric_recovery(run):
+            raise ValueError(f"published run {case_id} has no search_calls metric")
+        search_tools = _fetch_search_tools(client, trace_id)
+        effective_search_calls = len(search_tools)
+        search_call_count_source = "langfuse_tool_observations"
+        observed_search_tool_names = sorted(
+            {str(_get_field(observation, "name") or "") for observation in search_tools}
+        )
+    else:
+        effective_search_calls = int(search_calls)
+        search_call_count_source = "local_run_metrics"
+        observed_search_tool_names = []
 
     return {
         "case_id": case_id,
         "langfuse_trace_id": trace_id,
         "models": sorted(models),
         "generation_count": len(generations),
+        "local_llm_calls": (
+            int(expected_calls) if expected_calls is not None else None
+        ),
+        "generation_count_matches_local_llm_calls": (generation_count_matches_local),
         "priced_generation_count": len(generations),
         "total_cost_usd": _number(total_cost),
         "cost_components_usd": {
             key: _number(value) for key, value in sorted(component_costs.items())
         },
         "local_total_tokens": run.get("usage", {}).get("total_tokens"),
-        "local_search_calls": int(search_calls),
+        "search_calls": effective_search_calls,
+        "local_search_calls": (int(search_calls) if search_calls is not None else None),
+        "search_call_count_source": search_call_count_source,
+        "observed_search_tool_names": observed_search_tool_names,
     }
 
 
@@ -183,7 +250,7 @@ def _build_cost_evidence(
     projected_model_cost = mean_model_cost * Decimal(target_run_count)
     buffered_model_cost = projected_model_cost * projection_buffer
 
-    total_search_calls = sum(item["local_search_calls"] for item in per_trace)
+    total_search_calls = sum(item["search_calls"] for item in per_trace)
     mean_search_calls = Decimal(total_search_calls) / Decimal(run_count)
     projected_search_calls = math.ceil(
         mean_search_calls * Decimal(target_run_count) * projection_buffer
@@ -197,6 +264,14 @@ def _build_cost_evidence(
         for key, value in item["cost_components_usd"].items():
             component_totals[key] += _decimal(value)
 
+    missing_local_llm_calls = [
+        item["case_id"] for item in per_trace if item["local_llm_calls"] is None
+    ]
+    trace_derived_search_calls = [
+        item["case_id"]
+        for item in per_trace
+        if item["search_call_count_source"] == "langfuse_tool_observations"
+    ]
     evidence: dict[str, Any] = {
         "schema_version": 2,
         "collected_at": collected_at,
@@ -209,7 +284,13 @@ def _build_cost_evidence(
         },
         "validation": {
             "trace_count": len(per_trace),
-            "all_generation_counts_match_local_llm_calls": True,
+            "all_generation_counts_match_local_llm_calls": not missing_local_llm_calls,
+            "all_available_generation_counts_match_local_llm_calls": all(
+                item["generation_count_matches_local_llm_calls"] is not False
+                for item in per_trace
+            ),
+            "missing_local_llm_calls_case_ids": missing_local_llm_calls,
+            "trace_derived_search_calls_case_ids": trace_derived_search_calls,
             "all_generations_priced": True,
             "root_observations_excluded": True,
         },
@@ -219,8 +300,7 @@ def _build_cost_evidence(
             "total_usd": _number(total_model_cost),
             "mean_per_run_usd": _number(mean_model_cost),
             "cost_components_usd": {
-                key: _number(value)
-                for key, value in sorted(component_totals.items())
+                key: _number(value) for key, value in sorted(component_totals.items())
             },
             "target_run_count": target_run_count,
             "projection_buffer_multiplier": float(projection_buffer),
@@ -238,9 +318,7 @@ def _build_cost_evidence(
             "evaluation_search_calls": total_search_calls,
             "evaluation_allocated_cost_cny": _number(allocated_bocha_cost, 4),
             "projected_target_calls_with_buffer": projected_search_calls,
-            "projected_target_allocated_cost_cny": _number(
-                projected_bocha_cost, 4
-            ),
+            "projected_target_allocated_cost_cny": _number(projected_bocha_cost, 4),
             "search_call_cap": search_call_cap,
             "within_search_call_cap": projected_search_calls <= search_call_cap,
         },
@@ -280,9 +358,7 @@ def _cost_summary(evidence: dict[str, Any]) -> dict[str, Any]:
         "model_spend_cap_usd": model["spend_cap_usd"],
         "within_model_spend_cap": model["within_spend_cap"],
         "bocha_evaluation_search_calls": bocha["evaluation_search_calls"],
-        "bocha_evaluation_allocated_cost_cny": bocha[
-            "evaluation_allocated_cost_cny"
-        ],
+        "bocha_evaluation_allocated_cost_cny": bocha["evaluation_allocated_cost_cny"],
         "projected_50_run_search_calls_with_20_percent_buffer": bocha[
             "projected_target_calls_with_buffer"
         ],
@@ -434,9 +510,7 @@ def main() -> int:
     parser.add_argument("--bocha-remaining-calls", type=int)
     parser.add_argument("--target-run-count", type=int, default=50)
     parser.add_argument("--projection-buffer", type=Decimal, default=Decimal("1.2"))
-    parser.add_argument(
-        "--model-spend-cap-usd", type=Decimal, default=Decimal("1.5")
-    )
+    parser.add_argument("--model-spend-cap-usd", type=Decimal, default=Decimal("1.5"))
     parser.add_argument("--search-call-cap", type=int, default=360)
     parser.add_argument("--openai-credit-balance-usd", type=Decimal)
     parser.add_argument("--balance-snapshot-date")
@@ -446,7 +520,9 @@ def main() -> int:
     required_env = ("LANGFUSE_PUBLIC_KEY", "LANGFUSE_SECRET_KEY")
     missing = [name for name in required_env if not os.getenv(name)]
     if missing:
-        raise ValueError("missing Langfuse environment variables: " + ", ".join(missing))
+        raise ValueError(
+            "missing Langfuse environment variables: " + ", ".join(missing)
+        )
 
     from langfuse import get_client
 

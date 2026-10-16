@@ -1,0 +1,1181 @@
+{
+  "publication_schema_version": 1,
+  "published_at": "2026-10-16T21:34:26.508028+00:00",
+  "dataset_sha256": "9595213afcdd0b7baedf00f948d8364560e7484378ad06f88c0ed44d356fbf42",
+  "scorer_sha256": "719d828f5a94d54f0fdf240bca6e8e2ca4004b6459e4d627a570804e7703336e",
+  "cases": [
+    {
+      "case_id": "dr-main-001",
+      "source_result_dir": "20261016T180704Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "fca1ff217a837f34e44d4dbe10a1048a4d4bf74305af0a9379a465ae625fe73d",
+      "source_config_sha256": "bb019394a3f4ebb96f0ef9b906507f7f36cba2c243b539b02eabc78dcd2b0c22",
+      "artifacts": [
+        {
+          "path": "reports/draft_langgraph_vs_autogen.md",
+          "sha256": "34da3eb32b53a24651b4a0ebb17fccebe1a1a78abc23973ef722bd6263a1596d",
+          "size_bytes": 12979
+        },
+        {
+          "path": "reports/report_langgraph_vs_autogen_2026-10-16.md",
+          "sha256": "14991c5e642360dd318b05ad406eb357321009163fdc793768699e01012da6fe",
+          "size_bytes": 12991
+        },
+        {
+          "path": "sources/analysis_langgraph_vs_autogen.md",
+          "sha256": "169097d97fc742ab34f50e8963fc8bf91539c0170d26c9ba416945ffb6761735",
+          "size_bytes": 10862
+        },
+        {
+          "path": "sources/findings_autogen.md",
+          "sha256": "88c68b83a3fa58c32ee0ee4f46b4dd8949a378a3c44fabb402be47f1cf18147c",
+          "size_bytes": 5888
+        },
+        {
+          "path": "sources/findings_langgraph.md",
+          "sha256": "9ab6ae4b69fb8011c7de27f287abf1982154162cecbe7f091273dc43916aa9d0",
+          "size_bytes": 4402
+        },
+        {
+          "path": "sources/question.txt",
+          "sha256": "1325199815b4e2a6e9315f9d736f894fef02447b43cba4e7cbd391690afed76a",
+          "size_bytes": 186
+        },
+        {
+          "path": "sources/research_plan.md",
+          "sha256": "b64ecf05bc78ef8491d148a086af1c6deced3d5afcce5e3b480f454f7c995665",
+          "size_bytes": 2604
+        }
+      ]
+    },
+    {
+      "case_id": "dr-main-002",
+      "source_result_dir": "20261016T180704Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "fca1ff217a837f34e44d4dbe10a1048a4d4bf74305af0a9379a465ae625fe73d",
+      "source_config_sha256": "bb019394a3f4ebb96f0ef9b906507f7f36cba2c243b539b02eabc78dcd2b0c22",
+      "artifacts": [
+        {
+          "path": "reports/draft_agent_workflows.md",
+          "sha256": "53005fd6a2fa514db34382cfa361360b293e995b81c1b940315056f1ec634449",
+          "size_bytes": 8641
+        },
+        {
+          "path": "reports/report_agent_workflows_2026-10-16.md",
+          "sha256": "9fee4b4a55e66a0e940fb2de5dd365630fe12327d6d599fd1e43e3eab41b649a",
+          "size_bytes": 10328
+        },
+        {
+          "path": "sources/analysis_agent_workflows.md",
+          "sha256": "e19634050bf47b622155ea74a4d328fe92332b685ce2dcfc0c4b6e0deaf5f1cc",
+          "size_bytes": 9130
+        },
+        {
+          "path": "sources/findings_aws_callback.md",
+          "sha256": "abc41965e3c1595ffb6abcc94b7e63fdb5a4a1600d504201cb7d2bef9f7204a0",
+          "size_bytes": 2652
+        },
+        {
+          "path": "sources/findings_celery_stepfunctions.md",
+          "sha256": "d53522bc38443c716e520a50c5c213c9aab23ed5e9a6f1282a9b820560f91605",
+          "size_bytes": 5480
+        },
+        {
+          "path": "sources/findings_temporal.md",
+          "sha256": "78523611a831e2ba5da11a2358758cd5292c9470707c7dc6674aaf0d5a4717e3",
+          "size_bytes": 3936
+        },
+        {
+          "path": "sources/question.txt",
+          "sha256": "03dc5fb8def4e2dd982820d781d51272ee235310e9c079671e3830289f448e95",
+          "size_bytes": 193
+        },
+        {
+          "path": "sources/research_plan.md",
+          "sha256": "6f5dee635ab37ab83454c914a26f3cb360a322bf6b5fdaa19e094b981a65a9ed",
+          "size_bytes": 2327
+        }
+      ]
+    },
+    {
+      "case_id": "dr-main-003",
+      "source_result_dir": "20261016T180704Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "fca1ff217a837f34e44d4dbe10a1048a4d4bf74305af0a9379a465ae625fe73d",
+      "source_config_sha256": "bb019394a3f4ebb96f0ef9b906507f7f36cba2c243b539b02eabc78dcd2b0c22",
+      "artifacts": [
+        {
+          "path": "reports/draft_event_backbones.md",
+          "sha256": "c8ac18d3ed7dc6538192405861bf5cadbf4e31e8e3440ff96d76da72e1ee96b8",
+          "size_bytes": 11365
+        },
+        {
+          "path": "reports/report_event_backbones_2026-10-16.md",
+          "sha256": "c8ac18d3ed7dc6538192405861bf5cadbf4e31e8e3440ff96d76da72e1ee96b8",
+          "size_bytes": 11365
+        },
+        {
+          "path": "sources/analysis_event_backbones.md",
+          "sha256": "4d7061cc7c152fc183fc073fea23e0e83a5a1fc3c207e172080dd2f43a4503c2",
+          "size_bytes": 13676
+        },
+        {
+          "path": "sources/findings_kafka.md",
+          "sha256": "30e01986d7777b584730b42ab996072c08e25dc5abbc94ac65ee86f5875b1d46",
+          "size_bytes": 5316
+        },
+        {
+          "path": "sources/findings_redis_rabbitmq.md",
+          "sha256": "7532637c0b7304a0f6ef878d2cb2aee6d91ee1112f9970848ead67f51712c83a",
+          "size_bytes": 7029
+        },
+        {
+          "path": "sources/question.txt",
+          "sha256": "befec2dd284ad15cd0c2d131528de861ef5c94e10c670b2ed316c5605cf5ace9",
+          "size_bytes": 410
+        },
+        {
+          "path": "sources/research_plan.md",
+          "sha256": "2cd3b51feb1c59106b149dc8c507491bf483efd94acb890a14fbe9f68c87ebc5",
+          "size_bytes": 2485
+        }
+      ]
+    },
+    {
+      "case_id": "dr-main-004",
+      "source_result_dir": "20261016T180704Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "fca1ff217a837f34e44d4dbe10a1048a4d4bf74305af0a9379a465ae625fe73d",
+      "source_config_sha256": "bb019394a3f4ebb96f0ef9b906507f7f36cba2c243b539b02eabc78dcd2b0c22",
+      "artifacts": [
+        {
+          "path": "reports/draft_tool_routing.md",
+          "sha256": "b5aff010ec1b2857ab3863f36c8afccb90262ef8b3bba0cb99db1e927dfdee98",
+          "size_bytes": 9005
+        },
+        {
+          "path": "reports/report_tool_routing_2026-10-16.md",
+          "sha256": "0d13275801a7fab7604ea1bd5cbfda4914fc5e9462c5bb689680ef97c70766a4",
+          "size_bytes": 9085
+        },
+        {
+          "path": "sources/analysis_tool_routing.md",
+          "sha256": "7b34687b7404585b964dbd6eee4ab2d17fccde16b126d1d56ba72fa4b9a799d9",
+          "size_bytes": 9450
+        },
+        {
+          "path": "sources/findings_classic_routing.md",
+          "sha256": "9e29c18ac9094a77ee561b56d81708a552a6fafabfa6c06713fa5dc387bc728e",
+          "size_bytes": 5581
+        },
+        {
+          "path": "sources/findings_llm_routing.md",
+          "sha256": "dde5e8cf99e23aaf20cc35f588e4340d64126ecdc66beda09ac3e03f534d310b",
+          "size_bytes": 6403
+        },
+        {
+          "path": "sources/question.txt",
+          "sha256": "03498c8673bc5c902bc74eb02cf169ef925c7b249620000c5ede82852f5b3600",
+          "size_bytes": 334
+        },
+        {
+          "path": "sources/research_plan.md",
+          "sha256": "c1cbafdbb49985027e8fa018f95bbf1a56fe0491005bf0f21e4e0e4038d388ff",
+          "size_bytes": 2227
+        }
+      ]
+    },
+    {
+      "case_id": "dr-main-005",
+      "source_result_dir": "20261016T180704Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "fca1ff217a837f34e44d4dbe10a1048a4d4bf74305af0a9379a465ae625fe73d",
+      "source_config_sha256": "bb019394a3f4ebb96f0ef9b906507f7f36cba2c243b539b02eabc78dcd2b0c22",
+      "artifacts": [
+        {
+          "path": "reports/draft_support_retrieval.md",
+          "sha256": "3e90d34b5c79c66eeb880bcf3bf9375193a8d53fbaf8ecef67da76972328a7b7",
+          "size_bytes": 9448
+        },
+        {
+          "path": "reports/report_support_retrieval_2026-10-16.md",
+          "sha256": "43152b591a21363ca16e7d30df5c87a4dc5ca07394886aa9fcd85be9766f3fb3",
+          "size_bytes": 9536
+        },
+        {
+          "path": "sources/analysis_retrieval_comparison.md",
+          "sha256": "25fca726eaff92ef49d43be84fc4e38dc613d9dc73420b96b45e4200415a1904",
+          "size_bytes": 9768
+        },
+        {
+          "path": "sources/findings_dense_rerank.md",
+          "sha256": "293200ad9f339714323cdc1738d6cd59e7cfe88b0743cbed728c6e8c9268d934",
+          "size_bytes": 3997
+        },
+        {
+          "path": "sources/findings_hybrid_eval.md",
+          "sha256": "9fab84116d3752c64d5a4640ded6d7464d65f4598941d4f2958d0148d6f38084",
+          "size_bytes": 2964
+        },
+        {
+          "path": "sources/findings_sparse_exact.md",
+          "sha256": "811b5c0d297465756e516c80d7cb07e9ed10b6cf944bc43b0a71bf75cd0a7097",
+          "size_bytes": 3338
+        },
+        {
+          "path": "sources/question.txt",
+          "sha256": "2e35bcd1ae4eeedce7bd09c4771579eea40e010438723a9fdf2bee9200d69317",
+          "size_bytes": 168
+        },
+        {
+          "path": "sources/research_plan.md",
+          "sha256": "1c012511b659cbcb286bac6bca12fa47d752899156789cd31ebc80aa87512aba",
+          "size_bytes": 2471
+        }
+      ]
+    },
+    {
+      "case_id": "dr-main-006",
+      "source_result_dir": "20261016T182755Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "60755fe25fc4a363b706bf9e459ae76ddd3154fa2de5a4ac5cfc26ea5f9f7c7f",
+      "source_config_sha256": "60f69f4342f191ceaa4dea99514ea8e341a4eda0134343258b517022052dd078",
+      "artifacts": [
+        {
+          "path": "reports/draft_agent_reliability.md",
+          "sha256": "d4644d80dee13a858522cd5cb42c3df3f78854d102d48a61290f4c9159f77528",
+          "size_bytes": 9727
+        },
+        {
+          "path": "reports/report_agent_reliability_2026-10-16.md",
+          "sha256": "612f2c44d2fd11bd411db5ca41fd9c62ac4fb6d3ec6c7f3cccabc8d4de4566c4",
+          "size_bytes": 10063
+        },
+        {
+          "path": "sources/analysis_agent_reliability.md",
+          "sha256": "030a42b6e59b359683ad6389c66efe794e27cacdcb7c5e0844019f63781665d6",
+          "size_bytes": 13229
+        },
+        {
+          "path": "sources/findings_reliability.md",
+          "sha256": "70dc238933b30346334b7dc595641cd887422e8650803249ff4b6917610babd2",
+          "size_bytes": 5391
+        },
+        {
+          "path": "sources/findings_workflow.md",
+          "sha256": "2a07340e4c95f7b9976ad2d9a8764e1e94fbc8b4bf2e9df7277bf4daac19a364",
+          "size_bytes": 3525
+        },
+        {
+          "path": "sources/question.txt",
+          "sha256": "d9005fa0301200aa65c5bad5e12d9714a1f17024e4e529bfac41fbbb1ebf1da7",
+          "size_bytes": 328
+        },
+        {
+          "path": "sources/research_plan.md",
+          "sha256": "4368e6c10e15a95600ed0001ef1f2e4034f4c1be79901ea67191ab7090ff7a72",
+          "size_bytes": 2151
+        }
+      ]
+    },
+    {
+      "case_id": "dr-main-007",
+      "source_result_dir": "20261016T182755Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "60755fe25fc4a363b706bf9e459ae76ddd3154fa2de5a4ac5cfc26ea5f9f7c7f",
+      "source_config_sha256": "60f69f4342f191ceaa4dea99514ea8e341a4eda0134343258b517022052dd078",
+      "artifacts": [
+        {
+          "path": "reports/draft_multitenant_rag.md",
+          "sha256": "310b26f0a932a1efc1afcab134ced7b59d40e286c3569a0336a5117b4cb51a26",
+          "size_bytes": 13924
+        },
+        {
+          "path": "reports/report_multitenant_rag_2026-10-16.md",
+          "sha256": "310b26f0a932a1efc1afcab134ced7b59d40e286c3569a0336a5117b4cb51a26",
+          "size_bytes": 13924
+        },
+        {
+          "path": "sources/analysis_multitenant_rag.md",
+          "sha256": "aca7913f5ab46fffa420c8b83deb48e1a4b44208fea301e9e40b51ce7df58fda",
+          "size_bytes": 12017
+        },
+        {
+          "path": "sources/findings_async_recovery.md",
+          "sha256": "3b36d71f1733df9556412525b6404882387252d1d02f0c29c7289db83cfdecfb",
+          "size_bytes": 2842
+        },
+        {
+          "path": "sources/findings_rag_pipeline.md",
+          "sha256": "56131da52fb6b4a46c56d375aff07dec43c4ba53468694a302a8303ed2b30218",
+          "size_bytes": 3510
+        },
+        {
+          "path": "sources/findings_tenant_security.md",
+          "sha256": "8dc1f51fcc7ecece98d6eb1403d5672caa239530d465b33cd93a35f5f33a137f",
+          "size_bytes": 4783
+        },
+        {
+          "path": "sources/question.txt",
+          "sha256": "7029ee1b1b158cc7fe8e3d7c579d041aa98ad7a5183e2c075e6b9e4d1f936db8",
+          "size_bytes": 165
+        },
+        {
+          "path": "sources/research_plan.md",
+          "sha256": "fdbd6b63e6424e5f53483f908eba94d03fbfcfb2d34885c59aed7dbd82f58ec7",
+          "size_bytes": 2652
+        }
+      ]
+    },
+    {
+      "case_id": "dr-main-008",
+      "source_result_dir": "20261016T182755Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "60755fe25fc4a363b706bf9e459ae76ddd3154fa2de5a4ac5cfc26ea5f9f7c7f",
+      "source_config_sha256": "60f69f4342f191ceaa4dea99514ea8e341a4eda0134343258b517022052dd078",
+      "artifacts": [
+        {
+          "path": "reports/draft_multi_agent_context_governance.md",
+          "sha256": "b50bcc550a02ad224960784ecacf872bb500e72ea4bc4c411f4800a589489a88",
+          "size_bytes": 6810
+        },
+        {
+          "path": "reports/report_multi_agent_context_governance_2026-10-16.md",
+          "sha256": "be33b200c7fbc60a4f0f520dac995a95523bb23cad99741623777d185531c11d",
+          "size_bytes": 6975
+        },
+        {
+          "path": "sources/analysis_agent_controls.md",
+          "sha256": "9d4aa87560d84eb81b7f1faedb8f4143ef0d1be8c8c0740888fdab97c4f2ab05",
+          "size_bytes": 7331
+        },
+        {
+          "path": "sources/findings_context_isolation.md",
+          "sha256": "7d7a55f8a3a23709d2e0873e49e736dbf2127bdd3dd47d3889d742f289946550",
+          "size_bytes": 3860
+        },
+        {
+          "path": "sources/findings_handoff_budget.md",
+          "sha256": "7c5050038c8003d8006e04eac263ab345453a24eca69f87f9799c882a7749ec1",
+          "size_bytes": 3781
+        },
+        {
+          "path": "sources/question.txt",
+          "sha256": "02cea13bb5de7d8382c8d10035bc2ed7757c8c824b2c0041d49e2f6a18722fbc",
+          "size_bytes": 321
+        },
+        {
+          "path": "sources/research_plan.md",
+          "sha256": "c38d894da2bd8f2f14e222f808cd0256af004f52de383ee93154282c1d936648",
+          "size_bytes": 2241
+        }
+      ]
+    },
+    {
+      "case_id": "dr-main-009",
+      "source_result_dir": "20261016T182755Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "60755fe25fc4a363b706bf9e459ae76ddd3154fa2de5a4ac5cfc26ea5f9f7c7f",
+      "source_config_sha256": "60f69f4342f191ceaa4dea99514ea8e341a4eda0134343258b517022052dd078",
+      "artifacts": [
+        {
+          "path": "reports/draft_async_image_workflows.md",
+          "sha256": "02b42ec38a91aebbd410d1ee3b87a59570df516673a9fa7b512f510185373527",
+          "size_bytes": 12428
+        },
+        {
+          "path": "reports/report_async_image_workflows_2026-10-16.md",
+          "sha256": "c5d4944062cfe8a562bb2b053a218eadf95532ab2f7ac5eec1d8c8770690ea8e",
+          "size_bytes": 12536
+        },
+        {
+          "path": "sources/analysis_async_image_workflows.md",
+          "sha256": "eb1f5c12cfba21b9babcc01c4b7f16ccf233bb98bb1ff2937b731199bc874b2f",
+          "size_bytes": 10638
+        },
+        {
+          "path": "sources/findings_api_jobs.md",
+          "sha256": "7c3aba36461438f79e626ccdbe52570f12f7318cbdc4e51529966d2f955b28aa",
+          "size_bytes": 5218
+        },
+        {
+          "path": "sources/findings_provider_storage.md",
+          "sha256": "9d85a591aa9216bccf51aa7b44c618c1098cf207ad17cbf200d698d803cc4ad6",
+          "size_bytes": 4289
+        },
+        {
+          "path": "sources/question.txt",
+          "sha256": "c4112416c657c8a2a56e349978eebffede5b0857b2bde18a10c7b3d503520459",
+          "size_bytes": 158
+        },
+        {
+          "path": "sources/research_plan.md",
+          "sha256": "6615a8f43fbbf58a536d9df6d03d6f960f91d25f7d78d593b9b15d46cefc6280",
+          "size_bytes": 2489
+        }
+      ]
+    },
+    {
+      "case_id": "dr-main-010",
+      "source_result_dir": "20261016T182755Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "60755fe25fc4a363b706bf9e459ae76ddd3154fa2de5a4ac5cfc26ea5f9f7c7f",
+      "source_config_sha256": "60f69f4342f191ceaa4dea99514ea8e341a4eda0134343258b517022052dd078",
+      "artifacts": []
+    },
+    {
+      "case_id": "dr-main-011",
+      "source_result_dir": "20261016T185051Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "58f769124f94abb7812c9f8bd2114d7c4b92c1f12897cd7db451f558bc0a5ce3",
+      "source_config_sha256": "9fb5df5e9a6f438ea51894cb5e465ed67b7906a0e07b5653a62341764f882bde",
+      "artifacts": [
+        {
+          "path": "reports/draft_tool_agent_security.md",
+          "sha256": "7a04c4f9ef77b26f4eb460158ffffb2b62048bd62c7ef2437fc28c79b884297b",
+          "size_bytes": 11861
+        },
+        {
+          "path": "reports/report_tool_agent_security_2026-10-16.md",
+          "sha256": "78e01595656da609b81e749d34e123b921bc22ffdd24c8b6763038f407925c9e",
+          "size_bytes": 12007
+        },
+        {
+          "path": "sources/analysis_tool_agent_security.md",
+          "sha256": "9e6260717b71cbf61023e7b5738951c12613c55fdb24a9ca7576567eaed62932",
+          "size_bytes": 11025
+        },
+        {
+          "path": "sources/findings_agent_auth.md",
+          "sha256": "9bf36efdfff2d5c9d803dc142cf34592a43a9a61931f80c6d193bfebff165d30",
+          "size_bytes": 3835
+        },
+        {
+          "path": "sources/findings_log_management.md",
+          "sha256": "b37f6b974326044d51ca9e2ca345dbd589b2cf01b8dbcb7e0a3712f35686cd4c",
+          "size_bytes": 2655
+        },
+        {
+          "path": "sources/findings_tool_audit.md",
+          "sha256": "3795c5ce157ccc4d5699d494ed56e84ce58f2791cefcfb942597014263d769ec",
+          "size_bytes": 4341
+        },
+        {
+          "path": "sources/question.txt",
+          "sha256": "fd3fbecb27d1202bf17742cc854c7f26f31e7dba58b0871767d547d3ef579835",
+          "size_bytes": 165
+        },
+        {
+          "path": "sources/research_plan.md",
+          "sha256": "1cfaf14816ff52befdc75f879dfa6ead96311bde7b84992fd2274f1cbe958a21",
+          "size_bytes": 2112
+        }
+      ]
+    },
+    {
+      "case_id": "dr-main-012",
+      "source_result_dir": "20261016T185051Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "58f769124f94abb7812c9f8bd2114d7c4b92c1f12897cd7db451f558bc0a5ce3",
+      "source_config_sha256": "9fb5df5e9a6f438ea51894cb5e465ed67b7906a0e07b5653a62341764f882bde",
+      "artifacts": []
+    },
+    {
+      "case_id": "dr-main-013",
+      "source_result_dir": "20261016T185051Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "58f769124f94abb7812c9f8bd2114d7c4b92c1f12897cd7db451f558bc0a5ce3",
+      "source_config_sha256": "9fb5df5e9a6f438ea51894cb5e465ed67b7906a0e07b5653a62341764f882bde",
+      "artifacts": [
+        {
+          "path": "reports/draft_secure_uploads.md",
+          "sha256": "767d2edd7c133152ae488fa96247d5a7efe3641d32919a25929a87183fa438f0",
+          "size_bytes": 11313
+        },
+        {
+          "path": "reports/report_secure_uploads_2026-10-16.md",
+          "sha256": "767d2edd7c133152ae488fa96247d5a7efe3641d32919a25929a87183fa438f0",
+          "size_bytes": 11313
+        },
+        {
+          "path": "sources/analysis_secure_uploads.md",
+          "sha256": "41b0a61aef0d42b31c6acdbdc7921ad370e1354db83f83769ff930b510776d29",
+          "size_bytes": 10642
+        },
+        {
+          "path": "sources/findings_presigned_scope.md",
+          "sha256": "7dae7fb78ea383248e8c254e18c75476f01ccc81954a6e6e23fbbd4e916ea56a",
+          "size_bytes": 5172
+        },
+        {
+          "path": "sources/findings_upload_controls.md",
+          "sha256": "697a824b7832e4405bbcc37ed8dc0de07d50852f92151bc7e2500be0f7b64e70",
+          "size_bytes": 5405
+        },
+        {
+          "path": "sources/question.txt",
+          "sha256": "8234174a85f3311035152e228026ed727697f5b158513e3f509a898ac6c575df",
+          "size_bytes": 174
+        },
+        {
+          "path": "sources/research_plan.md",
+          "sha256": "bab953f92e76477289ecd3243ef2fbffd2fb9be6967c77591114a544ebe68478",
+          "size_bytes": 2454
+        }
+      ]
+    },
+    {
+      "case_id": "dr-main-014",
+      "source_result_dir": "20261016T185051Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "58f769124f94abb7812c9f8bd2114d7c4b92c1f12897cd7db451f558bc0a5ce3",
+      "source_config_sha256": "9fb5df5e9a6f438ea51894cb5e465ed67b7906a0e07b5653a62341764f882bde",
+      "artifacts": [
+        {
+          "path": "reports/draft_tenant_vector_isolation.md",
+          "sha256": "0c2c32620e58d1a47cf3bfcd976582168a16b5db7175a280490193f36984f428",
+          "size_bytes": 10544
+        },
+        {
+          "path": "reports/report_tenant_vector_isolation_2026-10-16.md",
+          "sha256": "f206df56b8c4a2595d3fa16b6557101fd607fda2fc63cb304f8db3b9150b2a0b",
+          "size_bytes": 10864
+        },
+        {
+          "path": "sources/analysis_tenant_vector_isolation.md",
+          "sha256": "60c239aafd431e5daa7035a6e9297e65878da925867ab8dfedb6331db6f61307",
+          "size_bytes": 9217
+        },
+        {
+          "path": "sources/findings_filters_instances.md",
+          "sha256": "d1d7f7ff2b7229d85cd8f09b96539887362ac147e6981e57dc407f0d13f8a809",
+          "size_bytes": 4988
+        },
+        {
+          "path": "sources/findings_logical_namespaces.md",
+          "sha256": "acd839569f561409c88446535272ba68b63649f099d080151810c09b515711d0",
+          "size_bytes": 5598
+        },
+        {
+          "path": "sources/question.txt",
+          "sha256": "ab63467f5d7de4629eb765596cdca82637a221388f15ae410d6e1f43d2abb29b",
+          "size_bytes": 3979
+        },
+        {
+          "path": "sources/research_plan.md",
+          "sha256": "ec906a2cc777370d83b0e493ec0092198a1890f1ac0b81e7a133f4eddf72e508",
+          "size_bytes": 2692
+        }
+      ]
+    },
+    {
+      "case_id": "dr-main-015",
+      "source_result_dir": "20261016T185051Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "58f769124f94abb7812c9f8bd2114d7c4b92c1f12897cd7db451f558bc0a5ce3",
+      "source_config_sha256": "9fb5df5e9a6f438ea51894cb5e465ed67b7906a0e07b5653a62341764f882bde",
+      "artifacts": [
+        {
+          "path": "reports/draft_voice_agent_privacy.md",
+          "sha256": "cb9a2d2212de8e44cd2c32ee548f4c2ce053ff5037c9ad5e2cd57e7dc49c43ba",
+          "size_bytes": 8466
+        },
+        {
+          "path": "reports/report_voice_agent_privacy_2026-10-16.md",
+          "sha256": "5b36df0cc36b11a886156ed6b949e507fbecefabd9ade2766f93f5f5d5ce0109",
+          "size_bytes": 8898
+        },
+        {
+          "path": "sources/findings_audio_lifecycle.md",
+          "sha256": "f81549da7a3bfff83a9a8629b450fd2bb0128629160124a476a398c11240907e",
+          "size_bytes": 7103
+        },
+        {
+          "path": "sources/findings_tool_and_output.md",
+          "sha256": "972430824248a9892fa38e67663209c3d69646c7d8b11c9992aeba6b1f28890a",
+          "size_bytes": 31488
+        },
+        {
+          "path": "sources/question.txt",
+          "sha256": "a2c0023f0cd25e9f56d2167acf0fd4b0e11439b3193aa155bba5af805141a161",
+          "size_bytes": 148
+        },
+        {
+          "path": "sources/research_plan.md",
+          "sha256": "6bcaf58283a2effe33a929ae56a9b66ebd25d3178e63396a42b129c2c6f62ff7",
+          "size_bytes": 2028
+        }
+      ]
+    },
+    {
+      "case_id": "dr-main-016",
+      "source_result_dir": "20261016T191251Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "decdbb04b99bbbe3cd5d13697fa6307d49474cd601244d963896bc364960d0eb",
+      "source_config_sha256": "261ab2e1a87ed4e081a9449d6050ab15da4f9f6508d0efe9fc29dd854e181e94",
+      "artifacts": [
+        {
+          "path": "reports/draft_rag_cost_model.md",
+          "sha256": "08c1f558ea13a0ba82bf1ba2a052dde5b7991ea99540517ec2e17d78fcd94280",
+          "size_bytes": 10447
+        },
+        {
+          "path": "reports/report_rag_cost_model_2026-10-16.md",
+          "sha256": "3125655260445dbc28431f673ef184f375815d8945b26b2d941315adcf1c1bf1",
+          "size_bytes": 11068
+        },
+        {
+          "path": "sources/analysis_rag_cost_model.md",
+          "sha256": "7b9390f728cdb21d29414245dcb844a73bfbe7a9bc7fd2b5e3998ae9e94f1cba",
+          "size_bytes": 10622
+        },
+        {
+          "path": "sources/findings_embedding_recovery.md",
+          "sha256": "955a911022f25a5c8f7cb0d859855fa9b7c46ff69c39742841b314b8802f5120",
+          "size_bytes": 1495
+        },
+        {
+          "path": "sources/findings_infra.md",
+          "sha256": "c6b992c299acf5bcdbabdd257c919d4d586d0c2e930dc0e80fed1417b110b9f9",
+          "size_bytes": 3660
+        },
+        {
+          "path": "sources/findings_model_embedding.md",
+          "sha256": "c2ed5d2032c456094f97653c835309ccb5a7717f68abb323be4e314206103a9e",
+          "size_bytes": 3175
+        },
+        {
+          "path": "sources/question.txt",
+          "sha256": "2c98e46a4375efbb4ba4b3865a24ad9420f377dbba7fc8c15a2b9cd75bc058b7",
+          "size_bytes": 648
+        },
+        {
+          "path": "sources/research_plan.md",
+          "sha256": "f17a53417bde860ea97eee365caebe1a03dfa5df0431b454b38cb5fe87983009",
+          "size_bytes": 2736
+        }
+      ]
+    },
+    {
+      "case_id": "dr-main-017",
+      "source_result_dir": "20261016T191251Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "decdbb04b99bbbe3cd5d13697fa6307d49474cd601244d963896bc364960d0eb",
+      "source_config_sha256": "261ab2e1a87ed4e081a9449d6050ab15da4f9f6508d0efe9fc29dd854e181e94",
+      "artifacts": [
+        {
+          "path": "sources/findings_gemini_flash.md",
+          "sha256": "c7f661589ef9fbb70cc9b11c1f69cd2007d464dee7271418487ba5e6cfd374db",
+          "size_bytes": 2010
+        },
+        {
+          "path": "sources/findings_large_model.md",
+          "sha256": "24fd20dd4e670c51d8d86ca5fdd91e1c141f8e1293b466288002b2e46baab88d",
+          "size_bytes": 2779
+        },
+        {
+          "path": "sources/findings_small_model.md",
+          "sha256": "7ae17f79bcd1221c0a57b90f7a25d4815891f83398f2f5127ad8c37410c8fcd0",
+          "size_bytes": 2451
+        },
+        {
+          "path": "sources/question.txt",
+          "sha256": "47324bdc96c6d0aa8d5f3f5da580d0b2f71bf46f736aed5b6daa7513d0835c49",
+          "size_bytes": 747
+        },
+        {
+          "path": "sources/research_plan.md",
+          "sha256": "35b08e3a53be59998c8bdacc065c6bdf2da9b756a004b3f1b363c30f0213feee",
+          "size_bytes": 2030
+        }
+      ]
+    },
+    {
+      "case_id": "dr-main-018",
+      "source_result_dir": "20261016T191251Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "decdbb04b99bbbe3cd5d13697fa6307d49474cd601244d963896bc364960d0eb",
+      "source_config_sha256": "261ab2e1a87ed4e081a9449d6050ab15da4f9f6508d0efe9fc29dd854e181e94",
+      "artifacts": [
+        {
+          "path": "reports/draft_llm_cost_quality.md",
+          "sha256": "b5d4c1f7e04167181341fa617b68697c6e954743b74f4c423550fccbbe049471",
+          "size_bytes": 10403
+        },
+        {
+          "path": "reports/report_llm_cost_quality_2026-10-16.md",
+          "sha256": "cbc2612ede5c2cf72447f8daacbd030aeef720f1c8c4e8d40f01fec29438c040",
+          "size_bytes": 10761
+        },
+        {
+          "path": "sources/analysis_llm_cost_quality.md",
+          "sha256": "0e93404555b7af7f8db0769441841c381bdf8dcded3350c85b18d549a6c0f7c8",
+          "size_bytes": 9499
+        },
+        {
+          "path": "sources/findings_context_rag.md",
+          "sha256": "fa3b97d94613a37ea2726b405ef1356429e2a055f1052c2716c7717d2e031ba5",
+          "size_bytes": 6106
+        },
+        {
+          "path": "sources/findings_prompt_cache.md",
+          "sha256": "6c798869dd743b2ecba246aa1f14cb26a5568b2933f9c8c6922dbecb77e676cb",
+          "size_bytes": 6594
+        },
+        {
+          "path": "sources/question.txt",
+          "sha256": "4b1918b8bca032e21ba01828c1aab7fdd9e734b2520a5ee365eb64a0b37f1f0f",
+          "size_bytes": 134
+        },
+        {
+          "path": "sources/research_plan.md",
+          "sha256": "ca368a9d63babde6473c78a21bc6480631a1a75e7c14b255b1f30915c9983f21",
+          "size_bytes": 2469
+        }
+      ]
+    },
+    {
+      "case_id": "dr-main-019",
+      "source_result_dir": "20261016T191251Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "decdbb04b99bbbe3cd5d13697fa6307d49474cd601244d963896bc364960d0eb",
+      "source_config_sha256": "261ab2e1a87ed4e081a9449d6050ab15da4f9f6508d0efe9fc29dd854e181e94",
+      "artifacts": []
+    },
+    {
+      "case_id": "dr-main-020",
+      "source_result_dir": "20261016T191251Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "decdbb04b99bbbe3cd5d13697fa6307d49474cd601244d963896bc364960d0eb",
+      "source_config_sha256": "261ab2e1a87ed4e081a9449d6050ab15da4f9f6508d0efe9fc29dd854e181e94",
+      "artifacts": [
+        {
+          "path": "reports/draft_vector_db_cost_scale.md",
+          "sha256": "b837e01d97f68579c7f6ff467009ffac4eb0d03994a0dc6c267c8825f36f8bcb",
+          "size_bytes": 9204
+        },
+        {
+          "path": "reports/report_vector_db_cost_scale_2026-10-16.md",
+          "sha256": "c0e510552cf61ef6503d06c33834cb165309709d76ef8bdc463d4dd741c92abe",
+          "size_bytes": 9630
+        },
+        {
+          "path": "sources/analysis_vector_db_cost_scale.md",
+          "sha256": "b95d22477c7de6f1316af4cfd470efcfc94f43b838a0c6bac16e37faf44de303",
+          "size_bytes": 11651
+        },
+        {
+          "path": "sources/findings_managed_cost.md",
+          "sha256": "e7078118060ff26e35065bef3ccbf68a62397431190b4849ebde0ef9eb1bc933",
+          "size_bytes": 3048
+        },
+        {
+          "path": "sources/findings_milvus_distributed.md",
+          "sha256": "2ede91ce55b66f65a84fa6c78ab87dc7ec1ae3b8372ee54dc124405847599724",
+          "size_bytes": 4962
+        },
+        {
+          "path": "sources/findings_milvus_lite_standalone.md",
+          "sha256": "1aa4b252b56b33abb6c91c34ba9b145e71b499d3be34bd883ff3395551d887c0",
+          "size_bytes": 4112
+        },
+        {
+          "path": "sources/question.txt",
+          "sha256": "6e26355ca4a4bb42e76a1b6b14c1fe9dc963a8f47db0974c4eb67024e1d1d453",
+          "size_bytes": 448
+        },
+        {
+          "path": "sources/research_plan.md",
+          "sha256": "51e5a434a58aa25414e92affbf0ffd382568b03207b672f45cfa4ea9b1a1e311",
+          "size_bytes": 2430
+        }
+      ]
+    },
+    {
+      "case_id": "dr-main-021",
+      "source_result_dir": "20261016T200914Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "bd2e9669233bffdc0f5f53f0248dda8ffb49e0656916c1c86483a8dd849a05a7",
+      "source_config_sha256": "167c0ef0f2d569362a33fc6be71f2995cf627b89e13db34f7bcfb05cbca67154",
+      "artifacts": [
+        {
+          "path": "reports/draft_fastapi_react_deployment.md",
+          "sha256": "cb28c4e0dc8db6d9a7ec77b823b01c28bfc59523db4c0842928100a711112228",
+          "size_bytes": 10012
+        },
+        {
+          "path": "reports/report_fastapi_react_deployment_2026-10-16.md",
+          "sha256": "0e0ede330d862629b07abc21f1198da19aeff508009a775737048846003dfdb4",
+          "size_bytes": 11483
+        },
+        {
+          "path": "sources/findings_containers_health.md",
+          "sha256": "4d9fc78ca15432c5b375ea10e2ee778c0c43a305ff627655624eedfb6611e866",
+          "size_bytes": 4494
+        },
+        {
+          "path": "sources/findings_migrations_rollback.md",
+          "sha256": "c6a97aa8cd97e92775d464eec65367b472a573976c942e7eee3e0feed27d8354",
+          "size_bytes": 5130
+        },
+        {
+          "path": "sources/question.txt",
+          "sha256": "294af29f87148b6a551e72529009a412f5f7702356996d9d1dbf1af96109c7d6",
+          "size_bytes": 162
+        },
+        {
+          "path": "sources/research_plan.md",
+          "sha256": "86b6d038a4bee0b10a504ed1762805c5ab47d5eb82195ca7b94f09d8c3416593",
+          "size_bytes": 2063
+        }
+      ]
+    },
+    {
+      "case_id": "dr-main-022",
+      "source_result_dir": "20261016T200914Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "bd2e9669233bffdc0f5f53f0248dda8ffb49e0656916c1c86483a8dd849a05a7",
+      "source_config_sha256": "167c0ef0f2d569362a33fc6be71f2995cf627b89e13db34f7bcfb05cbca67154",
+      "artifacts": [
+        {
+          "path": "sources/findings_checkpoint.md",
+          "sha256": "96150d1faeafd0065f7393fc2339738eaf9365fbba10ce34bce61250079a4231",
+          "size_bytes": 3511
+        },
+        {
+          "path": "sources/findings_queue.md",
+          "sha256": "8b0c32c0f2d57c144a147c3171ef1af0f6dfb507bccad29b7dba99b5313b9ff7",
+          "size_bytes": 3175
+        },
+        {
+          "path": "sources/findings_retry_recovery.md",
+          "sha256": "bd1dda2144cd5a9c4d79990ebc14f78872f5bb1f42e754b67db15009eb27c760",
+          "size_bytes": 1631
+        },
+        {
+          "path": "sources/question.txt",
+          "sha256": "f5363967e20d479f2542310a5c3feccac523a5db5b15cbb95d9783166f4c5a67",
+          "size_bytes": 4008
+        },
+        {
+          "path": "sources/research_plan.md",
+          "sha256": "8522158656605cccbd8f2bd3db893d251214c7f0b2fa6cb6836d291dab7462a2",
+          "size_bytes": 2401
+        }
+      ]
+    },
+    {
+      "case_id": "dr-main-023",
+      "source_result_dir": "20261016T200914Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "bd2e9669233bffdc0f5f53f0248dda8ffb49e0656916c1c86483a8dd849a05a7",
+      "source_config_sha256": "167c0ef0f2d569362a33fc6be71f2995cf627b89e13db34f7bcfb05cbca67154",
+      "artifacts": [
+        {
+          "path": "reports/draft_agent_observability.md",
+          "sha256": "41083a8281cc494ebb0c3e163ff3158bffe32d1060566da1909690ca62a8b9eb",
+          "size_bytes": 8224
+        },
+        {
+          "path": "reports/report_agent_observability_2026-10-16.md",
+          "sha256": "fc527bcd3fa3c16e7dda548a2ebbc05edbbe9c7118ad6f313c432560caf7345c",
+          "size_bytes": 8169
+        },
+        {
+          "path": "sources/findings_agent_tracing.md",
+          "sha256": "ddfba840a88533747db99806ba7a53721b5aab2d0e9405f22d2f54df54c2fa8d",
+          "size_bytes": 3222
+        },
+        {
+          "path": "sources/findings_eval_privacy.md",
+          "sha256": "29a0ac7c6e0507e12ca7eb9d45101c8b7fe186f0f3e790d6ce90001cb969649b",
+          "size_bytes": 3125
+        },
+        {
+          "path": "sources/question.txt",
+          "sha256": "6d5a8a778df38c4eaa0ae8577047a964130bc1c8004ea2d6ac2e23b1259fc94a",
+          "size_bytes": 175
+        },
+        {
+          "path": "sources/research_plan.md",
+          "sha256": "3e35cbec703b5c1bf5aa937a0a3cde7af3ae7b11abfffed7145de931e05163b0",
+          "size_bytes": 2561
+        }
+      ]
+    },
+    {
+      "case_id": "dr-main-024",
+      "source_result_dir": "20261016T200914Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "bd2e9669233bffdc0f5f53f0248dda8ffb49e0656916c1c86483a8dd849a05a7",
+      "source_config_sha256": "167c0ef0f2d569362a33fc6be71f2995cf627b89e13db34f7bcfb05cbca67154",
+      "artifacts": [
+        {
+          "path": "reports/draft_llm_resilience.md",
+          "sha256": "886761b795e2c9edcba270ac987ebf01d518746432db949ee9b508b12e965d49",
+          "size_bytes": 9937
+        },
+        {
+          "path": "reports/report_llm_resilience_2026-10-16.md",
+          "sha256": "92c126bb8ac6e50dac25813f505b2000563f87036149dc03ae86451aa3b81e36",
+          "size_bytes": 10290
+        },
+        {
+          "path": "sources/analysis_llm_resilience.md",
+          "sha256": "a5fc69809d385c3192a9dcc5e5440ff12679691e59c6831e9598846232d3ad93",
+          "size_bytes": 10082
+        },
+        {
+          "path": "sources/findings_circuit.md",
+          "sha256": "276db7396144b0041afbdc1d9abcfa789fca84a0de69e2a045c58d5325ee3267",
+          "size_bytes": 5145
+        },
+        {
+          "path": "sources/findings_retry.md",
+          "sha256": "7750853f243330ecbbe77dd3e415e422ac4587ef95cd3b89e74c3c024f882080",
+          "size_bytes": 5656
+        },
+        {
+          "path": "sources/question.txt",
+          "sha256": "7d5002096a0324fd88a8b7bd5a65aec065511addeff79c3bcaef39df43b6522a",
+          "size_bytes": 443
+        },
+        {
+          "path": "sources/research_plan.md",
+          "sha256": "03665034660a7969e8a83fa5c85a8861fe48fa64799cd4f43eb9346bbfa6a329",
+          "size_bytes": 2325
+        }
+      ]
+    },
+    {
+      "case_id": "dr-main-025",
+      "source_result_dir": "20261016T200914Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "bd2e9669233bffdc0f5f53f0248dda8ffb49e0656916c1c86483a8dd849a05a7",
+      "source_config_sha256": "167c0ef0f2d569362a33fc6be71f2995cf627b89e13db34f7bcfb05cbca67154",
+      "artifacts": [
+        {
+          "path": "reports/draft_agent_continuous_delivery.md",
+          "sha256": "fa726f700429057c54b12328ac096414d5ced5195ea0be431edd3ce6a9aad7ec",
+          "size_bytes": 9155
+        },
+        {
+          "path": "reports/report_agent_continuous_delivery_2026-10-16.md",
+          "sha256": "99e17950f4da4455270d296d1f5ec63dea3dc100473342c5abed0985b1b2cc14",
+          "size_bytes": 9091
+        },
+        {
+          "path": "sources/findings_agent_delivery.md",
+          "sha256": "c7e7e2e3ac403df9de3ec74ff25dd0b30a70f6feaf5f228fb0705f81e87424f7",
+          "size_bytes": 4526
+        },
+        {
+          "path": "sources/findings_agent_testing.md",
+          "sha256": "8fc888b90de0b8b4e85756cbb623e36e334afe385e28156ea99b84236735a293",
+          "size_bytes": 4636
+        },
+        {
+          "path": "sources/question.txt",
+          "sha256": "5253ddcd363ca66ea092080d5070cf55fadf5566491aeb6c5ef38cb76d72d747",
+          "size_bytes": 169
+        },
+        {
+          "path": "sources/research_plan.md",
+          "sha256": "b3be8c39c928d81d03b6184f9dedc231c1958a0355779e8ea0fabfbc75ee4563",
+          "size_bytes": 1870
+        }
+      ]
+    },
+    {
+      "case_id": "dr-main-026",
+      "source_result_dir": "20261016T202426Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "41bc9eeb6ce093bdb6faedc741740aff5ea1edc3bd1317ead309b4e24145f7cf",
+      "source_config_sha256": "c862f7d08c4438a5b1e527b0d573384f68faa5489109d2ed1f0d1ae283f57657",
+      "artifacts": [
+        {
+          "path": "reports/draft_agent_release_gates.md",
+          "sha256": "c20779f11874072f3da128b33275702807db135e2e74c6ca945ab7f9e5573ce8",
+          "size_bytes": 9641
+        },
+        {
+          "path": "reports/report_agent_release_gates_2026-10-16.md",
+          "sha256": "15148edddc38e513cc2afc21ce352961eb19cec3494c69ba1705f4f153029650",
+          "size_bytes": 10804
+        },
+        {
+          "path": "sources/analysis_agent_release_gates.md",
+          "sha256": "e5a5c95d62037cbcf798c82e9a143105ee64f155d7557b3bdf4b7253e6e0aa46",
+          "size_bytes": 11901
+        },
+        {
+          "path": "sources/findings_offline_eval.md",
+          "sha256": "99a5300fd3f5ed2ed1b05bfaf6ad255b63e0879b571a4310bad46ec29c6d07d9",
+          "size_bytes": 5383
+        },
+        {
+          "path": "sources/findings_online_ops.md",
+          "sha256": "bab793f69a75e7c559366a01389853e410dc7139ec9aa9e406fdeace9b90d4e0",
+          "size_bytes": 4738
+        },
+        {
+          "path": "sources/question.txt",
+          "sha256": "eecc3123c656794f2f3232917be70da8849495d23467b400ee0ef0ed7b7b485c",
+          "size_bytes": 1080
+        },
+        {
+          "path": "sources/research_plan.md",
+          "sha256": "31a9030db03fc924ce2aa9d8a381248a952e97549bd88b4dab1dc2a30f296612",
+          "size_bytes": 2583
+        }
+      ]
+    },
+    {
+      "case_id": "dr-main-027",
+      "source_result_dir": "20261016T202426Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "41bc9eeb6ce093bdb6faedc741740aff5ea1edc3bd1317ead309b4e24145f7cf",
+      "source_config_sha256": "c862f7d08c4438a5b1e527b0d573384f68faa5489109d2ed1f0d1ae283f57657",
+      "artifacts": [
+        {
+          "path": "reports/draft_tool_selection_quality.md",
+          "sha256": "873746c34e33dff451edec08a7e8d1a1f2c26fdebc87fa62c88484ee59263b0e",
+          "size_bytes": 7845
+        },
+        {
+          "path": "reports/report_tool_selection_quality_2026-10-16.md",
+          "sha256": "873746c34e33dff451edec08a7e8d1a1f2c26fdebc87fa62c88484ee59263b0e",
+          "size_bytes": 7845
+        },
+        {
+          "path": "sources/analysis_tool_selection_quality.md",
+          "sha256": "a94f71f9cf93211bb212b05ee8db02ab7c86c6ebaa0db1bcb29a940534c85528",
+          "size_bytes": 10517
+        },
+        {
+          "path": "sources/findings_dataset_design.md",
+          "sha256": "306965e0366629bb61c5d019dafd79f81a226e47381b4d0af7d5c5a896b72b4d",
+          "size_bytes": 5715
+        },
+        {
+          "path": "sources/findings_metrics_validation.md",
+          "sha256": "00785071d33dc83962d9e47c3998495c7df072c6e1d354efd296101561ede527",
+          "size_bytes": 4654
+        },
+        {
+          "path": "sources/question.txt",
+          "sha256": "f2026f016f097b75957bc100aad1f099e2c43f71f65b9a9c5cdce58ba123b6c1",
+          "size_bytes": 171
+        },
+        {
+          "path": "sources/research_plan.md",
+          "sha256": "6f1996fdcfb372992306299be7661de6d903977ff2dea916e7dfc389752decf5",
+          "size_bytes": 2272
+        }
+      ]
+    },
+    {
+      "case_id": "dr-main-028",
+      "source_result_dir": "20261016T202426Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "41bc9eeb6ce093bdb6faedc741740aff5ea1edc3bd1317ead309b4e24145f7cf",
+      "source_config_sha256": "c862f7d08c4438a5b1e527b0d573384f68faa5489109d2ed1f0d1ae283f57657",
+      "artifacts": [
+        {
+          "path": "reports/draft_rag_retrieval_metrics.md",
+          "sha256": "04c5832ff959630870640d67236f49d121e4b078fe1f2ade212bac86403d1990",
+          "size_bytes": 7788
+        },
+        {
+          "path": "reports/report_rag_retrieval_metrics_2026-10-16.md",
+          "sha256": "18698138b4b695db60b6591bc44a121507c7c8291809e04f39c2e70026fb09a5",
+          "size_bytes": 8285
+        },
+        {
+          "path": "sources/analysis_rag_retrieval_metrics.md",
+          "sha256": "5dc6865ac0dd9c083792cf174fa3ac6394b2a6d9a77bb7faa9fe82bf6945f8e2",
+          "size_bytes": 8724
+        },
+        {
+          "path": "sources/findings_evidence_coverage.md",
+          "sha256": "19ad6917d832894e1a853be98d8f84f2b2f409eb3a9d457c3fe75f7e0e451224",
+          "size_bytes": 5191
+        },
+        {
+          "path": "sources/findings_ranking_metrics.md",
+          "sha256": "64e35b8c2b68b1ca959af29ca1d746e31ad2b42c62053428b9a81f5db8c1ea21",
+          "size_bytes": 6193
+        },
+        {
+          "path": "sources/question.txt",
+          "sha256": "d0519cf5eb36d0d8c6a1d016d23f1349a6a44003749e0f1af2c281016827f5ef",
+          "size_bytes": 3665
+        },
+        {
+          "path": "sources/research_plan.md",
+          "sha256": "3f8b11031dd2e07fc9c2e31611bb1be96d6d74fdbb402237c96efecca2238b4a",
+          "size_bytes": 2439
+        }
+      ]
+    },
+    {
+      "case_id": "dr-main-029",
+      "source_result_dir": "20261016T202426Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "41bc9eeb6ce093bdb6faedc741740aff5ea1edc3bd1317ead309b4e24145f7cf",
+      "source_config_sha256": "c862f7d08c4438a5b1e527b0d573384f68faa5489109d2ed1f0d1ae283f57657",
+      "artifacts": [
+        {
+          "path": "reports/draft_llm_judge_agents.md",
+          "sha256": "2f46b6b5ccf4fb4e1335f127be5fe711fea165b37b49b327826ca1cd97483483",
+          "size_bytes": 8626
+        },
+        {
+          "path": "reports/report_llm_judge_agents_2026-10-16.md",
+          "sha256": "7810ca6d8158cf8244d757c963955ec697eeb5c59e28c5957f1a0d6b120f0581",
+          "size_bytes": 8628
+        },
+        {
+          "path": "sources/analysis_llm_judge_agents.md",
+          "sha256": "3ae5310fe6304f28159af28e6b6ec165638912f5c749e8a1cf6bdcee991c1bd4",
+          "size_bytes": 12153
+        },
+        {
+          "path": "sources/findings_bias_blinding.md",
+          "sha256": "61c463168e8632bcb588fdc02e291a8527d95737ea78b6c15fdeb5ea8168bbfd",
+          "size_bytes": 3560
+        },
+        {
+          "path": "sources/findings_rubric_calibration.md",
+          "sha256": "3e12e532f7eb60fc1fb4b37ca30ba8089a4e7d0200f69573d14e124d88d3209c",
+          "size_bytes": 5025
+        },
+        {
+          "path": "sources/question.txt",
+          "sha256": "cc6b09ba84fdfaa9d01043e00d1f524dcf18c6e918b9f539ccb4ae64608df8d8",
+          "size_bytes": 169
+        },
+        {
+          "path": "sources/research_plan.md",
+          "sha256": "10ce6fc7f03062cd6006450e7ccb2f0b4b3fbc566064369e6bb662dd44783ddb",
+          "size_bytes": 2470
+        }
+      ]
+    },
+    {
+      "case_id": "dr-main-030",
+      "source_result_dir": "20261016T202426Z_gpt-6-luna_research_main_v1",
+      "source_raw_runs_sha256": "41bc9eeb6ce093bdb6faedc741740aff5ea1edc3bd1317ead309b4e24145f7cf",
+      "source_config_sha256": "c862f7d08c4438a5b1e527b0d573384f68faa5489109d2ed1f0d1ae283f57657",
+      "artifacts": [
+        {
+          "path": "reports/draft_genai_audit_versioning.md",
+          "sha256": "5e66c4f608100839b00de3a85d9df584dab897499ec88a3ab7e9246c6c532c66",
+          "size_bytes": 6802
+        },
+        {
+          "path": "reports/report_genai_audit_versioning_2026-10-16.md",
+          "sha256": "0787146f4b1105df7f2611fa00ec1bb67ff16bc7dc584badaab0cd6192f9dafd",
+          "size_bytes": 6821
+        },
+        {
+          "path": "sources/findings_model_data.md",
+          "sha256": "0b46c8aba2682ceff3d921dc5be8120cbe419a21bb49ab991b9e8ad0b8af6140",
+          "size_bytes": 3381
+        },
+        {
+          "path": "sources/findings_prompt_eval.md",
+          "sha256": "59107ddb12338434fd86c14877975effb24acdb143cdf5424f1e8681bc7ebecf",
+          "size_bytes": 3767
+        },
+        {
+          "path": "sources/question.txt",
+          "sha256": "ab13fa8e272d02beca714fd7ea9d1e02f61462cdaa773634b5523a96e690726a",
+          "size_bytes": 300
+        },
+        {
+          "path": "sources/research_plan.md",
+          "sha256": "b3a481367ace07094f0a3ea37b8e9885fd47e7010f09f1284a6d89e7bdf3dbed",
+          "size_bytes": 1482
+        }
+      ]
+    }
+  ],
+  "cost_evidence": {
+    "collected_at": "2026-10-16T21:39:24.299749+00:00",
+    "costs_sha256": "6caac97e4d2478bfb9a63d27999c10da63963b571589505755acd4ef6eb8dfb3",
+    "summary_sha256": "a94a0b7bc17c0feba9c6fe0a8b2674766876adaccc29e50b1e6152df67839b8b",
+    "report_sha256": "779810003e2533486475126d260b806d2b40440643ef2084962a1d9360334e6e"
+  }
+}

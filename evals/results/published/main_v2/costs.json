@@ -1,0 +1,788 @@
+{
+  "schema_version": 2,
+  "collected_at": "2026-10-16T21:39:24.299749+00:00",
+  "evaluation_scope": "main benchmark",
+  "source": {
+    "model_costs": "Langfuse Observations v2 GENERATION records",
+    "run_metrics": "published rescored_runs.jsonl",
+    "bocha_pricing": "manual package configuration",
+    "dashboard_snapshots": "capacity audit only; not run-cost evidence"
+  },
+  "validation": {
+    "trace_count": 30,
+    "all_generation_counts_match_local_llm_calls": false,
+    "all_available_generation_counts_match_local_llm_calls": true,
+    "missing_local_llm_calls_case_ids": [
+      "dr-main-010",
+      "dr-main-012",
+      "dr-main-019"
+    ],
+    "trace_derived_search_calls_case_ids": [
+      "dr-main-010",
+      "dr-main-012",
+      "dr-main-019"
+    ],
+    "all_generations_priced": true,
+    "root_observations_excluded": true
+  },
+  "model_cost": {
+    "currency": "USD",
+    "run_count": 30,
+    "total_usd": 0.746385699802,
+    "mean_per_run_usd": 0.024879523327,
+    "cost_components_usd": {
+      "input": 0.1750121,
+      "input_cache_read": 0.3099906,
+      "output": 0.261383,
+      "output_reasoning": 0.0,
+      "total": 0.746385699802
+    },
+    "target_run_count": 50,
+    "projection_buffer_multiplier": 1.2,
+    "projected_target_cost_usd": 1.243976166337,
+    "projected_target_cost_with_buffer_usd": 1.492771399604,
+    "spend_cap_usd": 1.5,
+    "within_spend_cap": true,
+    "cap_headroom_usd": 0.007228600396
+  },
+  "bocha_search_cost": {
+    "currency": "CNY",
+    "package_price_cny": 3.6,
+    "package_calls": 1000,
+    "unit_cost_cny": 0.0036,
+    "evaluation_search_calls": 158,
+    "evaluation_allocated_cost_cny": 0.5688,
+    "projected_target_calls_with_buffer": 317,
+    "projected_target_allocated_cost_cny": 1.1412,
+    "search_call_cap": 360,
+    "within_search_call_cap": true
+  },
+  "per_trace": [
+    {
+      "case_id": "dr-main-001",
+      "langfuse_trace_id": "967db957f5e3be8f7981aed696eb04cf",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 58,
+      "local_llm_calls": 58,
+      "generation_count_matches_local_llm_calls": true,
+      "priced_generation_count": 58,
+      "total_cost_usd": 0.025403019996,
+      "cost_components_usd": {
+        "input": 0.0061773,
+        "input_cache_read": 0.00888772,
+        "output": 0.010338,
+        "output_reasoning": 0.0,
+        "total": 0.025403019996
+      },
+      "local_total_tokens": 971221,
+      "search_calls": 5,
+      "local_search_calls": 5,
+      "search_call_count_source": "local_run_metrics",
+      "observed_search_tool_names": []
+    },
+    {
+      "case_id": "dr-main-002",
+      "langfuse_trace_id": "83ba5d24ea02a78ae816ad287215312a",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 47,
+      "local_llm_calls": 47,
+      "generation_count_matches_local_llm_calls": true,
+      "priced_generation_count": 47,
+      "total_cost_usd": 0.020683959995,
+      "cost_components_usd": {
+        "input": 0.0061687,
+        "input_cache_read": 0.00633726,
+        "output": 0.008178,
+        "output_reasoning": 0.0,
+        "total": 0.020683959995
+      },
+      "local_total_tokens": 711769,
+      "search_calls": 6,
+      "local_search_calls": 6,
+      "search_call_count_source": "local_run_metrics",
+      "observed_search_tool_names": []
+    },
+    {
+      "case_id": "dr-main-003",
+      "langfuse_trace_id": "c4f965c6ea50defbf0edf3da8f3cbf78",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 37,
+      "local_llm_calls": 37,
+      "generation_count_matches_local_llm_calls": true,
+      "priced_generation_count": 37,
+      "total_cost_usd": 0.017536659997,
+      "cost_components_usd": {
+        "input": 0.0057838,
+        "input_cache_read": 0.00501686,
+        "output": 0.006736,
+        "output_reasoning": 0.0,
+        "total": 0.017536659997
+      },
+      "local_total_tokens": 572996,
+      "search_calls": 5,
+      "local_search_calls": 5,
+      "search_call_count_source": "local_run_metrics",
+      "observed_search_tool_names": []
+    },
+    {
+      "case_id": "dr-main-004",
+      "langfuse_trace_id": "b7388940c69cf3e30a9bb281a8ca7172",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 47,
+      "local_llm_calls": 47,
+      "generation_count_matches_local_llm_calls": true,
+      "priced_generation_count": 47,
+      "total_cost_usd": 0.022485829994,
+      "cost_components_usd": {
+        "input": 0.0063623,
+        "input_cache_read": 0.00763653,
+        "output": 0.008487,
+        "output_reasoning": 0.0,
+        "total": 0.022485829994
+      },
+      "local_total_tokens": 844250,
+      "search_calls": 5,
+      "local_search_calls": 5,
+      "search_call_count_source": "local_run_metrics",
+      "observed_search_tool_names": []
+    },
+    {
+      "case_id": "dr-main-005",
+      "langfuse_trace_id": "b8d07361ba361b7fc929ee86f921da60",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 44,
+      "local_llm_calls": 44,
+      "generation_count_matches_local_llm_calls": true,
+      "priced_generation_count": 44,
+      "total_cost_usd": 0.017083469993,
+      "cost_components_usd": {
+        "input": 0.0050957,
+        "input_cache_read": 0.00606627,
+        "output": 0.0059215,
+        "output_reasoning": 0.0,
+        "total": 0.017083469993
+      },
+      "local_total_tokens": 669427,
+      "search_calls": 5,
+      "local_search_calls": 5,
+      "search_call_count_source": "local_run_metrics",
+      "observed_search_tool_names": []
+    },
+    {
+      "case_id": "dr-main-006",
+      "langfuse_trace_id": "08e699d6e53a7a4d790e8d9164adbef1",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 46,
+      "local_llm_calls": 46,
+      "generation_count_matches_local_llm_calls": true,
+      "priced_generation_count": 46,
+      "total_cost_usd": 0.020911369996,
+      "cost_components_usd": {
+        "input": 0.0058982,
+        "input_cache_read": 0.00602317,
+        "output": 0.00899,
+        "output_reasoning": 0.0,
+        "total": 0.020911369996
+      },
+      "local_total_tokens": 679279,
+      "search_calls": 5,
+      "local_search_calls": 5,
+      "search_call_count_source": "local_run_metrics",
+      "observed_search_tool_names": []
+    },
+    {
+      "case_id": "dr-main-007",
+      "langfuse_trace_id": "8a8ecdac6aed95b8e04c7cb25edec44c",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 42,
+      "local_llm_calls": 42,
+      "generation_count_matches_local_llm_calls": true,
+      "priced_generation_count": 42,
+      "total_cost_usd": 0.019329479993,
+      "cost_components_usd": {
+        "input": 0.0060323,
+        "input_cache_read": 0.00585268,
+        "output": 0.0074445,
+        "output_reasoning": 0.0,
+        "total": 0.019329479993
+      },
+      "local_total_tokens": 660480,
+      "search_calls": 6,
+      "local_search_calls": 6,
+      "search_call_count_source": "local_run_metrics",
+      "observed_search_tool_names": []
+    },
+    {
+      "case_id": "dr-main-008",
+      "langfuse_trace_id": "998a5996b583001b7727a88dc35bbc21",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 38,
+      "local_llm_calls": 38,
+      "generation_count_matches_local_llm_calls": true,
+      "priced_generation_count": 38,
+      "total_cost_usd": 0.016538679996,
+      "cost_components_usd": {
+        "input": 0.005005,
+        "input_cache_read": 0.00500718,
+        "output": 0.0065265,
+        "output_reasoning": 0.0,
+        "total": 0.016538679996
+      },
+      "local_total_tokens": 563821,
+      "search_calls": 5,
+      "local_search_calls": 5,
+      "search_call_count_source": "local_run_metrics",
+      "observed_search_tool_names": []
+    },
+    {
+      "case_id": "dr-main-009",
+      "langfuse_trace_id": "9567ec6cb030dbee2fcd19d52ccef2f2",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 48,
+      "local_llm_calls": 48,
+      "generation_count_matches_local_llm_calls": true,
+      "priced_generation_count": 48,
+      "total_cost_usd": 0.022103059991,
+      "cost_components_usd": {
+        "input": 0.0061596,
+        "input_cache_read": 0.00716746,
+        "output": 0.008776,
+        "output_reasoning": 0.0,
+        "total": 0.022103059991
+      },
+      "local_total_tokens": 795894,
+      "search_calls": 5,
+      "local_search_calls": 5,
+      "search_call_count_source": "local_run_metrics",
+      "observed_search_tool_names": []
+    },
+    {
+      "case_id": "dr-main-010",
+      "langfuse_trace_id": "51d28718c5003ef9b231f15757fc5d89",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 55,
+      "local_llm_calls": null,
+      "generation_count_matches_local_llm_calls": null,
+      "priced_generation_count": 55,
+      "total_cost_usd": 0.037464069995,
+      "cost_components_usd": {
+        "input": 0.0069689,
+        "input_cache_read": 0.01226667,
+        "output": 0.0182285,
+        "output_reasoning": 0.0,
+        "total": 0.037464069995
+      },
+      "local_total_tokens": null,
+      "search_calls": 7,
+      "local_search_calls": null,
+      "search_call_count_source": "langfuse_tool_observations",
+      "observed_search_tool_names": [
+        "web_search"
+      ]
+    },
+    {
+      "case_id": "dr-main-011",
+      "langfuse_trace_id": "a92f7986065c93c017087d030c07e250",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 46,
+      "local_llm_calls": 46,
+      "generation_count_matches_local_llm_calls": true,
+      "priced_generation_count": 46,
+      "total_cost_usd": 0.018152739996,
+      "cost_components_usd": {
+        "input": 0.005231,
+        "input_cache_read": 0.00617424,
+        "output": 0.0067475,
+        "output_reasoning": 0.0,
+        "total": 0.018152739996
+      },
+      "local_total_tokens": 683229,
+      "search_calls": 6,
+      "local_search_calls": 6,
+      "search_call_count_source": "local_run_metrics",
+      "observed_search_tool_names": []
+    },
+    {
+      "case_id": "dr-main-012",
+      "langfuse_trace_id": "d1a1e579f0fafd6830600c4d0181c12c",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 65,
+      "local_llm_calls": null,
+      "generation_count_matches_local_llm_calls": null,
+      "priced_generation_count": 65,
+      "total_cost_usd": 0.026647769992,
+      "cost_components_usd": {
+        "input": 0.0048669,
+        "input_cache_read": 0.01356537,
+        "output": 0.0082155,
+        "output_reasoning": 0.0,
+        "total": 0.026647769992
+      },
+      "local_total_tokens": null,
+      "search_calls": 7,
+      "local_search_calls": null,
+      "search_call_count_source": "langfuse_tool_observations",
+      "observed_search_tool_names": [
+        "web_search"
+      ]
+    },
+    {
+      "case_id": "dr-main-013",
+      "langfuse_trace_id": "6c499c66609b8956ca89340b20ea0e8a",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 41,
+      "local_llm_calls": 41,
+      "generation_count_matches_local_llm_calls": true,
+      "priced_generation_count": 41,
+      "total_cost_usd": 0.018332529993,
+      "cost_components_usd": {
+        "input": 0.0055735,
+        "input_cache_read": 0.00622703,
+        "output": 0.006532,
+        "output_reasoning": 0.0,
+        "total": 0.018332529993
+      },
+      "local_total_tokens": 691502,
+      "search_calls": 5,
+      "local_search_calls": 5,
+      "search_call_count_source": "local_run_metrics",
+      "observed_search_tool_names": []
+    },
+    {
+      "case_id": "dr-main-014",
+      "langfuse_trace_id": "0cd2b41aa6847490f930cd8987ac8495",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 40,
+      "local_llm_calls": 40,
+      "generation_count_matches_local_llm_calls": true,
+      "priced_generation_count": 40,
+      "total_cost_usd": 0.021984799997,
+      "cost_components_usd": {
+        "input": 0.0064596,
+        "input_cache_read": 0.0061232,
+        "output": 0.009402,
+        "output_reasoning": 0.0,
+        "total": 0.021984799997
+      },
+      "local_total_tokens": 695720,
+      "search_calls": 5,
+      "local_search_calls": 5,
+      "search_call_count_source": "local_run_metrics",
+      "observed_search_tool_names": []
+    },
+    {
+      "case_id": "dr-main-015",
+      "langfuse_trace_id": "a568c69cd01be2cec61eb170d495b871",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 53,
+      "local_llm_calls": 53,
+      "generation_count_matches_local_llm_calls": true,
+      "priced_generation_count": 53,
+      "total_cost_usd": 0.028846219991,
+      "cost_components_usd": {
+        "input": 0.007756,
+        "input_cache_read": 0.00812522,
+        "output": 0.012965,
+        "output_reasoning": 0.0,
+        "total": 0.028846219991
+      },
+      "local_total_tokens": 916012,
+      "search_calls": 5,
+      "local_search_calls": 5,
+      "search_call_count_source": "local_run_metrics",
+      "observed_search_tool_names": []
+    },
+    {
+      "case_id": "dr-main-016",
+      "langfuse_trace_id": "21798b1f830a6f05f01aeec52ecde1bd",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 49,
+      "local_llm_calls": 49,
+      "generation_count_matches_local_llm_calls": true,
+      "priced_generation_count": 49,
+      "total_cost_usd": 0.022805609991,
+      "cost_components_usd": {
+        "input": 0.0062438,
+        "input_cache_read": 0.00718481,
+        "output": 0.009377,
+        "output_reasoning": 0.0,
+        "total": 0.022805609991
+      },
+      "local_total_tokens": 799673,
+      "search_calls": 5,
+      "local_search_calls": 5,
+      "search_call_count_source": "local_run_metrics",
+      "observed_search_tool_names": []
+    },
+    {
+      "case_id": "dr-main-017",
+      "langfuse_trace_id": "2312642516f7dbf588a3d9204663a50e",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 47,
+      "local_llm_calls": 47,
+      "generation_count_matches_local_llm_calls": true,
+      "priced_generation_count": 47,
+      "total_cost_usd": 0.017534269994,
+      "cost_components_usd": {
+        "input": 0.0042959,
+        "input_cache_read": 0.00900587,
+        "output": 0.0042325,
+        "output_reasoning": 0.0,
+        "total": 0.017534269994
+      },
+      "local_total_tokens": 952011,
+      "search_calls": 6,
+      "local_search_calls": 6,
+      "search_call_count_source": "local_run_metrics",
+      "observed_search_tool_names": []
+    },
+    {
+      "case_id": "dr-main-018",
+      "langfuse_trace_id": "a39a49e57b7dfc586eae7312fb33e3a1",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 37,
+      "local_llm_calls": 37,
+      "generation_count_matches_local_llm_calls": true,
+      "priced_generation_count": 37,
+      "total_cost_usd": 0.019642509991,
+      "cost_components_usd": {
+        "input": 0.0063102,
+        "input_cache_read": 0.00526781,
+        "output": 0.0080645,
+        "output_reasoning": 0.0,
+        "total": 0.019642509991
+      },
+      "local_total_tokens": 606012,
+      "search_calls": 5,
+      "local_search_calls": 5,
+      "search_call_count_source": "local_run_metrics",
+      "observed_search_tool_names": []
+    },
+    {
+      "case_id": "dr-main-019",
+      "langfuse_trace_id": "c5cfc8428c621030d5ae50bb8f545817",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 293,
+      "local_llm_calls": null,
+      "generation_count_matches_local_llm_calls": null,
+      "priced_generation_count": 293,
+      "total_cost_usd": 0.160043369957,
+      "cost_components_usd": {
+        "input": 0.0101365,
+        "input_cache_read": 0.11558187,
+        "output": 0.034325,
+        "output_reasoning": 0.0,
+        "total": 0.160043369957
+      },
+      "local_total_tokens": null,
+      "search_calls": 7,
+      "local_search_calls": null,
+      "search_call_count_source": "langfuse_tool_observations",
+      "observed_search_tool_names": [
+        "web_search"
+      ]
+    },
+    {
+      "case_id": "dr-main-020",
+      "langfuse_trace_id": "521f25c8f5f80c43a3d581b055551020",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 45,
+      "local_llm_calls": 45,
+      "generation_count_matches_local_llm_calls": true,
+      "priced_generation_count": 45,
+      "total_cost_usd": 0.022414569991,
+      "cost_components_usd": {
+        "input": 0.0067199,
+        "input_cache_read": 0.00593167,
+        "output": 0.009763,
+        "output_reasoning": 0.0,
+        "total": 0.022414569991
+      },
+      "local_total_tokens": 679892,
+      "search_calls": 6,
+      "local_search_calls": 6,
+      "search_call_count_source": "local_run_metrics",
+      "observed_search_tool_names": []
+    },
+    {
+      "case_id": "dr-main-021",
+      "langfuse_trace_id": "364409ddcf521e0235577721317e55fb",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 32,
+      "local_llm_calls": 32,
+      "generation_count_matches_local_llm_calls": true,
+      "priced_generation_count": 32,
+      "total_cost_usd": 0.014860849996,
+      "cost_components_usd": {
+        "input": 0.0061502,
+        "input_cache_read": 0.00409365,
+        "output": 0.004617,
+        "output_reasoning": 0.0,
+        "total": 0.014860849996
+      },
+      "local_total_tokens": 480101,
+      "search_calls": 5,
+      "local_search_calls": 5,
+      "search_call_count_source": "local_run_metrics",
+      "observed_search_tool_names": []
+    },
+    {
+      "case_id": "dr-main-022",
+      "langfuse_trace_id": "f04470941750947665f668969f22441e",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 74,
+      "local_llm_calls": 74,
+      "generation_count_matches_local_llm_calls": true,
+      "priced_generation_count": 74,
+      "total_cost_usd": 0.026139379993,
+      "cost_components_usd": {
+        "input": 0.0070246,
+        "input_cache_read": 0.01225028,
+        "output": 0.0068645,
+        "output_reasoning": 0.0,
+        "total": 0.026139379993
+      },
+      "local_total_tokens": 1309003,
+      "search_calls": 6,
+      "local_search_calls": 6,
+      "search_call_count_source": "local_run_metrics",
+      "observed_search_tool_names": []
+    },
+    {
+      "case_id": "dr-main-023",
+      "langfuse_trace_id": "a8d75e8bb32d682a45ff917a2bfdccd5",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 33,
+      "local_llm_calls": 33,
+      "generation_count_matches_local_llm_calls": true,
+      "priced_generation_count": 33,
+      "total_cost_usd": 0.010779449996,
+      "cost_components_usd": {
+        "input": 0.0029497,
+        "input_cache_read": 0.00390125,
+        "output": 0.0039285,
+        "output_reasoning": 0.0,
+        "total": 0.010779449996
+      },
+      "local_total_tokens": 427479,
+      "search_calls": 5,
+      "local_search_calls": 5,
+      "search_call_count_source": "local_run_metrics",
+      "observed_search_tool_names": []
+    },
+    {
+      "case_id": "dr-main-024",
+      "langfuse_trace_id": "6fd40bac97e010e1037e65b529149d1f",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 41,
+      "local_llm_calls": 41,
+      "generation_count_matches_local_llm_calls": true,
+      "priced_generation_count": 41,
+      "total_cost_usd": 0.021782859996,
+      "cost_components_usd": {
+        "input": 0.0073173,
+        "input_cache_read": 0.00587756,
+        "output": 0.008588,
+        "output_reasoning": 0.0,
+        "total": 0.021782859996
+      },
+      "local_total_tokens": 678105,
+      "search_calls": 5,
+      "local_search_calls": 5,
+      "search_call_count_source": "local_run_metrics",
+      "observed_search_tool_names": []
+    },
+    {
+      "case_id": "dr-main-025",
+      "langfuse_trace_id": "0fb64ef8ebc60e8a8b4a51ffa097a5ea",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 29,
+      "local_llm_calls": 29,
+      "generation_count_matches_local_llm_calls": true,
+      "priced_generation_count": 29,
+      "total_cost_usd": 0.010975589996,
+      "cost_components_usd": {
+        "input": 0.003259,
+        "input_cache_read": 0.00364159,
+        "output": 0.004075,
+        "output_reasoning": 0.0,
+        "total": 0.010975589996
+      },
+      "local_total_tokens": 404899,
+      "search_calls": 5,
+      "local_search_calls": 5,
+      "search_call_count_source": "local_run_metrics",
+      "observed_search_tool_names": []
+    },
+    {
+      "case_id": "dr-main-026",
+      "langfuse_trace_id": "3966d949966ff0604c2252b0c11c7fd7",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 46,
+      "local_llm_calls": 46,
+      "generation_count_matches_local_llm_calls": true,
+      "priced_generation_count": 46,
+      "total_cost_usd": 0.020534679996,
+      "cost_components_usd": {
+        "input": 0.0056726,
+        "input_cache_read": 0.00651108,
+        "output": 0.008351,
+        "output_reasoning": 0.0,
+        "total": 0.020534679996
+      },
+      "local_total_tokens": 724536,
+      "search_calls": 4,
+      "local_search_calls": 4,
+      "search_call_count_source": "local_run_metrics",
+      "observed_search_tool_names": []
+    },
+    {
+      "case_id": "dr-main-027",
+      "langfuse_trace_id": "3d33186cda1405352c2b70f122a42044",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 33,
+      "local_llm_calls": 33,
+      "generation_count_matches_local_llm_calls": true,
+      "priced_generation_count": 33,
+      "total_cost_usd": 0.014802059998,
+      "cost_components_usd": {
+        "input": 0.005113,
+        "input_cache_read": 0.00398856,
+        "output": 0.0057005,
+        "output_reasoning": 0.0,
+        "total": 0.014802059998
+      },
+      "local_total_tokens": 461387,
+      "search_calls": 5,
+      "local_search_calls": 5,
+      "search_call_count_source": "local_run_metrics",
+      "observed_search_tool_names": []
+    },
+    {
+      "case_id": "dr-main-028",
+      "langfuse_trace_id": "1c1d82403957dc5e83d2a50f6d912830",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 44,
+      "local_llm_calls": 44,
+      "generation_count_matches_local_llm_calls": true,
+      "priced_generation_count": 44,
+      "total_cost_usd": 0.022133339999,
+      "cost_components_usd": {
+        "input": 0.0061025,
+        "input_cache_read": 0.00714884,
+        "output": 0.008882,
+        "output_reasoning": 0.0,
+        "total": 0.022133339999
+      },
+      "local_total_tokens": 793673,
+      "search_calls": 4,
+      "local_search_calls": 4,
+      "search_call_count_source": "local_run_metrics",
+      "observed_search_tool_names": []
+    },
+    {
+      "case_id": "dr-main-029",
+      "langfuse_trace_id": "2748232b68a9094077e723fa77cf4cc9",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 38,
+      "local_llm_calls": 38,
+      "generation_count_matches_local_llm_calls": true,
+      "priced_generation_count": 38,
+      "total_cost_usd": 0.017254169996,
+      "cost_components_usd": {
+        "input": 0.0045896,
+        "input_cache_read": 0.00578557,
+        "output": 0.006879,
+        "output_reasoning": 0.0,
+        "total": 0.017254169996
+      },
+      "local_total_tokens": 638211,
+      "search_calls": 4,
+      "local_search_calls": 4,
+      "search_call_count_source": "local_run_metrics",
+      "observed_search_tool_names": []
+    },
+    {
+      "case_id": "dr-main-030",
+      "langfuse_trace_id": "fc0ee10131c903893e15ee3d8a16998b",
+      "models": [
+        "gpt-6-luna"
+      ],
+      "generation_count": 26,
+      "local_llm_calls": 26,
+      "generation_count_matches_local_llm_calls": true,
+      "priced_generation_count": 26,
+      "total_cost_usd": 0.011179329997,
+      "cost_components_usd": {
+        "input": 0.0035885,
+        "input_cache_read": 0.00334333,
+        "output": 0.0042475,
+        "output_reasoning": 0.0,
+        "total": 0.011179329997
+      },
+      "local_total_tokens": 378713,
+      "search_calls": 4,
+      "local_search_calls": 4,
+      "search_call_count_source": "local_run_metrics",
+      "observed_search_tool_names": []
+    }
+  ]
+}

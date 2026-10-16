@@ -11,22 +11,37 @@ from evals.collect_costs import collect_costs
 
 
 class FakeObservations:
-    def __init__(self, observations_by_trace: dict[str, list[dict]]):
+    def __init__(
+        self,
+        observations_by_trace: dict[str, list[dict]],
+        tools_by_trace: dict[str, list[dict]] | None = None,
+    ):
         self.observations_by_trace = observations_by_trace
+        self.tools_by_trace = tools_by_trace or {}
 
     def get_many(self, **kwargs):
-        assert kwargs["type"] == "GENERATION"
-        assert kwargs["fields"] == "basic,usage,model"
         trace_id = kwargs["trace_id"]
+        if kwargs["type"] == "GENERATION":
+            assert kwargs["fields"] == "basic,usage,model"
+            data = self.observations_by_trace[trace_id]
+        else:
+            assert kwargs["type"] == "TOOL"
+            assert kwargs["fields"] == "basic"
+            data = self.tools_by_trace.get(trace_id, [])
         return SimpleNamespace(
-            data=self.observations_by_trace[trace_id],
+            data=data,
             meta=SimpleNamespace(cursor=None),
         )
 
 
-def _client(observations_by_trace: dict[str, list[dict]]):
+def _client(
+    observations_by_trace: dict[str, list[dict]],
+    tools_by_trace: dict[str, list[dict]] | None = None,
+):
     return SimpleNamespace(
-        api=SimpleNamespace(observations=FakeObservations(observations_by_trace))
+        api=SimpleNamespace(
+            observations=FakeObservations(observations_by_trace, tools_by_trace)
+        )
     )
 
 
@@ -118,10 +133,7 @@ def test_collect_costs_updates_published_evidence(tmp_path: Path):
     assert evidence["model_cost"]["within_spend_cap"] is True
     assert evidence["evaluation_scope"] == "main benchmark"
     assert evidence["bocha_search_cost"]["evaluation_search_calls"] == 4
-    assert (
-        evidence["bocha_search_cost"]["evaluation_allocated_cost_cny"]
-        == 0.0144
-    )
+    assert evidence["bocha_search_cost"]["evaluation_allocated_cost_cny"] == 0.0144
     assert evidence["bocha_search_cost"]["projected_target_calls_with_buffer"] == 120
     assert evidence["capacity_snapshot"]["credit_balance_covers_projection"] is True
 
@@ -146,12 +158,8 @@ def test_collect_costs_rejects_generation_count_mismatch(tmp_path: Path):
     published = _published_bundle(tmp_path)
     client = _client(
         {
-            "trace-1": [
-                {"id": "gen-1", "model": "model-a", "total_cost": 0.01}
-            ],
-            "trace-2": [
-                {"id": "gen-2", "model": "model-a", "total_cost": 0.01}
-            ],
+            "trace-1": [{"id": "gen-1", "model": "model-a", "total_cost": 0.01}],
+            "trace-2": [{"id": "gen-2", "model": "model-a", "total_cost": 0.01}],
         }
     )
 
@@ -164,3 +172,70 @@ def test_collect_costs_rejects_generation_count_mismatch(tmp_path: Path):
         )
 
     assert not (published / "costs.json").exists()
+
+
+def test_collect_costs_recovers_metrics_for_terminal_failure(tmp_path: Path):
+    published = _published_bundle(tmp_path)
+    runs_path = published / "rescored_runs.jsonl"
+    runs = [json.loads(line) for line in runs_path.read_text().splitlines()]
+    runs[1].update(
+        {
+            "status": "agent_failure",
+            "failure_type": "recursion_limit",
+            "original_failure_type": "recursion_limit",
+            "usage": {
+                "llm_calls": None,
+                "total_tokens": None,
+            },
+            "calls": {"search_calls": None},
+        }
+    )
+    runs_path.write_text(
+        "".join(json.dumps(run) + "\n" for run in runs),
+        encoding="utf-8",
+    )
+    client = _client(
+        {
+            "trace-1": [
+                {"id": "gen-1", "model": "model-a", "total_cost": 0.01},
+                {"id": "gen-2", "model": "model-a", "total_cost": 0.02},
+            ],
+            "trace-2": [
+                {"id": "gen-3", "model": "model-a", "total_cost": 0.03},
+                {"id": "gen-4", "model": "model-a", "total_cost": 0.04},
+            ],
+        },
+        {
+            "trace-2": [
+                {"id": "tool-1", "name": "web_search"},
+                {"id": "tool-2", "name": "write_file"},
+                {"id": "tool-3", "name": "bocha_web_search"},
+            ]
+        },
+    )
+
+    evidence = collect_costs(
+        published,
+        client,
+        bocha_package_price_cny=Decimal("3.6"),
+        bocha_package_calls=1000,
+    )
+
+    recovered = evidence["per_trace"][1]
+    assert recovered["generation_count"] == 2
+    assert recovered["local_llm_calls"] is None
+    assert recovered["generation_count_matches_local_llm_calls"] is None
+    assert recovered["search_calls"] == 2
+    assert recovered["local_search_calls"] is None
+    assert recovered["search_call_count_source"] == "langfuse_tool_observations"
+    assert evidence["model_cost"]["total_usd"] == 0.1
+    assert evidence["bocha_search_cost"]["evaluation_search_calls"] == 5
+    assert (
+        evidence["validation"]["all_generation_counts_match_local_llm_calls"] is False
+    )
+    assert (
+        evidence["validation"]["all_available_generation_counts_match_local_llm_calls"]
+        is True
+    )
+    assert evidence["validation"]["missing_local_llm_calls_case_ids"] == ["case-2"]
+    assert evidence["validation"]["trace_derived_search_calls_case_ids"] == ["case-2"]
