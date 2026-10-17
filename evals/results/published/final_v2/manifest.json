@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-17T00:15:24.010992+00:00",
+  "sources": {
+    "comparison": {
+      "path": "evals/results/published/main_v1_vs_v2",
+      "comparison_sha256": "37a26355c2dfe6d7695cf6116185e09a13fe46b4dca050c0a42b556f0a8754eb",
+      "manifest_sha256": "5b2bcae77538b4270d36fb688665c2ca45e48d9633f58d89430617ec59b7ead6"
+    },
+    "stability": {
+      "path": "evals/results/published/stability_v2",
+      "config_sha256": "a275dbda8b78ba2b5ce89d38b88c4d5f170cde9644ce8b5bff2ed8c1f7e5a6f8",
+      "summary_sha256": "4e88736747d615e0082f2f367eafcb181195e20869d7eaf151fcb37b74d6650c",
+      "costs_sha256": "7e75fdc37e9389725624ee3c6eadcee947eaeb204655f0a4b0a70c62e3da0e68",
+      "manifest_sha256": "ada323c3f999c8a050729bb6ac967010dc7a6c8b7b6463827148c38ffef82837"
+    }
+  },
+  "outputs": {
+    "summary.json": "c85e136abdbfa42c43e32116798fdfd2a86b4d6779847dcc6a8d09e879afbb2a",
+    "report.md": "830caaa577e692c4c9509ec35c0a080974540c932447f787a4030c9b3e28d562"
+  }
+}

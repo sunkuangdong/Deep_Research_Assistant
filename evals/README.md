@@ -246,5 +246,20 @@ to `main_v2` and that repeats 2 and 3 do not overlap it. The report shows both
 the cost of all 30 stability observations and the deduplicated full experiment
 cost: all 30 main runs plus only the 20 additional stability runs.
 
+## Final Benchmark Publication
+
+After the priced regression comparison and stability bundle are complete,
+generate the final combined report without making external calls:
+
+```bash
+python -m evals.publish_final_report
+```
+
+The publisher validates model, protocol, dataset hash, repeat count, and the
+deduplicated 50-run cost evidence before writing
+`evals/results/published/final_v2/summary.json`, `report.md`, and a SHA-256
+manifest. The report keeps regression and repeated-run evidence separate and
+records claims that the current experiment does not support.
+
 No file in this directory contains API credentials.
 

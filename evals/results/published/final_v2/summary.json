@@ -1,0 +1,122 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-10-17T00:15:24.010992+00:00",
+  "model_name": "gpt-6-luna",
+  "dataset_sha256": "9595213afcdd0b7baedf00f948d8364560e7484378ad06f88c0ed44d356fbf42",
+  "protocols": {
+    "baseline": "1.3.0",
+    "candidate": "2.1.0"
+  },
+  "main_regression": {
+    "evidence_type": "regression_on_previously_observed_dataset",
+    "task_count": 30,
+    "baseline_completed": 11,
+    "candidate_completed": 24,
+    "baseline_completion_rate": 0.36666666666666664,
+    "candidate_completion_rate": 0.8,
+    "change_percentage_points": 43.333333,
+    "improved_case_count": 16,
+    "regressed_case_count": 3,
+    "candidate_status_counts": {
+      "completed": 24,
+      "agent_failure": 5,
+      "infrastructure_failure": 1
+    },
+    "candidate_failure_type_counts": {
+      "acceptance_criteria": 3,
+      "recursion_limit": 2,
+      "timeout": 1
+    }
+  },
+  "efficiency_tradeoffs": {
+    "median_latency_ms": {
+      "baseline": 144343.5,
+      "candidate": 181404.5,
+      "absolute_change": 37061.0,
+      "relative_change": 0.256756
+    },
+    "p95_latency_ms": {
+      "baseline": 250178.0,
+      "candidate": 369157.0,
+      "absolute_change": 118979.0,
+      "relative_change": 0.475577
+    },
+    "model_cost_usd": {
+      "baseline": 0.588057329823,
+      "candidate": 0.746385699802,
+      "absolute_change": 0.158328,
+      "relative_change": 0.26924
+    },
+    "cost_per_completed_case_usd": {
+      "baseline": 0.05345975725663636,
+      "candidate": 0.031099404158416666,
+      "absolute_change": -0.02236,
+      "relative_change": -0.418265
+    },
+    "search_calls": {
+      "baseline": 178.0,
+      "candidate": 158.0,
+      "absolute_change": -20.0,
+      "relative_change": -0.11236
+    }
+  },
+  "stability": {
+    "evidence_type": "post_regression_frozen_subset_not_holdout",
+    "task_count": 10,
+    "runs_per_task": 3,
+    "observation_count": 30,
+    "completed_observations": 23,
+    "pooled_completion_rate": 0.766667,
+    "three_run_completion_agreement_rate": 0.7,
+    "three_run_exact_status_agreement_rate": 0.7,
+    "stable_completed_case_ids": [
+      "dr-main-006",
+      "dr-main-009",
+      "dr-main-018",
+      "dr-main-021",
+      "dr-main-027",
+      "dr-main-028"
+    ],
+    "stable_incomplete_case_ids": [
+      "dr-main-003"
+    ],
+    "mixed_outcome_case_ids": [
+      "dr-main-012",
+      "dr-main-015",
+      "dr-main-024"
+    ],
+    "completion_frequency_distribution": {
+      "0/3": 1,
+      "1/3": 1,
+      "2/3": 2,
+      "3/3": 6
+    },
+    "median_within_task_token_cv": 0.160652,
+    "median_within_task_latency_cv": 0.318169,
+    "token_observation_sample_count": 28,
+    "token_observation_missing_count": 2,
+    "latency_observation_sample_count": 30,
+    "latency_observation_missing_count": 0
+  },
+  "deduplicated_v2_experiment_cost": {
+    "main_run_count": 30,
+    "additional_stability_run_count": 20,
+    "total_unique_paid_run_count": 50,
+    "additional_stability_model_cost_usd": 0.391637919882,
+    "total_model_cost_usd": 1.138023619684,
+    "total_search_calls": 268,
+    "within_model_spend_cap": true,
+    "within_search_call_cap": true
+  },
+  "defensible_claims": [
+    "Protocol v2 improved structural completion from 36.7% to 80.0% across the same 30-case regression dataset.",
+    "Model cost per completed case decreased by 41.8%, despite a 26.9% increase in total model cost.",
+    "A frozen ten-task subset achieved 76.7% pooled completion and 70.0% three-run outcome agreement."
+  ],
+  "unsupported_claims": [
+    "The 80.0% completion rate generalizes to unseen or production tasks.",
+    "The system guarantees factual correctness or citation entailment.",
+    "Context isolation reduced token usage without a non-isolated baseline.",
+    "The ten-task stability subset is independent holdout evidence."
+  ]
+}
