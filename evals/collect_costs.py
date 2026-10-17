@@ -345,25 +345,146 @@ def _build_cost_evidence(
 def _cost_summary(evidence: dict[str, Any]) -> dict[str, Any]:
     model = evidence["model_cost"]
     bocha = evidence["bocha_search_cost"]
-    return {
+    summary = {
         "status": "collected",
         "source": "Langfuse GENERATION observations plus local search-call metrics",
         "collected_at": evidence["collected_at"],
         "total_usd": model["total_usd"],
         "mean_per_run_usd": model["mean_per_run_usd"],
-        "projected_50_run_cost_usd": model["projected_target_cost_usd"],
-        "projected_50_run_cost_with_20_percent_buffer_usd": model[
+        "target_run_count": model["target_run_count"],
+        "projection_buffer_multiplier": model["projection_buffer_multiplier"],
+        "projected_target_cost_usd": model["projected_target_cost_usd"],
+        "projected_target_cost_with_buffer_usd": model[
             "projected_target_cost_with_buffer_usd"
         ],
         "model_spend_cap_usd": model["spend_cap_usd"],
         "within_model_spend_cap": model["within_spend_cap"],
         "bocha_evaluation_search_calls": bocha["evaluation_search_calls"],
         "bocha_evaluation_allocated_cost_cny": bocha["evaluation_allocated_cost_cny"],
-        "projected_50_run_search_calls_with_20_percent_buffer": bocha[
+        "projected_target_search_calls_with_buffer": bocha[
             "projected_target_calls_with_buffer"
         ],
         "search_call_cap": bocha["search_call_cap"],
         "within_search_call_cap": bocha["within_search_call_cap"],
+    }
+    if "stability_cost" in evidence:
+        summary["stability_cost"] = evidence["stability_cost"]
+    return summary
+
+
+def _sum_trace_metrics(
+    runs: list[dict[str, Any]],
+    per_trace_by_id: dict[str, dict[str, Any]],
+) -> tuple[Decimal, int]:
+    model_cost = Decimal(0)
+    search_calls = 0
+    for run in runs:
+        trace_id = str(run.get("langfuse_trace_id") or "")
+        trace = per_trace_by_id.get(trace_id)
+        if trace is None:
+            raise ValueError(f"missing collected trace evidence for {trace_id}")
+        model_cost += _decimal(trace["total_cost_usd"])
+        search_calls += int(trace["search_calls"])
+    return model_cost, search_calls
+
+
+def _add_stability_cost_breakdown(
+    evidence: dict[str, Any],
+    runs: list[dict[str, Any]],
+    config: dict[str, Any],
+    *,
+    bocha_package_price_cny: Decimal,
+    bocha_package_calls: int,
+    model_spend_cap_usd: Decimal,
+    search_call_cap: int,
+) -> None:
+    if "stability" not in str(config.get("dataset_name") or "").lower():
+        return
+
+    repeat_groups: dict[int, list[dict[str, Any]]] = defaultdict(list)
+    for run in runs:
+        repeat_index = run.get("repeat_index")
+        if repeat_index is None:
+            raise ValueError("stability run is missing repeat_index")
+        repeat_groups[int(repeat_index)].append(run)
+    if set(repeat_groups) != {1, 2, 3}:
+        raise ValueError("stability cost evidence requires repeat indexes 1, 2, and 3")
+
+    per_trace_by_id = {
+        str(item["langfuse_trace_id"]): item for item in evidence["per_trace"]
+    }
+    by_repeat: dict[str, dict[str, Any]] = {}
+    for repeat_index in (1, 2, 3):
+        cost, searches = _sum_trace_metrics(
+            repeat_groups[repeat_index], per_trace_by_id
+        )
+        by_repeat[str(repeat_index)] = {
+            "run_count": len(repeat_groups[repeat_index]),
+            "model_cost_usd": _number(cost),
+            "search_calls": searches,
+        }
+
+    additional_runs = repeat_groups[2] + repeat_groups[3]
+    additional_cost, additional_searches = _sum_trace_metrics(
+        additional_runs, per_trace_by_id
+    )
+
+    main_bundle_value = str(config.get("main_bundle") or "")
+    if not main_bundle_value:
+        raise ValueError("stability config is missing main_bundle")
+    main_bundle = Path(main_bundle_value)
+    if not main_bundle.is_absolute():
+        main_bundle = PROJECT_ROOT / main_bundle
+    main_cost_path = main_bundle / "costs.json"
+    if not main_cost_path.is_file():
+        raise FileNotFoundError(
+            f"main bundle cost evidence is unavailable: {main_cost_path}"
+        )
+    main_evidence = _read_json(main_cost_path)
+    main_model = main_evidence["model_cost"]
+    main_bocha = main_evidence["bocha_search_cost"]
+    main_trace_ids = {
+        str(item["langfuse_trace_id"]) for item in main_evidence["per_trace"]
+    }
+    reused_trace_ids = {str(run["langfuse_trace_id"]) for run in repeat_groups[1]}
+    additional_trace_ids = {str(run["langfuse_trace_id"]) for run in additional_runs}
+    if not reused_trace_ids <= main_trace_ids:
+        raise ValueError("repeat 1 contains traces absent from the main bundle")
+    if main_trace_ids & additional_trace_ids:
+        raise ValueError("additional stability traces overlap the main bundle")
+
+    main_model_cost = _decimal(main_model["total_usd"])
+    main_searches = int(main_bocha["evaluation_search_calls"])
+    full_model_cost = main_model_cost + additional_cost
+    full_searches = main_searches + additional_searches
+    bocha_unit_cost = bocha_package_price_cny / Decimal(bocha_package_calls)
+    full_bocha_cost = bocha_unit_cost * Decimal(full_searches)
+    evidence["stability_cost"] = {
+        "deduplication_rule": (
+            "Repeat 1 reuses main_v2 traces; only repeats 2 and 3 are added "
+            "to the full v2 experiment cost."
+        ),
+        "by_repeat": by_repeat,
+        "additional_stability_runs": {
+            "run_count": len(additional_runs),
+            "model_cost_usd": _number(additional_cost),
+            "search_calls": additional_searches,
+        },
+        "full_v2_experiment": {
+            "main_run_count": int(main_model["run_count"]),
+            "additional_stability_run_count": len(additional_runs),
+            "total_unique_paid_run_count": int(main_model["run_count"])
+            + len(additional_runs),
+            "model_cost_usd": _number(full_model_cost),
+            "search_calls": full_searches,
+            "bocha_allocated_cost_cny": _number(full_bocha_cost, 4),
+            "model_spend_cap_usd": _number(model_spend_cap_usd),
+            "within_model_spend_cap": full_model_cost <= model_spend_cap_usd,
+            "model_cap_headroom_usd": _number(model_spend_cap_usd - full_model_cost),
+            "search_call_cap": search_call_cap,
+            "within_search_call_cap": full_searches <= search_call_cap,
+            "search_call_headroom": search_call_cap - full_searches,
+        },
     }
 
 
@@ -380,43 +501,74 @@ def _update_report(report_path: Path, evidence: dict[str, Any]) -> None:
         count=1,
         flags=re.MULTILINE,
     )
-    section = "\n".join(
-        [
-            COST_SECTION_START,
-            "## Cost Evidence",
-            "",
-            (
-                f"- Langfuse model cost: ${model['total_usd']:.6f} total; "
-                f"${model['mean_per_run_usd']:.6f} mean per run."
-            ),
-            (
-                f"- Projected model cost for {model['target_run_count']} runs: "
-                f"${model['projected_target_cost_usd']:.6f}; "
-                f"${model['projected_target_cost_with_buffer_usd']:.6f} with the "
-                f"{model['projection_buffer_multiplier']:.0%} multiplier."
-            ),
-            (
-                f"- Model spend cap: ${model['spend_cap_usd']:.2f}; "
-                f"within cap: {str(model['within_spend_cap']).lower()}."
-            ),
-            (
-                f"- Bocha {evaluation_scope} usage: "
-                f"{bocha['evaluation_search_calls']} calls, allocated cost CNY "
-                f"{bocha['evaluation_allocated_cost_cny']:.4f}."
-            ),
-            (
-                "- Projected Bocha usage: "
-                f"{bocha['projected_target_calls_with_buffer']} calls with buffer; "
-                f"cap {bocha['search_call_cap']} calls."
-            ),
-            (
-                "- Root observations are excluded; model cost is summed only from "
-                "priced `GENERATION` observations."
-            ),
-            "- Full trace-level evidence is stored in `costs.json`.",
-            COST_SECTION_END,
-        ]
-    )
+    section_lines = [
+        COST_SECTION_START,
+        "## Cost Evidence",
+        "",
+        (
+            f"- Langfuse model cost: ${model['total_usd']:.6f} total; "
+            f"${model['mean_per_run_usd']:.6f} mean per run."
+        ),
+        (
+            f"- Projected model cost for {model['target_run_count']} runs: "
+            f"${model['projected_target_cost_usd']:.6f}; "
+            f"${model['projected_target_cost_with_buffer_usd']:.6f} with the "
+            f"{model['projection_buffer_multiplier']:.0%} multiplier."
+        ),
+        (
+            f"- Model spend cap: ${model['spend_cap_usd']:.2f}; "
+            f"within cap: {str(model['within_spend_cap']).lower()}."
+        ),
+        (
+            f"- Bocha {evaluation_scope} usage: "
+            f"{bocha['evaluation_search_calls']} calls, allocated cost CNY "
+            f"{bocha['evaluation_allocated_cost_cny']:.4f}."
+        ),
+        (
+            "- Projected Bocha usage: "
+            f"{bocha['projected_target_calls_with_buffer']} calls with buffer; "
+            f"cap {bocha['search_call_cap']} calls."
+        ),
+        (
+            "- Root observations are excluded; model cost is summed only from "
+            "priced `GENERATION` observations."
+        ),
+        "- Full trace-level evidence is stored in `costs.json`.",
+    ]
+    stability = evidence.get("stability_cost")
+    if stability:
+        additional = stability["additional_stability_runs"]
+        full = stability["full_v2_experiment"]
+        section_lines.extend(
+            [
+                "",
+                "### Deduplicated Experiment Cost",
+                "",
+                (
+                    "- Repeat 1 reuses 10 traces already included in `main_v2`; "
+                    "it is not charged a second time in the full experiment total."
+                ),
+                (
+                    f"- Repeats 2 and 3 add {additional['run_count']} paid runs: "
+                    f"${additional['model_cost_usd']:.6f} and "
+                    f"{additional['search_calls']} search calls."
+                ),
+                (
+                    f"- Full v2 experiment: {full['total_unique_paid_run_count']} "
+                    f"unique paid runs, ${full['model_cost_usd']:.6f} model cost, "
+                    f"and {full['search_calls']} search calls."
+                ),
+                (
+                    f"- Full-experiment caps: model "
+                    f"${full['model_spend_cap_usd']:.2f} "
+                    f"(within cap: {str(full['within_model_spend_cap']).lower()}); "
+                    f"search {full['search_call_cap']} calls "
+                    f"(within cap: {str(full['within_search_call_cap']).lower()})."
+                ),
+            ]
+        )
+    section_lines.append(COST_SECTION_END)
+    section = "\n".join(section_lines)
     if COST_SECTION_START in report and COST_SECTION_END in report:
         before, remainder = report.split(COST_SECTION_START, 1)
         _, after = remainder.split(COST_SECTION_END, 1)
@@ -463,6 +615,8 @@ def collect_costs(
     dataset_tokens = set(str(config.get("dataset_name") or "").lower().split("_"))
     if "smoke" in dataset_tokens:
         evaluation_scope = "smoke"
+    elif "stability" in dataset_tokens:
+        evaluation_scope = "stability evaluation"
     elif "main" in dataset_tokens:
         evaluation_scope = "main benchmark"
     else:
@@ -482,6 +636,15 @@ def collect_costs(
         openai_credit_balance_usd=openai_credit_balance_usd,
         balance_snapshot_date=balance_snapshot_date,
         collected_at=collected_at or datetime.now(UTC).isoformat(),
+    )
+    _add_stability_cost_breakdown(
+        evidence,
+        runs,
+        config,
+        bocha_package_price_cny=bocha_package_price_cny,
+        bocha_package_calls=bocha_package_calls,
+        model_spend_cap_usd=model_spend_cap_usd,
+        search_call_cap=search_call_cap,
     )
 
     summary = _read_json(summary_path)

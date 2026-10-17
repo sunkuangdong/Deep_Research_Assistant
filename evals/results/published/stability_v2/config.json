@@ -1,0 +1,34 @@
+{
+  "publication_schema_version": 1,
+  "published_at": "2026-10-16T23:53:45.113936+00:00",
+  "dataset_name": "research_stability_v2",
+  "dataset_sha256": "9595213afcdd0b7baedf00f948d8364560e7484378ad06f88c0ed44d356fbf42",
+  "subset_sha256": "669f2235e4c861f6808bc74ecdb840ffab40d64a2d1d2f883f8c72bc7d9e2db3",
+  "subset_version": "v1",
+  "protocol_version": "2.1.0",
+  "model_name": "gpt-6-luna",
+  "run_date": "2026-10-16",
+  "selected_case_ids": [
+    "dr-main-003",
+    "dr-main-006",
+    "dr-main-009",
+    "dr-main-012",
+    "dr-main-015",
+    "dr-main-018",
+    "dr-main-021",
+    "dr-main-024",
+    "dr-main-027",
+    "dr-main-028"
+  ],
+  "repeat_count": 3,
+  "main_bundle": "evals/results/published/main_v2",
+  "repeat_result_dirs": [
+    "evals/results/stability_v2_round_2",
+    "evals/results/stability_v2_round_3"
+  ],
+  "source_git_commits": [
+    "87f44b9b9dee94f331d38c3845fc4fb87d541dee",
+    "e6a73edc5ccc34f927661332731f1368d5c9413a"
+  ],
+  "selection_chronology": "Frozen after the v2 main regression run; therefore this subset is descriptive stability evidence, not a preregistered or holdout sample."
+}

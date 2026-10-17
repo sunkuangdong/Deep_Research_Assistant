@@ -1,0 +1,1180 @@
+{
+  "task_count": 10,
+  "repeat_count": 3,
+  "observation_count": 30,
+  "completed_observation_count": 23,
+  "pooled_completion_rate": 0.766667,
+  "status_counts": {
+    "completed": 23,
+    "agent_failure": 7,
+    "infrastructure_failure": 0
+  },
+  "completion_agreement": {
+    "all_three_agree_count": 7,
+    "rate": 0.7,
+    "mixed_outcome_count": 3,
+    "all_three_completed_count": 6,
+    "all_three_not_completed_count": 1,
+    "frequency_distribution": {
+      "0/3": 1,
+      "1/3": 1,
+      "2/3": 2,
+      "3/3": 6
+    }
+  },
+  "exact_status_agreement": {
+    "all_three_agree_count": 7,
+    "rate": 0.7
+  },
+  "tokens": {
+    "sample_count": 28,
+    "missing_count": 2,
+    "minimum": 417537.0,
+    "maximum": 933973.0,
+    "range": 516436.0,
+    "mean": 675033.678571,
+    "median": 664348.0,
+    "sample_stddev": 149391.66838,
+    "coefficient_of_variation": 0.22131
+  },
+  "latency_ms": {
+    "sample_count": 30,
+    "missing_count": 0,
+    "minimum": 84721.0,
+    "maximum": 498694.0,
+    "range": 413973.0,
+    "mean": 250952.1,
+    "median": 235908.0,
+    "sample_stddev": 111461.468347,
+    "coefficient_of_variation": 0.444154
+  },
+  "per_task": [
+    {
+      "case_id": "dr-main-003",
+      "statuses": [
+        "agent_failure",
+        "agent_failure",
+        "agent_failure"
+      ],
+      "failure_types": [
+        "acceptance_criteria",
+        "acceptance_criteria",
+        "acceptance_criteria"
+      ],
+      "completed_runs": 0,
+      "completion_frequency": 0.0,
+      "completion_agreement": true,
+      "exact_status_agreement": true,
+      "tokens": {
+        "sample_count": 3,
+        "missing_count": 0,
+        "minimum": 572996.0,
+        "maximum": 735517.0,
+        "range": 162521.0,
+        "mean": 651516.666667,
+        "median": 646037.0,
+        "sample_stddev": 81398.949135,
+        "coefficient_of_variation": 0.124938
+      },
+      "latency_ms": {
+        "sample_count": 3,
+        "missing_count": 0,
+        "minimum": 175700.0,
+        "maximum": 341812.0,
+        "range": 166112.0,
+        "mean": 264661.333333,
+        "median": 276472.0,
+        "sample_stddev": 83683.439349,
+        "coefficient_of_variation": 0.316191
+      },
+      "calls": {
+        "search_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 5.0,
+          "maximum": 6.0,
+          "range": 1.0,
+          "mean": 5.333333,
+          "median": 5.0,
+          "sample_stddev": 0.57735,
+          "coefficient_of_variation": 0.108253
+        },
+        "fetch_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 5.0,
+          "maximum": 5.0,
+          "range": 0.0,
+          "mean": 5.0,
+          "median": 5.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        },
+        "researcher_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 2.0,
+          "maximum": 3.0,
+          "range": 1.0,
+          "mean": 2.333333,
+          "median": 2.0,
+          "sample_stddev": 0.57735,
+          "coefficient_of_variation": 0.247436
+        },
+        "analyst_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 1.0,
+          "maximum": 1.0,
+          "range": 0.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        },
+        "editor_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 1.0,
+          "maximum": 1.0,
+          "range": 0.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        },
+        "draft_edit_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 1.0,
+          "maximum": 1.0,
+          "range": 0.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        }
+      }
+    },
+    {
+      "case_id": "dr-main-006",
+      "statuses": [
+        "completed",
+        "completed",
+        "completed"
+      ],
+      "failure_types": [
+        null,
+        null,
+        null
+      ],
+      "completed_runs": 3,
+      "completion_frequency": 1.0,
+      "completion_agreement": true,
+      "exact_status_agreement": true,
+      "tokens": {
+        "sample_count": 3,
+        "missing_count": 0,
+        "minimum": 640018.0,
+        "maximum": 896687.0,
+        "range": 256669.0,
+        "mean": 738661.333333,
+        "median": 679279.0,
+        "sample_stddev": 138254.981915,
+        "coefficient_of_variation": 0.18717
+      },
+      "latency_ms": {
+        "sample_count": 3,
+        "missing_count": 0,
+        "minimum": 207424.0,
+        "maximum": 305397.0,
+        "range": 97973.0,
+        "mean": 262844.666667,
+        "median": 275713.0,
+        "sample_stddev": 50238.159643,
+        "coefficient_of_variation": 0.191133
+      },
+      "calls": {
+        "search_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 5.0,
+          "maximum": 5.0,
+          "range": 0.0,
+          "mean": 5.0,
+          "median": 5.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        },
+        "fetch_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 5.0,
+          "maximum": 5.0,
+          "range": 0.0,
+          "mean": 5.0,
+          "median": 5.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        },
+        "researcher_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 2.0,
+          "maximum": 3.0,
+          "range": 1.0,
+          "mean": 2.333333,
+          "median": 2.0,
+          "sample_stddev": 0.57735,
+          "coefficient_of_variation": 0.247436
+        },
+        "analyst_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 1.0,
+          "maximum": 1.0,
+          "range": 0.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        },
+        "editor_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 1.0,
+          "maximum": 1.0,
+          "range": 0.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        },
+        "draft_edit_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 1.0,
+          "maximum": 1.0,
+          "range": 0.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        }
+      }
+    },
+    {
+      "case_id": "dr-main-009",
+      "statuses": [
+        "completed",
+        "completed",
+        "completed"
+      ],
+      "failure_types": [
+        null,
+        null,
+        null
+      ],
+      "completed_runs": 3,
+      "completion_frequency": 1.0,
+      "completion_agreement": true,
+      "exact_status_agreement": true,
+      "tokens": {
+        "sample_count": 3,
+        "missing_count": 0,
+        "minimum": 626154.0,
+        "maximum": 795894.0,
+        "range": 169740.0,
+        "mean": 714195.666667,
+        "median": 720539.0,
+        "sample_stddev": 85047.606129,
+        "coefficient_of_variation": 0.119082
+      },
+      "latency_ms": {
+        "sample_count": 3,
+        "missing_count": 0,
+        "minimum": 204561.0,
+        "maximum": 331584.0,
+        "range": 127023.0,
+        "mean": 261652.333333,
+        "median": 248812.0,
+        "sample_stddev": 64477.641492,
+        "coefficient_of_variation": 0.246425
+      },
+      "calls": {
+        "search_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 5.0,
+          "maximum": 6.0,
+          "range": 1.0,
+          "mean": 5.333333,
+          "median": 5.0,
+          "sample_stddev": 0.57735,
+          "coefficient_of_variation": 0.108253
+        },
+        "fetch_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 5.0,
+          "maximum": 6.0,
+          "range": 1.0,
+          "mean": 5.333333,
+          "median": 5.0,
+          "sample_stddev": 0.57735,
+          "coefficient_of_variation": 0.108253
+        },
+        "researcher_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 2.0,
+          "maximum": 3.0,
+          "range": 1.0,
+          "mean": 2.333333,
+          "median": 2.0,
+          "sample_stddev": 0.57735,
+          "coefficient_of_variation": 0.247436
+        },
+        "analyst_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 1.0,
+          "maximum": 1.0,
+          "range": 0.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        },
+        "editor_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 1.0,
+          "maximum": 1.0,
+          "range": 0.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        },
+        "draft_edit_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 1.0,
+          "maximum": 1.0,
+          "range": 0.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        }
+      }
+    },
+    {
+      "case_id": "dr-main-012",
+      "statuses": [
+        "agent_failure",
+        "completed",
+        "agent_failure"
+      ],
+      "failure_types": [
+        "recursion_limit",
+        null,
+        "acceptance_criteria"
+      ],
+      "completed_runs": 1,
+      "completion_frequency": 0.333333,
+      "completion_agreement": false,
+      "exact_status_agreement": false,
+      "tokens": {
+        "sample_count": 2,
+        "missing_count": 1,
+        "minimum": 564642.0,
+        "maximum": 682975.0,
+        "range": 118333.0,
+        "mean": 623808.5,
+        "median": 623808.5,
+        "sample_stddev": 83674.066738,
+        "coefficient_of_variation": 0.134134
+      },
+      "latency_ms": {
+        "sample_count": 3,
+        "missing_count": 0,
+        "minimum": 217317.0,
+        "maximum": 267329.0,
+        "range": 50012.0,
+        "mean": 235883.333333,
+        "median": 223004.0,
+        "sample_stddev": 27380.795393,
+        "coefficient_of_variation": 0.116078
+      },
+      "calls": {
+        "search_calls": {
+          "sample_count": 2,
+          "missing_count": 1,
+          "minimum": 5.0,
+          "maximum": 6.0,
+          "range": 1.0,
+          "mean": 5.5,
+          "median": 5.5,
+          "sample_stddev": 0.707107,
+          "coefficient_of_variation": 0.128565
+        },
+        "fetch_calls": {
+          "sample_count": 2,
+          "missing_count": 1,
+          "minimum": 4.0,
+          "maximum": 6.0,
+          "range": 2.0,
+          "mean": 5.0,
+          "median": 5.0,
+          "sample_stddev": 1.414214,
+          "coefficient_of_variation": 0.282843
+        },
+        "researcher_calls": {
+          "sample_count": 2,
+          "missing_count": 1,
+          "minimum": 2.0,
+          "maximum": 3.0,
+          "range": 1.0,
+          "mean": 2.5,
+          "median": 2.5,
+          "sample_stddev": 0.707107,
+          "coefficient_of_variation": 0.282843
+        },
+        "analyst_calls": {
+          "sample_count": 2,
+          "missing_count": 1,
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "range": 1.0,
+          "mean": 0.5,
+          "median": 0.5,
+          "sample_stddev": 0.707107,
+          "coefficient_of_variation": 1.414214
+        },
+        "editor_calls": {
+          "sample_count": 2,
+          "missing_count": 1,
+          "minimum": 1.0,
+          "maximum": 1.0,
+          "range": 0.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        },
+        "draft_edit_calls": {
+          "sample_count": 2,
+          "missing_count": 1,
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "range": 1.0,
+          "mean": 0.5,
+          "median": 0.5,
+          "sample_stddev": 0.707107,
+          "coefficient_of_variation": 1.414214
+        }
+      }
+    },
+    {
+      "case_id": "dr-main-015",
+      "statuses": [
+        "completed",
+        "completed",
+        "agent_failure"
+      ],
+      "failure_types": [
+        null,
+        null,
+        "acceptance_criteria"
+      ],
+      "completed_runs": 2,
+      "completion_frequency": 0.666667,
+      "completion_agreement": false,
+      "exact_status_agreement": false,
+      "tokens": {
+        "sample_count": 3,
+        "missing_count": 0,
+        "minimum": 417537.0,
+        "maximum": 916012.0,
+        "range": 498475.0,
+        "mean": 734961.333333,
+        "median": 871335.0,
+        "sample_stddev": 275803.66953,
+        "coefficient_of_variation": 0.375263
+      },
+      "latency_ms": {
+        "sample_count": 3,
+        "missing_count": 0,
+        "minimum": 84721.0,
+        "maximum": 220230.0,
+        "range": 135509.0,
+        "mean": 144536.333333,
+        "median": 128658.0,
+        "sample_stddev": 69135.832767,
+        "coefficient_of_variation": 0.478328
+      },
+      "calls": {
+        "search_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 5.0,
+          "maximum": 6.0,
+          "range": 1.0,
+          "mean": 5.333333,
+          "median": 5.0,
+          "sample_stddev": 0.57735,
+          "coefficient_of_variation": 0.108253
+        },
+        "fetch_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 4.0,
+          "maximum": 6.0,
+          "range": 2.0,
+          "mean": 5.0,
+          "median": 5.0,
+          "sample_stddev": 1.0,
+          "coefficient_of_variation": 0.2
+        },
+        "researcher_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 2.0,
+          "maximum": 3.0,
+          "range": 1.0,
+          "mean": 2.333333,
+          "median": 2.0,
+          "sample_stddev": 0.57735,
+          "coefficient_of_variation": 0.247436
+        },
+        "analyst_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 0.0,
+          "maximum": 0.0,
+          "range": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": null
+        },
+        "editor_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 1.0,
+          "maximum": 1.0,
+          "range": 0.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        },
+        "draft_edit_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "range": 1.0,
+          "mean": 0.666667,
+          "median": 1.0,
+          "sample_stddev": 0.57735,
+          "coefficient_of_variation": 0.866025
+        }
+      }
+    },
+    {
+      "case_id": "dr-main-018",
+      "statuses": [
+        "completed",
+        "completed",
+        "completed"
+      ],
+      "failure_types": [
+        null,
+        null,
+        null
+      ],
+      "completed_runs": 3,
+      "completion_frequency": 1.0,
+      "completion_agreement": true,
+      "exact_status_agreement": true,
+      "tokens": {
+        "sample_count": 3,
+        "missing_count": 0,
+        "minimum": 606012.0,
+        "maximum": 917437.0,
+        "range": 311425.0,
+        "mean": 740105.333333,
+        "median": 696867.0,
+        "sample_stddev": 160151.639886,
+        "coefficient_of_variation": 0.21639
+      },
+      "latency_ms": {
+        "sample_count": 3,
+        "missing_count": 0,
+        "minimum": 154971.0,
+        "maximum": 491409.0,
+        "range": 336438.0,
+        "mean": 301429.0,
+        "median": 257907.0,
+        "sample_stddev": 172389.835327,
+        "coefficient_of_variation": 0.571909
+      },
+      "calls": {
+        "search_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 5.0,
+          "maximum": 6.0,
+          "range": 1.0,
+          "mean": 5.333333,
+          "median": 5.0,
+          "sample_stddev": 0.57735,
+          "coefficient_of_variation": 0.108253
+        },
+        "fetch_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 5.0,
+          "maximum": 6.0,
+          "range": 1.0,
+          "mean": 5.333333,
+          "median": 5.0,
+          "sample_stddev": 0.57735,
+          "coefficient_of_variation": 0.108253
+        },
+        "researcher_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 2.0,
+          "maximum": 3.0,
+          "range": 1.0,
+          "mean": 2.333333,
+          "median": 2.0,
+          "sample_stddev": 0.57735,
+          "coefficient_of_variation": 0.247436
+        },
+        "analyst_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 1.0,
+          "maximum": 1.0,
+          "range": 0.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        },
+        "editor_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 1.0,
+          "maximum": 1.0,
+          "range": 0.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        },
+        "draft_edit_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 1.0,
+          "maximum": 1.0,
+          "range": 0.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        }
+      }
+    },
+    {
+      "case_id": "dr-main-021",
+      "statuses": [
+        "completed",
+        "completed",
+        "completed"
+      ],
+      "failure_types": [
+        null,
+        null,
+        null
+      ],
+      "completed_runs": 3,
+      "completion_frequency": 1.0,
+      "completion_agreement": true,
+      "exact_status_agreement": true,
+      "tokens": {
+        "sample_count": 3,
+        "missing_count": 0,
+        "minimum": 480101.0,
+        "maximum": 506963.0,
+        "range": 26862.0,
+        "mean": 494239.0,
+        "median": 495653.0,
+        "sample_stddev": 13486.708568,
+        "coefficient_of_variation": 0.027288
+      },
+      "latency_ms": {
+        "sample_count": 3,
+        "missing_count": 0,
+        "minimum": 89883.0,
+        "maximum": 127455.0,
+        "range": 37572.0,
+        "mean": 105717.666667,
+        "median": 99815.0,
+        "sample_stddev": 19469.075513,
+        "coefficient_of_variation": 0.184161
+      },
+      "calls": {
+        "search_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 4.0,
+          "maximum": 5.0,
+          "range": 1.0,
+          "mean": 4.666667,
+          "median": 5.0,
+          "sample_stddev": 0.57735,
+          "coefficient_of_variation": 0.123718
+        },
+        "fetch_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 5.0,
+          "maximum": 5.0,
+          "range": 0.0,
+          "mean": 5.0,
+          "median": 5.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        },
+        "researcher_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 2.0,
+          "maximum": 2.0,
+          "range": 0.0,
+          "mean": 2.0,
+          "median": 2.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        },
+        "analyst_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 0.0,
+          "maximum": 0.0,
+          "range": 0.0,
+          "mean": 0.0,
+          "median": 0.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": null
+        },
+        "editor_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 1.0,
+          "maximum": 1.0,
+          "range": 0.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        },
+        "draft_edit_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 1.0,
+          "maximum": 1.0,
+          "range": 0.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        }
+      }
+    },
+    {
+      "case_id": "dr-main-024",
+      "statuses": [
+        "completed",
+        "agent_failure",
+        "completed"
+      ],
+      "failure_types": [
+        null,
+        "recursion_limit",
+        null
+      ],
+      "completed_runs": 2,
+      "completion_frequency": 0.666667,
+      "completion_agreement": false,
+      "exact_status_agreement": false,
+      "tokens": {
+        "sample_count": 2,
+        "missing_count": 1,
+        "minimum": 650591.0,
+        "maximum": 678105.0,
+        "range": 27514.0,
+        "mean": 664348.0,
+        "median": 664348.0,
+        "sample_stddev": 19455.335978,
+        "coefficient_of_variation": 0.029285
+      },
+      "latency_ms": {
+        "sample_count": 3,
+        "missing_count": 0,
+        "minimum": 201066.0,
+        "maximum": 498694.0,
+        "range": 297628.0,
+        "mean": 363107.333333,
+        "median": 389562.0,
+        "sample_stddev": 150567.239589,
+        "coefficient_of_variation": 0.414663
+      },
+      "calls": {
+        "search_calls": {
+          "sample_count": 2,
+          "missing_count": 1,
+          "minimum": 5.0,
+          "maximum": 6.0,
+          "range": 1.0,
+          "mean": 5.5,
+          "median": 5.5,
+          "sample_stddev": 0.707107,
+          "coefficient_of_variation": 0.128565
+        },
+        "fetch_calls": {
+          "sample_count": 2,
+          "missing_count": 1,
+          "minimum": 5.0,
+          "maximum": 5.0,
+          "range": 0.0,
+          "mean": 5.0,
+          "median": 5.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        },
+        "researcher_calls": {
+          "sample_count": 2,
+          "missing_count": 1,
+          "minimum": 2.0,
+          "maximum": 3.0,
+          "range": 1.0,
+          "mean": 2.5,
+          "median": 2.5,
+          "sample_stddev": 0.707107,
+          "coefficient_of_variation": 0.282843
+        },
+        "analyst_calls": {
+          "sample_count": 2,
+          "missing_count": 1,
+          "minimum": 1.0,
+          "maximum": 1.0,
+          "range": 0.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        },
+        "editor_calls": {
+          "sample_count": 2,
+          "missing_count": 1,
+          "minimum": 1.0,
+          "maximum": 1.0,
+          "range": 0.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        },
+        "draft_edit_calls": {
+          "sample_count": 2,
+          "missing_count": 1,
+          "minimum": 1.0,
+          "maximum": 1.0,
+          "range": 0.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        }
+      }
+    },
+    {
+      "case_id": "dr-main-027",
+      "statuses": [
+        "completed",
+        "completed",
+        "completed"
+      ],
+      "failure_types": [
+        null,
+        null,
+        null
+      ],
+      "completed_runs": 3,
+      "completion_frequency": 1.0,
+      "completion_agreement": true,
+      "exact_status_agreement": true,
+      "tokens": {
+        "sample_count": 3,
+        "missing_count": 0,
+        "minimum": 461387.0,
+        "maximum": 815905.0,
+        "range": 354518.0,
+        "mean": 598812.333333,
+        "median": 519145.0,
+        "sample_stddev": 190212.817868,
+        "coefficient_of_variation": 0.31765
+      },
+      "latency_ms": {
+        "sample_count": 3,
+        "missing_count": 0,
+        "minimum": 126047.0,
+        "maximum": 422420.0,
+        "range": 296373.0,
+        "mean": 301496.333333,
+        "median": 356022.0,
+        "sample_stddev": 155528.212959,
+        "coefficient_of_variation": 0.515854
+      },
+      "calls": {
+        "search_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 5.0,
+          "maximum": 6.0,
+          "range": 1.0,
+          "mean": 5.333333,
+          "median": 5.0,
+          "sample_stddev": 0.57735,
+          "coefficient_of_variation": 0.108253
+        },
+        "fetch_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 2.0,
+          "maximum": 5.0,
+          "range": 3.0,
+          "mean": 4.0,
+          "median": 5.0,
+          "sample_stddev": 1.732051,
+          "coefficient_of_variation": 0.433013
+        },
+        "researcher_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 2.0,
+          "maximum": 3.0,
+          "range": 1.0,
+          "mean": 2.333333,
+          "median": 2.0,
+          "sample_stddev": 0.57735,
+          "coefficient_of_variation": 0.247436
+        },
+        "analyst_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 1.0,
+          "maximum": 1.0,
+          "range": 0.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        },
+        "editor_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 1.0,
+          "maximum": 1.0,
+          "range": 0.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        },
+        "draft_edit_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 1.0,
+          "maximum": 1.0,
+          "range": 0.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        }
+      }
+    },
+    {
+      "case_id": "dr-main-028",
+      "statuses": [
+        "completed",
+        "completed",
+        "completed"
+      ],
+      "failure_types": [
+        null,
+        null,
+        null
+      ],
+      "completed_runs": 3,
+      "completion_frequency": 1.0,
+      "completion_agreement": true,
+      "exact_status_agreement": true,
+      "tokens": {
+        "sample_count": 3,
+        "missing_count": 0,
+        "minimum": 579509.0,
+        "maximum": 933973.0,
+        "range": 354464.0,
+        "mean": 769051.666667,
+        "median": 793673.0,
+        "sample_stddev": 178510.053961,
+        "coefficient_of_variation": 0.232117
+      },
+      "latency_ms": {
+        "sample_count": 3,
+        "missing_count": 0,
+        "minimum": 169213.0,
+        "maximum": 322625.0,
+        "range": 153412.0,
+        "mean": 268192.666667,
+        "median": 312740.0,
+        "sample_stddev": 85861.278329,
+        "coefficient_of_variation": 0.320148
+      },
+      "calls": {
+        "search_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 4.0,
+          "maximum": 6.0,
+          "range": 2.0,
+          "mean": 4.666667,
+          "median": 4.0,
+          "sample_stddev": 1.154701,
+          "coefficient_of_variation": 0.247436
+        },
+        "fetch_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 4.0,
+          "maximum": 6.0,
+          "range": 2.0,
+          "mean": 5.0,
+          "median": 5.0,
+          "sample_stddev": 1.0,
+          "coefficient_of_variation": 0.2
+        },
+        "researcher_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 2.0,
+          "maximum": 3.0,
+          "range": 1.0,
+          "mean": 2.333333,
+          "median": 2.0,
+          "sample_stddev": 0.57735,
+          "coefficient_of_variation": 0.247436
+        },
+        "analyst_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 1.0,
+          "maximum": 1.0,
+          "range": 0.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        },
+        "editor_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 1.0,
+          "maximum": 1.0,
+          "range": 0.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        },
+        "draft_edit_calls": {
+          "sample_count": 3,
+          "missing_count": 0,
+          "minimum": 1.0,
+          "maximum": 1.0,
+          "range": 0.0,
+          "mean": 1.0,
+          "median": 1.0,
+          "sample_stddev": 0.0,
+          "coefficient_of_variation": 0.0
+        }
+      }
+    }
+  ],
+  "cost": {
+    "status": "collected",
+    "source": "Langfuse GENERATION observations plus local search-call metrics",
+    "collected_at": "2026-10-16T23:56:35.835205+00:00",
+    "total_usd": 0.600904619829,
+    "mean_per_run_usd": 0.020030153994,
+    "target_run_count": 30,
+    "projection_buffer_multiplier": 1.0,
+    "projected_target_cost_usd": 0.600904619829,
+    "projected_target_cost_with_buffer_usd": 0.600904619829,
+    "model_spend_cap_usd": 1.5,
+    "within_model_spend_cap": true,
+    "bocha_evaluation_search_calls": 161,
+    "bocha_evaluation_allocated_cost_cny": 0.5796,
+    "projected_target_search_calls_with_buffer": 161,
+    "search_call_cap": 360,
+    "within_search_call_cap": true,
+    "stability_cost": {
+      "deduplication_rule": "Repeat 1 reuses main_v2 traces; only repeats 2 and 3 are added to the full v2 experiment cost.",
+      "by_repeat": {
+        "1": {
+          "run_count": 10,
+          "model_cost_usd": 0.209266699947,
+          "search_calls": 51
+        },
+        "2": {
+          "run_count": 10,
+          "model_cost_usd": 0.199527489951,
+          "search_calls": 54
+        },
+        "3": {
+          "run_count": 10,
+          "model_cost_usd": 0.192110429931,
+          "search_calls": 56
+        }
+      },
+      "additional_stability_runs": {
+        "run_count": 20,
+        "model_cost_usd": 0.391637919882,
+        "search_calls": 110
+      },
+      "full_v2_experiment": {
+        "main_run_count": 30,
+        "additional_stability_run_count": 20,
+        "total_unique_paid_run_count": 50,
+        "model_cost_usd": 1.138023619684,
+        "search_calls": 268,
+        "bocha_allocated_cost_cny": 0.9648,
+        "model_spend_cap_usd": 1.5,
+        "within_model_spend_cap": true,
+        "model_cap_headroom_usd": 0.361976380316,
+        "search_call_cap": 360,
+        "within_search_call_cap": true,
+        "search_call_headroom": 92
+      }
+    }
+  }
+}

@@ -227,5 +227,24 @@ runtime compatibility, preserves every failure, and reports per-task
 completion agreement plus token, latency, search, and delegation variation.
 The observations remain ten task clusters rather than 30 independent tasks.
 
+Collect exact Langfuse cost evidence for the 30 stability observations after
+publication:
+
+```bash
+python -m evals.collect_costs \
+  --published-dir evals/results/published/stability_v2 \
+  --bocha-package-price-cny 3.6 \
+  --bocha-package-calls 1000 \
+  --target-run-count 30 \
+  --projection-buffer 1.0 \
+  --model-spend-cap-usd 1.50 \
+  --search-call-cap 360
+```
+
+For a stability bundle, the collector verifies that repeat-1 trace IDs belong
+to `main_v2` and that repeats 2 and 3 do not overlap it. The report shows both
+the cost of all 30 stability observations and the deduplicated full experiment
+cost: all 30 main runs plus only the 20 additional stability runs.
+
 No file in this directory contains API credentials.
 

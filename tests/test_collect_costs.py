@@ -239,3 +239,81 @@ def test_collect_costs_recovers_metrics_for_terminal_failure(tmp_path: Path):
     )
     assert evidence["validation"]["missing_local_llm_calls_case_ids"] == ["case-2"]
     assert evidence["validation"]["trace_derived_search_calls_case_ids"] == ["case-2"]
+
+
+def test_collect_costs_deduplicates_stability_repeats(tmp_path: Path):
+    main_bundle = tmp_path / "main_v2"
+    main_bundle.mkdir()
+    (main_bundle / "costs.json").write_text(
+        json.dumps(
+            {
+                "model_cost": {"run_count": 2, "total_usd": 0.10},
+                "bocha_search_cost": {"evaluation_search_calls": 5},
+                "per_trace": [
+                    {"langfuse_trace_id": "trace-1"},
+                    {"langfuse_trace_id": "main-only"},
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    published = _published_bundle(tmp_path, dataset_name="research_stability_v2")
+    runs_path = published / "rescored_runs.jsonl"
+    runs = [json.loads(line) for line in runs_path.read_text().splitlines()]
+    runs[0]["repeat_index"] = 1
+    runs[1]["repeat_index"] = 2
+    runs.append(
+        {
+            "case_id": "case-3",
+            "repeat_index": 3,
+            "langfuse_trace_id": "trace-3",
+            "usage": {"llm_calls": 1, "total_tokens": 60},
+            "calls": {"search_calls": 2},
+        }
+    )
+    runs_path.write_text(
+        "".join(json.dumps(run) + "\n" for run in runs),
+        encoding="utf-8",
+    )
+    config_path = published / "config.json"
+    config = json.loads(config_path.read_text())
+    config["main_bundle"] = str(main_bundle)
+    config_path.write_text(json.dumps(config), encoding="utf-8")
+    client = _client(
+        {
+            "trace-1": [
+                {"id": "gen-1", "model": "model-a", "total_cost": 0.01},
+                {"id": "gen-2", "model": "model-a", "total_cost": 0.02},
+            ],
+            "trace-2": [{"id": "gen-3", "model": "model-a", "total_cost": 0.03}],
+            "trace-3": [{"id": "gen-4", "model": "model-a", "total_cost": 0.04}],
+        }
+    )
+
+    evidence = collect_costs(
+        published,
+        client,
+        bocha_package_price_cny=Decimal("3.6"),
+        bocha_package_calls=1000,
+        target_run_count=3,
+        projection_buffer=Decimal("1.0"),
+        model_spend_cap_usd=Decimal("0.20"),
+        search_call_cap=20,
+    )
+
+    stability = evidence["stability_cost"]
+    assert stability["by_repeat"]["1"]["model_cost_usd"] == 0.03
+    assert stability["additional_stability_runs"] == {
+        "run_count": 2,
+        "model_cost_usd": 0.07,
+        "search_calls": 3,
+    }
+    assert stability["full_v2_experiment"]["total_unique_paid_run_count"] == 4
+    assert stability["full_v2_experiment"]["model_cost_usd"] == 0.17
+    assert stability["full_v2_experiment"]["search_calls"] == 8
+    summary = json.loads((published / "summary.json").read_text())
+    assert summary["cost"]["target_run_count"] == 3
+    assert "projected_50_run_cost_usd" not in summary["cost"]
+    report = (published / "report.md").read_text()
+    assert "Deduplicated Experiment Cost" in report
+    assert "4 unique paid runs" in report
